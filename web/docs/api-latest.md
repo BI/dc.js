@@ -29,6 +29,7 @@
   * [Bar Gauge](#bar-gauge)
   * [Geo Bubble Overlay Chart](#geo-bubble-overlay-chart)
   * [Arc Gauge](#arc-gauge)
+  * [Row Chart](#row-chart)
 
 #### Version 2.0.0-alpha.2
 
@@ -2007,3 +2008,46 @@ to the correct amount of degrees to fill in the arc.
 
 #### .initializeArc(ParentSelector)
 Add the background and foreground arcs. Also do the animation of the arc filling/emptying.
+
+## Row Chart
+
+Includes: [Base Mixin](#base-mixin)
+
+
+#### dc.sankey(parent[, chartGroup])
+Create a Sankey chart that shows how crossfilter dimensions flow into other dimensions. 
+Multiple dimensions can be used. 
+
+Parameters:
+
+* parent : string | node | selection - any valid
+[d3 single selector](https://github.com/mbostock/d3/wiki/Selections#selecting-elements) specifying
+a dom block element such as a div; or a dom element or d3 selection.
+
+* chartGroup : string (optional) - name of the chart group this chart instance should be placed in.
+Interaction with a chart will only trigger events and redraws within the chart's group.
+
+Returns:
+A newly created sankey instance
+
+```js
+//setup the dimension/column name array needed to translate crossfilter data into the sankey 
+//data structure
+var dimensionColumnnamePairs = [{'dimension' : someDimension, 'columnName' : 'columnNamefromCSV'},
+                               {'dimension' : anotherDimension, 'columnName' : 'anotherColumnName'}];
+//which column name from the CSV contains the value for measuring the data
+var measure_column = 'value';
+// create a row chart under #sankey element using the default global chart group
+var chart = dc.rowChart("#sankey")
+               .dimColPairs(dimensionColumnnamePairs)
+               .measure_column(measure_column);
+
+//filter manually by passing in the column name, and filter value like this
+chart.filter('columnNamefromCSV', 'singlefiltervalue');
+```
+
+//#### IMPORTANT .filter(dimension, filterValue)
+Filter the chart by specifying the filter and the dimension
+```js
+//filter on a dimension with a string
+chart.filter("csvColumnforRegion", "West");
