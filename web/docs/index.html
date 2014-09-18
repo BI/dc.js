@@ -144,6 +144,7 @@
 <li><a href="#bar-gauge">Bar Gauge</a></li>
 <li><a href="#geo-bubble-overlay-chart">Geo Bubble Overlay Chart</a></li>
 <li><a href="#arc-gauge">Arc Gauge</a></li>
+<li><a href="#tree-map">Tree Map</a></li>
 </ul>
 <h4 id="version-2-0-0-alpha-2">Version 2.0.0-alpha.2</h4>
 <p>The entire dc.js library is scoped under the <strong>dc</strong> name space. It does not introduce anything else
@@ -1645,6 +1646,40 @@ The filled value will be used to get the percentage the bar is filled which will
 to the correct amount of degrees to fill in the arc.</p>
 <h4 id="-initializearc-parentselector-">.initializeArc(ParentSelector)</h4>
 <p>Add the background and foreground arcs. Also do the animation of the arc filling/emptying.</p>
+<h2 id="tree-map">Tree Map</h2>
+<p>Includes: <a href="#base-mixin">Base Mixin</a></p>
+<h4 id="dc-treemap-parent-chartgroup-">dc.treeMap(parent[, chartGroup])</h4>
+<p>Create a Tree Map chart that uses multiple crossfilter dimensions in a hierarchical data structure.</p>
+<p>Parameters:</p>
+<ul>
+<li><p>parent : string | node | selection - any valid
+<a href="https://github.com/mbostock/d3/wiki/Selections#selecting-elements">d3 single selector</a> specifying
+a dom block element such as a div; or a dom element or d3 selection.</p>
+</li>
+<li><p>chartGroup : string (optional) - name of the chart group this chart instance should be placed in.
+Interaction with a chart will only trigger events and redraws within the chart’s group.</p>
+</li>
+</ul>
+<p>Returns:
+A newly created tree map instance</p>
+<pre><code class="lang-js">//setup <span class="keyword">the</span> dimension/column <span class="property">name</span> array <span class="keyword">in</span> <span class="keyword">the</span> order <span class="keyword">of</span> root -&gt; children
+//data structure
+var dimensionColumnnamePairs = [{'dimension' : someRootDimension, 'columnName' : 'columnNamefromCSV'},
+                               {'dimension' : aChildDimension, 'columnName' : 'anotherColumnName'}];
+//which column <span class="property">name</span> <span class="keyword">from</span> <span class="keyword">the</span> CSV <span class="keyword">contains</span> <span class="keyword">the</span> value <span class="keyword">for</span> measuring <span class="keyword">the</span> data
+var measure_column = 'value';
+// create a row chart under <span class="comment">#sankey element using the default global chart group</span>
+var chart = dc.rowChart(<span class="string">"#treeMap"</span>)
+               .dimColPairs(dimensionColumnnamePairs)
+               .measure_column(measure_column);
+
+//filter manually <span class="keyword">by</span> passing <span class="keyword">in</span> <span class="keyword">the</span> column <span class="property">name</span>, <span class="keyword">and</span> filter value like this
+chart.filter('columnNamefromCSV', 'singlefiltervalue');</code></pre>
+<p>//#### IMPORTANT .filter(column_name, filterValue)
+Filter the chart by specifying the filter and the dimension
+```js
+//filter on a dimension with a string
+chart.filter(“csvColumnforRegion”, “West”);</p>
 
   </body>
 </html>
