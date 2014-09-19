@@ -75,31 +75,32 @@ rect.child.selected {
 </form>
 <script src="http://d3js.org/d3.v3.min.js"></script>
 <script>
-var data = crossfilter(loadDateFixture());
-var stateDimension = data.dimension(function(d){return d.state;});
-var regionDimension = data.dimension(function(d){return d.region;});
-var countryDimension = data.dimension(function(d){return d.countrycode;});
-var statusDimension = data.dimension(function(d){return d.status;});
-dimTree = [{dimension : countryDimension, columnName : 'countrycode'},
-           {dimension : regionDimension, columnName : 'region'},
-           {dimension : stateDimension, columnName : 'state'}];
-
+var data = crossfilter(loadDateFixtureSankey());
+var stateFromDimension, stateLiveDimension, regionDimension, countryDimension;
+stateFromDimension = data.dimension(function(d){return d.state_from;});
+stateLiveDimension = data.dimension(function(d){return d.state_live;});
+regionDimension = data.dimension(function(d){return d.region;});
+countryDimension = data.dimension(function(d){return d.countrycode;});
+dimColPairs = [{'dimension' : countryDimension, 'columnName' : 'countrycode'},
+               {'dimension' : regionDimension, 'columnName' : 'region'},
+               {'dimension' : stateFromDimension, 'columnName' : 'state_from'},
+               {'dimension' : stateLiveDimension, 'columnName' : 'state_live'}];
 
 var treeMapTest = dc.treeMap("#chart")
                     .topBarHeight(25)
                     .height(200)
-                    .dimColPairs(dimTree)
+                    .dimColPairs(dimColPairs)
                     .label(function(d) {return "hi " + d.name + " " + d.value;})
                     .measure_column('value')
                     .rootName("frodo");
 
-var stateGroup = stateDimension.group().reduceSum(function(d) {return d.value;});
+var stateLiveGroup = stateLiveDimension.group().reduceSum(function(d) {return d.value;});
  barChartState = dc.rowChart("#barchart-state");
 barChartState
   .width(300)
   .height(200)
-  .dimension(stateDimension)
-  .group(stateGroup);
+  .dimension(stateLiveDimension)
+  .group(stateLiveGroup);
 
 var regionGroup = regionDimension.group().reduceSum(function(d) {return d.value;});
  barChartRegion = dc.rowChart("#barchart-region");

@@ -8739,9 +8739,10 @@ dc.treeMap = function (parent, chartGroup) {
 
     function onClick(d) {
         //if click event is blocked, then the element is being dragged so don't filter
-        if(d3.event.defaultPrevented) 
+        /*if(d3.event.defaultPrevented) 
             return;
         else 
+        	*/
             _chart.onClick(d);
     }
 
