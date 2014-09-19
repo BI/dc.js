@@ -120,24 +120,62 @@ describe('dc.treeMap', function () {
 			});
 
 			it('zooms to next level', function() {
+				chart.filterAll();
+				chart.render();
 				expect(chart.zoomLevel()).toBe(0);
 				
-				chart.root().selectAll("g.depth g.children")[0].forEach(function(d) {
-					var text = d3.select(d).select("text").text();
-					var onclickfunc = d3.select(d).on("click");
-					
-					if(text.indexOf("US") > -1) {
+				var usData = getDataForNode("US");
+				clickZoom(usData);
+				expect(chart.zoomLevel()).toBe(1);
+				chart.render();
 
-						expect(text.indexOf("341") > -1);
-					}
-					
-				});
+				var westData = getDataForNode("West");
+				clickZoom(westData);
+				expect(chart.zoomLevel()).toBe(2);
+				chart.render();
 
+				var caliData = getDataForNode("California");
+				clickZoom(caliData);
+				chart.render();
+				expect(chart.zoomLevel()).toBe(3);
+
+				
+				var mississippiData = getDataForNode("Mississippi");
+				var misElement = clickZoom(mississippiData);
+				chart.render();
+				expect(chart.zoomLevel()).toBe(3);
+				//expect(misElement.classed("selected")).toBe(true);
+				
+
+
+
+
+		function getDataForNode(name) {
+			var data = {};
+			chart.root().selectAll("g.depth g.children").each(function(d) {
+				if(d.name === name) {
+					data = d;
+				}
+			});
+			
+			return data;
+		}
+
+		function clickZoom(dataNode) {
+			chart.root().selectAll("g.depth g.children")[0].forEach(function(d) {
+				var text = d3.select(d).select("text").text();
+
+				if(text.indexOf(dataNode.name) > -1) {
+					expect(text).toBe("ac");
+					d3.select(d).on("click")(dataNode); //send in correct data for 
+					return d3.select(d);
+				}
+			});
+		}
 			});
 		});
 
-
-
+		
 
 	});
 });
