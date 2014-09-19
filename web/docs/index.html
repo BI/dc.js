@@ -144,7 +144,7 @@
 <li><a href="#bar-gauge">Bar Gauge</a></li>
 <li><a href="#geo-bubble-overlay-chart">Geo Bubble Overlay Chart</a></li>
 <li><a href="#arc-gauge">Arc Gauge</a></li>
-<li><a href="#row-chart">Row Chart</a></li>
+<li><a href="#sankey">Sankey</a></li>
 </ul>
 <h4 id="version-2-0-0-alpha-2">Version 2.0.0-alpha.2</h4>
 <p>The entire dc.js library is scoped under the <strong>dc</strong> name space. It does not introduce anything else
@@ -1646,7 +1646,7 @@ The filled value will be used to get the percentage the bar is filled which will
 to the correct amount of degrees to fill in the arc.</p>
 <h4 id="-initializearc-parentselector-">.initializeArc(ParentSelector)</h4>
 <p>Add the background and foreground arcs. Also do the animation of the arc filling/emptying.</p>
-<h2 id="row-chart">Row Chart</h2>
+<h2 id="sankey">Sankey</h2>
 <p>Includes: <a href="#base-mixin">Base Mixin</a></p>
 <h4 id="dc-sankey-parent-chartgroup-">dc.sankey(parent[, chartGroup])</h4>
 <p>Create a Sankey chart that shows how crossfilter dimensions flow into other dimensions. 
@@ -1669,18 +1669,26 @@ var dimensionColumnnamePairs = [{'dimension' : someDimension, 'columnName' : 'co
                                {'dimension' : anotherDimension, 'columnName' : 'anotherColumnName'}];
 //which column <span class="property">name</span> <span class="keyword">from</span> <span class="keyword">the</span> CSV <span class="keyword">contains</span> <span class="keyword">the</span> value <span class="keyword">for</span> measuring <span class="keyword">the</span> data
 var measure_column = 'value';
-// create a row chart under <span class="comment">#sankey element using the default global chart group</span>
-var chart = dc.rowChart(<span class="string">"#sankey"</span>)
+// create a sankey chart under <span class="comment">#sankey element using the default global chart group</span>
+var chart = dc.sankey(<span class="string">"#sankey"</span>)
                .dimColPairs(dimensionColumnnamePairs)
                .measure_column(measure_column);
 
 //filter manually <span class="keyword">by</span> passing <span class="keyword">in</span> <span class="keyword">the</span> column <span class="property">name</span>, <span class="keyword">and</span> filter value like this
 chart.filter('columnNamefromCSV', 'singlefiltervalue');</code></pre>
-<p>//#### IMPORTANT .filter(dimension, filterValue)
-Filter the chart by specifying the filter and the dimension
+<h4 id="-filter-columnname-filtervalue-">.filter(columnName, filterValue)</h4>
+<p>Filter the chart by specifying the column name and filter value.
+This differs from the normal chart.filter(“value”) api that comes with Base mixin.
+Returns the _filters object containing all of the specified dimensions and filters.
 ```js
 //filter on a dimension with a string
 chart.filter(“csvColumnforRegion”, “West”);</p>
+<h4 id="-dimcolpairs-dimension-somedimension-columnname-column-">.dimColPairs([{dimension: someDimension, columnName: “column”}])</h4>
+<p>Pass in an array of objects containing a dimension and corresponding column name
+Make sure the array order matches the order in which the dimensions should appear
+in the Sankey diagram from left to right.</p>
+<h4 id="-measurecolumn-string-">.measureColumn([String])</h4>
+<p>Set the column name that contains the measure value for the chart.</p>
 
   </body>
 </html>

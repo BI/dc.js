@@ -23,7 +23,7 @@ describe('dc.sankey', function () {
 
 			chart = dc.sankey("#" + id)
 						.dimColPairs(dimColPairs)
-						.measure_column(measure_column);
+						.measureColumn(measure_column);
             chart.render();
 		});
 

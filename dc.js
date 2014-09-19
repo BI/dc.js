@@ -8800,7 +8800,7 @@ d3.sankey = function() {
 };
 
 /**
-## Row Chart
+## Sankey
 
 Includes: [Base Mixin](#base-mixin)
 
@@ -8828,8 +8828,8 @@ var dimensionColumnnamePairs = [{'dimension' : someDimension, 'columnName' : 'co
                                 {'dimension' : anotherDimension, 'columnName' : 'anotherColumnName'}];
 //which column name from the CSV contains the value for measuring the data
 var measure_column = 'value';
-// create a row chart under #sankey element using the default global chart group
-var chart = dc.rowChart("#sankey")
+// create a sankey chart under #sankey element using the default global chart group
+var chart = dc.sankey("#sankey")
                 .dimColPairs(dimensionColumnnamePairs)
                 .measure_column(measure_column);
 
@@ -8840,7 +8840,7 @@ chart.filter('columnNamefromCSV', 'singlefiltervalue');
 **/
 dc.sankey = function(parent, chartGroup) {
     var _chart = dc.capMixin(dc.baseMixin({}));
-    var _sankey, _sankeyDataObject, _dimColPairs = [{}], _measure_column;
+    var _sankey, _sankeyDataObject, _dimColPairs = [{}], _measureColumn;
     var _margin = {top: 1, right: 1, bottom: 6, left: 1},
         _width = 960 - _margin.left - _margin.right,
         _height = 500 - _margin.top - _margin.bottom;
@@ -8942,8 +8942,10 @@ dc.sankey = function(parent, chartGroup) {
     };
 
     /**
-    //#### IMPORTANT .filter(dimension, filterValue)
-    Filter the chart by specifying the filter and the dimension
+    #### .filter(columnName, filterValue)
+    Filter the chart by specifying the column name and filter value.
+    This differs from the normal chart.filter("value") api that comes with Base mixin.
+    Returns the _filters object containing all of the specified dimensions and filters.
     ```js
     //filter on a dimension with a string
     chart.filter("csvColumnforRegion", "West");
@@ -8967,6 +8969,7 @@ dc.sankey = function(parent, chartGroup) {
         });
         
     };
+
     _chart.filters = function() {
         return _filters;
 
@@ -8976,33 +8979,33 @@ dc.sankey = function(parent, chartGroup) {
 
     _chart.transitionDuration(450); // good default
 
-    _chart.width = function(_) {
-        if(!arguments.length) return _width;
-        _width = _;
-        return _chart;
-    };
+    
 
-    _chart.height = function(_) {
-        if(!arguments.length) return _height;
-        _height = _;
-        return _chart;
-    };
-
+    /**
+    #### .dimColPairs([{dimension: someDimension, columnName: "column"}]) 
+    Pass in an array of objects containing a dimension and corresponding column name
+    Make sure the array order matches the order in which the dimensions should appear
+    in the Sankey diagram from left to right. 
+    **/
     _chart.dimColPairs = function(_) {
         if(!arguments.length) return _dimColPairs;
         _dimColPairs = _;
         return _chart;
     };
 
-    _chart.measure_column = function(_) {
-        if(!arguments.length) return _measure_column;
-        _measure_column = _;
+    /**
+    #### .measureColumn([String]) 
+    Set the column name that contains the measure value for the chart. 
+    **/
+    _chart.measureColumn = function(_) {
+        if(!arguments.length) return _measureColumn;
+        _measureColumn = _;
         return _chart;
     };
 
     _chart.initData = function () {
-        if(_dimColPairs && _measure_column) {
-            _sankeyDataObject = crossfilterToSankeyData(_dimColPairs, _measure_column);
+        if(_dimColPairs && _measureColumn) {
+            _sankeyDataObject = crossfilterToSankeyData(_dimColPairs, _measureColumn);
         }
         else throw "Must provide dimension column array and measure_column";
         return _chart;

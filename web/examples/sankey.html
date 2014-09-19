@@ -69,7 +69,7 @@ var dimColPairs = [{'dimension' : stateFromDimension, 'columnName' : 'state_from
 
 var sankey = dc.sankey("#sankey")
                 .dimColPairs(dimColPairs)
-                .measure_column('value');
+                .measureColumn('value');
 
 var stateFromGroup = stateFromDimension.group().reduceSum(function(d) {return d.value;});
  barChartStateFrom = dc.rowChart("#barchart-state-from");

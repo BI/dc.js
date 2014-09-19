@@ -29,7 +29,7 @@
   * [Bar Gauge](#bar-gauge)
   * [Geo Bubble Overlay Chart](#geo-bubble-overlay-chart)
   * [Arc Gauge](#arc-gauge)
-  * [Row Chart](#row-chart)
+  * [Sankey](#sankey)
 
 #### Version 2.0.0-alpha.2
 
@@ -2009,7 +2009,7 @@ to the correct amount of degrees to fill in the arc.
 #### .initializeArc(ParentSelector)
 Add the background and foreground arcs. Also do the animation of the arc filling/emptying.
 
-## Row Chart
+## Sankey
 
 Includes: [Base Mixin](#base-mixin)
 
@@ -2037,8 +2037,8 @@ var dimensionColumnnamePairs = [{'dimension' : someDimension, 'columnName' : 'co
                                {'dimension' : anotherDimension, 'columnName' : 'anotherColumnName'}];
 //which column name from the CSV contains the value for measuring the data
 var measure_column = 'value';
-// create a row chart under #sankey element using the default global chart group
-var chart = dc.rowChart("#sankey")
+// create a sankey chart under #sankey element using the default global chart group
+var chart = dc.sankey("#sankey")
                .dimColPairs(dimensionColumnnamePairs)
                .measure_column(measure_column);
 
@@ -2046,8 +2046,18 @@ var chart = dc.rowChart("#sankey")
 chart.filter('columnNamefromCSV', 'singlefiltervalue');
 ```
 
-//#### IMPORTANT .filter(dimension, filterValue)
-Filter the chart by specifying the filter and the dimension
+#### .filter(columnName, filterValue)
+Filter the chart by specifying the column name and filter value.
+This differs from the normal chart.filter("value") api that comes with Base mixin.
+Returns the _filters object containing all of the specified dimensions and filters.
 ```js
 //filter on a dimension with a string
 chart.filter("csvColumnforRegion", "West");
+
+#### .dimColPairs([{dimension: someDimension, columnName: "column"}]) 
+Pass in an array of objects containing a dimension and corresponding column name
+Make sure the array order matches the order in which the dimensions should appear
+in the Sankey diagram from left to right.
+
+#### .measureColumn([String]) 
+Set the column name that contains the measure value for the chart.
