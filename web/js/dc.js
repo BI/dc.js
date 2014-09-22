@@ -8845,7 +8845,7 @@ dc.sankey = function(parent, chartGroup) {
         _width = 960 - _margin.left - _margin.right,
         _height = 500 - _margin.top - _margin.bottom;
     var _formatNumber = d3.format(",.0f"),
-        _format = function(d) { return _formatNumber(d) + " TWh"; },
+        _format = function(d) { return _formatNumber(d); },
         _color = d3.scale.category20();
 
     //****change _filters to let this chart have multiple filters, one for each dimension
@@ -8979,6 +8979,25 @@ dc.sankey = function(parent, chartGroup) {
 
     _chart.transitionDuration(450); // good default
 
+    /**
+    #### .width(Number)
+    Specify the width of the SVG. Default is 960
+    **/
+    _chart.width = function(_) {
+        if(!arguments.length) return _width;
+        _width = _;
+        return _chart;
+    };
+
+    /**
+    #### .height(Number)
+    Specify the height of the SVG. Default is 500
+    **/
+    _chart.height = function(_) {
+        if(!arguments.length) return _height;
+        _height = _;
+        return _chart;
+    };
     
 
     /**
@@ -9048,7 +9067,7 @@ dc.sankey = function(parent, chartGroup) {
         var node = svg.append("g").selectAll(".node")
             .data(_sankeyDataObject.nodes)
         .enter().append("g")
-            .attr("class", function(d) {return "node " + d.name;})
+            .attr("class", function(d) {return "node " + dc.utils.nameToId(d.name);})
             .attr("transform", function(d) { return "translate(" + d.x + "," + d.y + ")"; })
             .on("click", onClick)
         .call(d3.behavior.drag()

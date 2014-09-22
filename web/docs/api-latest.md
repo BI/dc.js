@@ -2054,6 +2054,12 @@ Returns the _filters object containing all of the specified dimensions and filte
 //filter on a dimension with a string
 chart.filter("csvColumnforRegion", "West");
 
+#### .width(Number)
+Specify the width of the SVG. Default is 960
+
+#### .height(Number)
+Specify the height of the SVG. Default is 500
+
 #### .dimColPairs([{dimension: someDimension, columnName: "column"}]) 
 Pass in an array of objects containing a dimension and corresponding column name
 Make sure the array order matches the order in which the dimensions should appear

@@ -4,8 +4,8 @@
     <title>dc.js - Sankey Example</title>
     <meta charset="UTF-8">
     <style>
-    #chart {
-  height: 500px;
+    #sankey {
+  height: 400px;
 }
 
 .node rect {
@@ -68,6 +68,8 @@ var dimColPairs = [{'dimension' : stateFromDimension, 'columnName' : 'state_from
                     {'dimension' : countryDimension, 'columnName' : 'countrycode'}];
 
 var sankey = dc.sankey("#sankey")
+                .width(600)
+                .height(400)
                 .dimColPairs(dimColPairs)
                 .measureColumn('value');
 

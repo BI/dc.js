@@ -2,7 +2,7 @@ describe('dc.sankey', function () {
 	var chart;
 	var stateFromDimension, stateLiveDimension, regionDimension, countryDimension;
 	var crossfilterdata;
-	var dimColPairs, measure_column = "value", testNodeName = "US";
+	var dimColPairs, measure_column = "value", testNodeName = "us";
 
 	describe('creation', function(){
 		beforeEach(function () {
@@ -42,7 +42,7 @@ describe('dc.sankey', function () {
 
         it('should create title text for the US', function() {
 			var usSelection = chart.root().select("g.node." + testNodeName)[0][0];
-			expect(d3.select(usSelection).text().indexOf(testNodeName) > -1).toBeTruthy();
+			expect(d3.select(usSelection).text().indexOf(testNodeName.toUpperCase()) > -1).toBeTruthy();
         });
 
         it('should have a rectangle inside the US node', function() {

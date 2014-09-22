@@ -30,7 +30,7 @@ function loadDateFixture2() {
 function loadDateFixtureSankey() {
     var fixture = JSON.parse("[" +
         "{\"value\":\"44\",\"nvalue\":\"-4\",\"countrycode\":\"US\",\"state_from\":\"California\",\"state_live\":\"California\",\"status\":\"T\",\"id\":1,\"region\":\"South\",\"date\":\"2012-05-25T16:10:09Z\"}, " +
-        "{\"value\":\"22\",\"nvalue\":\"-2\",\"countrycode\":\"US\",\"state_from\":\"Colorado\",\"state_live\":\"Omaha\",\"status\":\"F\",\"id\":2,\"region\":\"West\",\"date\":\"2012-06-10T16:10:19Z\"}, " +
+        "{\"value\":\"22\",\"nvalue\":\"-2\",\"countrycode\":\"US\",\"state_from\":\"Colorado's Test\",\"state_live\":\"Omaha\",\"status\":\"F\",\"id\":2,\"region\":\"West\",\"date\":\"2012-06-10T16:10:19Z\"}, " +
         "{\"value\":\"33\",\"nvalue\":\"1\",\"countrycode\":\"US\",\"state_from\":\"Delaware\",\"state_live\":\"Omaha\",\"status\":\"T\",\"id\":3,\"region\":\"West\",\"date\":\"2012-08-10T16:20:29Z\"}, " +
         "{\"value\":\"44\",\"nvalue\":\"-3\",\"countrycode\":\"US\",\"state_from\":\"California\",\"state_live\":\"Nebraska\",\"status\":\"F\",\"id\":4,\"region\":\"South\",\"date\":\"2012-07-01T16:10:39Z\"}, " +
         "{\"value\":\"55\",\"nvalue\":\"-5\",\"countrycode\":\"CA\",\"state_from\":\"Ontario\",\"state_live\":\"Quebec\",\"status\":\"T\",\"id\":5,\"region\":\"Central\",\"date\":\"2012-06-10T16:10:49Z\"}, " +
