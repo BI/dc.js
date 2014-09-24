@@ -8898,7 +8898,7 @@ dc.sankey = function(parent, chartGroup) {
         var dimension = lookupDimension(column_name);
         _filters[column_name].filterArr.forEach(function(f, index) {
             if(f === filter) {
-                _filters[column_name].filterArr = _filters[column_name].filterArr.splice(index, 0);
+                var removedFilter = _filters[column_name].filterArr.splice(index, 1);
             }
         });
         applyFilters();
