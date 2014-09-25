@@ -236,11 +236,12 @@ dc.treeMap = function (parent, chartGroup) {
         /*if(d3.event.defaultPrevented) 
             return;
         else 
-        	*/
-            _chart.onClick(d);
+        */
+        _chart.onClick(d);
     }
 
     _chart.onClick = function (d) {
+    
         var filter = d.name;
         var dimensionTofilter = lookupDimension(d.column_name);
         dc.events.trigger(function () {
@@ -256,7 +257,10 @@ dc.treeMap = function (parent, chartGroup) {
 			}
 			if(dc._renderlet !== null)
 				dc._renderlet(group);
+
         });
+
+        
     };
 
     function isSelectedNode(d) {
@@ -420,8 +424,10 @@ dc.treeMap = function (parent, chartGroup) {
 
 					}
 					else {
+						
 						onClick(d);
 						if(_chart.hasFilter() && isSelectedNode(d)) {
+							//note: could not seem to get 'this' value in test spec
 							d3.select(this).classed("selected", true);
 							d3.select(this).classed("deselected", false);
 						}
