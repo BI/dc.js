@@ -39,7 +39,7 @@ chart.filter('columnNamefromCSV', 'singlefiltervalue');
 dc.treeMap = function (parent, chartGroup) {
 	var _chart = dc.baseMixin({});
 	var _treeMapd3, _treeMapDataObject,
-		_dimColPairs = [{}], _measure_column, _rootName = "root",
+		_dimColPairs = [{}], _measureColumn, _rootName = "root",
 		_zoomLevel = 0;
 	var _margin = {top: 0, right: 0, bottom: 0, left: 0},
 		_width = 960,
@@ -203,9 +203,9 @@ dc.treeMap = function (parent, chartGroup) {
         return _chart;
     };
 
-    _chart.measure_column = function(_) {
-        if(!arguments.length) return _measure_column;
-        _measure_column = _;
+    _chart.measureColumn = function(_) {
+        if(!arguments.length) return _measureColumn;
+        _measureColumn = _;
         return _chart;
     };
 
@@ -224,8 +224,8 @@ dc.treeMap = function (parent, chartGroup) {
     };
 
     _chart.initData = function () {
-        if(_dimColPairs && _measure_column) {
-            _treeMapDataObject = crossfilterToTreeMapData(_dimColPairs, _measure_column);
+        if(_dimColPairs && _measureColumn) {
+            _treeMapDataObject = crossfilterToTreeMapData(_dimColPairs, _measureColumn);
         }
         else throw "Must provide dimension column array and measure_column";
         return _chart;
