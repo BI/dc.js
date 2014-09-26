@@ -2050,3 +2050,62 @@ Filter the chart by specifying the filter and the dimension
 ```js
 //filter on a dimension with a string
 chart.filter("csvColumnforRegion", "West");
+
+## Sankey
+
+Includes: [Base Mixin](#base-mixin)
+
+
+#### dc.sankey(parent[, chartGroup])
+Create a Sankey chart that shows how crossfilter dimensions flow into other dimensions. 
+Multiple dimensions can be used. 
+
+Parameters:
+
+* parent : string | node | selection - any valid
+[d3 single selector](https://github.com/mbostock/d3/wiki/Selections#selecting-elements) specifying
+a dom block element such as a div; or a dom element or d3 selection.
+
+* chartGroup : string (optional) - name of the chart group this chart instance should be placed in.
+Interaction with a chart will only trigger events and redraws within the chart's group.
+
+Returns:
+A newly created sankey instance
+
+```js
+//setup the dimension/column name array needed to translate crossfilter data into the sankey 
+//data structure
+var dimensionColumnnamePairs = [{'dimension' : someDimension, 'columnName' : 'columnNamefromCSV'},
+                               {'dimension' : anotherDimension, 'columnName' : 'anotherColumnName'}];
+//which column name from the CSV contains the value for measuring the data
+var measure_column = 'value';
+// create a sankey chart under #sankey element using the default global chart group
+var chart = dc.sankey("#sankey")
+               .dimColPairs(dimensionColumnnamePairs)
+               .measure_column(measure_column);
+
+//filter manually by passing in the column name, and filter value like this
+chart.filter('columnNamefromCSV', 'singlefiltervalue');
+```
+
+#### .filter(columnName, filterValue)
+Filter the chart by specifying the column name and filter value.
+This differs from the normal chart.filter("value") api that comes with Base mixin.
+Returns the _filters object containing all of the specified dimensions and filters.
+```js
+//filter on a dimension with a string
+chart.filter("csvColumnforRegion", "West");
+
+#### .width(Number)
+Specify the width of the SVG. Default is 960
+
+#### .height(Number)
+Specify the height of the SVG. Default is 500
+
+#### .dimColPairs([{dimension: someDimension, columnName: "column"}]) 
+Pass in an array of objects containing a dimension and corresponding column name
+Make sure the array order matches the order in which the dimensions should appear
+in the Sankey diagram from left to right.
+
+#### .measureColumn([String]) 
+Set the column name that contains the measure value for the chart.

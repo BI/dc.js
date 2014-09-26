@@ -1,0 +1,105 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <title>dc.js - Sankey Example</title>
+    <meta charset="UTF-8">
+    <style>
+    #sankey {
+  height: 400px;
+}
+
+.node rect {
+  cursor: move;
+  fill-opacity: .9;
+  shape-rendering: crispEdges;
+}
+
+.node text {
+  pointer-events: none;
+  text-shadow: 0 1px 0 #fff;
+}
+
+.link {
+  fill: none;
+  stroke: #000;
+  stroke-opacity: .2;
+}
+
+.link:hover {
+  stroke-opacity: .5;
+}
+svg {
+  font: 10px sans-serif;
+}
+
+.axis path, .axis line {
+  fill: none;
+  stroke: #000;
+  shape-rendering: crispEdges;
+}
+</style>
+</head>
+<body>
+
+<div id="sankey" ></div>
+<br/><hr/>
+<div id="barchart-state-from"></div>
+<div id="barchart-state-live"></div>
+<div id="barchart-region"></div>
+<script type="text/javascript" src="../js/d3.js"></script>
+<script type="text/javascript" src="../js/crossfilter.js"></script>
+<script type="text/javascript" src="../js/dc.js"></script>
+<script type="text/javascript" src="../../spec/helpers/fixtures.js"></script>
+<script type="text/javascript">
+
+var chart;
+var stateDimension,regionDimension, countryDimension;
+
+var crossfilterdata = crossfilter(loadDateFixtureSankey());
+
+stateFromDimension = crossfilterdata.dimension(function(d){return d.state_from;});
+stateLiveDimension = crossfilterdata.dimension(function(d){return d.state_live;});
+regionDimension = crossfilterdata.dimension(function(d){return d.region;});
+countryDimension = crossfilterdata.dimension(function(d){return d.countrycode;});
+
+var dimColPairs = [{'dimension' : stateFromDimension, 'columnName' : 'state_from'},
+                    {'dimension' : stateLiveDimension, 'columnName' : 'state_live'},
+                    {'dimension' : regionDimension, 'columnName' : 'region'},
+                    {'dimension' : countryDimension, 'columnName' : 'countrycode'}];
+
+var sankey = dc.sankey("#sankey")
+                .width(600)
+                .height(400)
+                .dimColPairs(dimColPairs)
+                .measureColumn('value');
+
+var stateFromGroup = stateFromDimension.group().reduceSum(function(d) {return d.value;});
+ barChartStateFrom = dc.rowChart("#barchart-state-from");
+barChartStateFrom
+  .width(300)
+  .height(200)
+  .dimension(stateFromDimension)
+  .group(stateFromGroup);
+
+var stateLiveGroup = stateLiveDimension.group().reduceSum(function(d) {return d.value;});
+ barChartStateLive = dc.rowChart("#barchart-state-live");
+barChartStateLive
+  .width(300)
+  .height(200)
+  .dimension(stateLiveDimension)
+  .group(stateLiveGroup);
+
+var regionGroup = regionDimension.group().reduceSum(function(d) {return d.value;});
+ barChartRegion = dc.rowChart("#barchart-region");
+barChartRegion
+  .width(300)
+  .height(200)
+  .dimension(regionDimension)
+  .group(regionGroup);
+
+dc.renderAll();
+
+</script>
+
+</body>
+</html>

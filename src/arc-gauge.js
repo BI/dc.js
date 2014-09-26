@@ -152,6 +152,7 @@ dc.arcGauge = function (parent, chartGroup) {
         foreground.datum({endAngle: degreesToRadians(oldFillAngle)})
             .attr("d", _arc);
         
+
         foreground.transition()
             .duration(_chart.transitionDuration())
             .call(arcTween, degreesToRadians(newFillAngle));
@@ -175,9 +176,10 @@ dc.arcGauge = function (parent, chartGroup) {
 
         var svgArc = _chart.root().append('svg')
              .append("g");
-             
 
         initializeArc(svgArc);
+        _chart.select("g").attr("transform", "translate(" + _chart.outerRadius() + "," +  _chart.outerRadius() + ")");
+
     };
 
     _chart._doRedraw = function(){

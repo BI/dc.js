@@ -317,5 +317,7 @@ module.exports.jsFiles = [
     "src/geo-bubble-overlay-chart.js",
     "src/arc-gauge.js",
     "src/tree-map.js",
+    "bower_components/d3-plugins/sankey/sankey.js",
+    "src/sankey.js",
     "src/footer.js"  // NOTE: keep this last
 ];

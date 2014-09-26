@@ -1676,10 +1676,62 @@ var chart = dc.rowChart(<span class="string">"#treeMap"</span>)
 //filter manually <span class="keyword">by</span> passing <span class="keyword">in</span> <span class="keyword">the</span> column <span class="property">name</span>, <span class="keyword">and</span> filter value like this
 chart.filter('columnNamefromCSV', 'singlefiltervalue');</code></pre>
 <p>//#### IMPORTANT .filter(column_name, filterValue)
-Filter the chart by specifying the filter and the dimension
+Filter the chart by specifying the filter and the dimension</p>
+<pre><code class="lang-js">//filter <span class="function_start"><span class="keyword">on</span> <span class="title">a</span></span> dimension <span class="keyword">with</span> a <span class="type">string</span>
+chart.filter(<span class="string">"csvColumnforRegion"</span>, <span class="string">"West"</span>);
+
+<span class="comment">## Sankey</span>
+
+Includes: [Base Mixin](<span class="comment">#base-mixin)</span>
+
+
+<span class="comment">#### dc.sankey(parent[, chartGroup])</span>
+Create a Sankey chart <span class="keyword">that</span> shows how crossfilter dimensions flow <span class="keyword">into</span> other dimensions. 
+Multiple dimensions can be used. 
+
+Parameters:
+
+* parent : <span class="type">string</span> | node | selection - any valid
+[d3 single selector](https://github.com/mbostock/d3/wiki/Selections<span class="comment">#selecting-elements) specifying</span>
+a dom block element such <span class="keyword">as</span> a <span class="keyword">div</span>; <span class="keyword">or</span> a dom element <span class="keyword">or</span> d3 selection.
+
+* chartGroup : <span class="type">string</span> (optional) - <span class="property">name</span> <span class="keyword">of</span> <span class="keyword">the</span> chart group this chart instance should be placed <span class="keyword">in</span>.
+Interaction <span class="keyword">with</span> a chart will only trigger events <span class="keyword">and</span> redraws within <span class="keyword">the</span> chart's group.
+
+Returns:
+A newly created sankey instance
+
+```js
+//setup <span class="keyword">the</span> dimension/column <span class="property">name</span> array needed <span class="keyword">to</span> translate crossfilter data <span class="keyword">into</span> <span class="keyword">the</span> sankey 
+//data structure
+var dimensionColumnnamePairs = [{'dimension' : someDimension, 'columnName' : 'columnNamefromCSV'},
+                               {'dimension' : anotherDimension, 'columnName' : 'anotherColumnName'}];
+//which column <span class="property">name</span> <span class="keyword">from</span> <span class="keyword">the</span> CSV <span class="keyword">contains</span> <span class="keyword">the</span> value <span class="keyword">for</span> measuring <span class="keyword">the</span> data
+var measure_column = 'value';
+// create a sankey chart under <span class="comment">#sankey element using the default global chart group</span>
+var chart = dc.sankey(<span class="string">"#sankey"</span>)
+               .dimColPairs(dimensionColumnnamePairs)
+               .measure_column(measure_column);
+
+//filter manually <span class="keyword">by</span> passing <span class="keyword">in</span> <span class="keyword">the</span> column <span class="property">name</span>, <span class="keyword">and</span> filter value like this
+chart.filter('columnNamefromCSV', 'singlefiltervalue');</code></pre>
+<h4 id="-filter-columnname-filtervalue-">.filter(columnName, filterValue)</h4>
+<p>Filter the chart by specifying the column name and filter value.
+This differs from the normal chart.filter(“value”) api that comes with Base mixin.
+Returns the _filters object containing all of the specified dimensions and filters.
 ```js
 //filter on a dimension with a string
 chart.filter(“csvColumnforRegion”, “West”);</p>
+<h4 id="-width-number-">.width(Number)</h4>
+<p>Specify the width of the SVG. Default is 960</p>
+<h4 id="-height-number-">.height(Number)</h4>
+<p>Specify the height of the SVG. Default is 500</p>
+<h4 id="-dimcolpairs-dimension-somedimension-columnname-column-">.dimColPairs([{dimension: someDimension, columnName: “column”}])</h4>
+<p>Pass in an array of objects containing a dimension and corresponding column name
+Make sure the array order matches the order in which the dimensions should appear
+in the Sankey diagram from left to right.</p>
+<h4 id="-measurecolumn-string-">.measureColumn([String])</h4>
+<p>Set the column name that contains the measure value for the chart.</p>
 
   </body>
 </html>

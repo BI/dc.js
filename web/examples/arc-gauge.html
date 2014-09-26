@@ -32,9 +32,7 @@ var arc = dc.arcGauge('#arc')
 	.valueAccessor(function(d){return d;})
 	.totalCapacity(data.groupAll().reduceSum(function(d){return d.value;}).value());
 
-//render then position the gauge 
 arc.render();
-arc.select("g").attr("transform", "translate(" + arc.outerRadius() + "," +  arc.outerRadius() + ")");
 </script>
 
 </body>
