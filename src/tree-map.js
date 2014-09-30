@@ -48,7 +48,8 @@ dc.treeMap = function (parent, chartGroup) {
 		_transitioning;
     var _filters = {};
     var _labelFunc = function(d) {return d.name;};
-    
+    var _titleBarFunc = function(d) {return d.parent ? _titleBarFunc(d.parent) + "." + d.name
+				: d.name;};
 
     _chart._mandatoryAttributes([]);
 
@@ -223,6 +224,12 @@ dc.treeMap = function (parent, chartGroup) {
         return _chart;
     };
 
+    _chart.titleBarCaption = function(_) {
+    	if(!arguments.length) return _titleBarFunc;
+		_titleBarFunc = _;
+        return _chart;
+    };
+
     _chart.initData = function () {
         if(_dimColPairs && _measureColumn) {
             _treeMapDataObject = crossfilterToTreeMapData(_dimColPairs, _measureColumn);
@@ -394,7 +401,7 @@ dc.treeMap = function (parent, chartGroup) {
 					}
 				})
 				.select("text")
-				.text(name(d));
+				.text(_titleBarFunc(d));
 
 			var depthContainer = svg.insert("g", ".grandparent")
 				.datum(d)
@@ -521,11 +528,6 @@ dc.treeMap = function (parent, chartGroup) {
 				.attr("y", function(d) { return y(d.y); })
 				.attr("width", function(d) { return x(d.x + d.dx) - x(d.x); })
 				.attr("height", function(d) { return y(d.y + d.dy) - y(d.y); });
-		}
-
-		function name(d) {
-			return d.parent ? name(d.parent) + "." + d.name
-				: d.name;
 		}
 	};
 

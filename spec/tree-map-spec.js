@@ -27,7 +27,7 @@ describe('dc.treeMap', function () {
                     .width(600)
                     .dimColPairs(dimColPairs)
                     .label(function(d) {return "hi " + d.name + " " + d.value;})
-                    .measure_column(measure_column)
+                    .measureColumn(measure_column)
                     .rootName(rootName);
 
             chart.render();
