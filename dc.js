@@ -8921,7 +8921,7 @@ dc.treeMap = function (parent, chartGroup) {
 			var depthContainerChildren = depthContainer.selectAll("g")
 				.data(d._children)
               .enter().append("g")
-              	.attr("clip-path", function(d) {return "url(#" + d.name + "-clip-path)";}); 
+              	.attr("clip-path", function(d) {return "url(#" + dc.utils.nameToId(d.name) + "-clip-path)";}); 
 
 			depthContainerChildren.filter(function(d) { return d._children || d; })
 				.classed("children", true)
@@ -8977,7 +8977,7 @@ dc.treeMap = function (parent, chartGroup) {
 				.call(rect);
 
 			depthContainerChildren.append("defs").append("clipPath")
-				.attr("id", function(d) {return d.name + "-clip-path";})
+				.attr("id", function(d) {return dc.utils.nameToId(d.name) + "-clip-path";})
 				.append("rect")
 				.attr("class", "clip-path-parent")
 				.call(rect);
