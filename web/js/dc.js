@@ -8915,9 +8915,13 @@ dc.treeMap = function (parent, chartGroup) {
 				.datum(d)
 				.attr("class", "depth");
 
+			//container for each main parent box
+			//this box will then contain children outlines
+			//need clip path to hide excess text on smaller boxes
 			var depthContainerChildren = depthContainer.selectAll("g")
 				.data(d._children)
-              .enter().append("g");
+              .enter().append("g")
+              	.attr("clip-path", function(d) {return "url(#" + d.name + "-clip-path)";}); 
 
 			depthContainerChildren.filter(function(d) { return d._children || d; })
 				.classed("children", true)
@@ -8970,6 +8974,12 @@ dc.treeMap = function (parent, chartGroup) {
 					}
 					else return false; 
 				})
+				.call(rect);
+
+			depthContainerChildren.append("defs").append("clipPath")
+				.attr("id", function(d) {return d.name + "-clip-path";})
+				.append("rect")
+				.attr("class", "clip-path-parent")
 				.call(rect);
 
 			depthContainerChildren.append("rect")

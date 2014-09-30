@@ -90,7 +90,7 @@ var treeMapTest = dc.treeMap("#chart")
                     .topBarHeight(25)
                     .height(200)
                     .dimColPairs(dimColPairs)
-                    .label(function(d) {return "hi " + d.name + " " + d.value;})
+                    .label(function(d) {return "hi " + d.name + d.value;})
                     .measureColumn('value')
                     .rootName("frodo")
                     .titleBarCaption(function test(d) {return d.parent ? test(d.parent) + "+" + d.name : d.name;});
