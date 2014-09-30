@@ -9489,9 +9489,8 @@ chart.filter('columnNamefromCSV', 'singlefiltervalue');
 dc.sankey = function(parent, chartGroup) {
     var _chart = dc.capMixin(dc.baseMixin({}));
     var _sankey, _sankeyDataObject, _dimColPairs = [{}], _measureColumn;
-    var _margin = {top: 1, right: 1, bottom: 6, left: 1},
-        _width = 960 - _margin.left - _margin.right,
-        _height = 500 - _margin.top - _margin.bottom;
+    var _width = 960,
+        _height = 500;
     var _formatNumber = d3.format(",.0f"),
         _format = function(d) { return _formatNumber(d); },
         _color = d3.scale.category20();
@@ -9685,10 +9684,9 @@ dc.sankey = function(parent, chartGroup) {
         _chart.root().html('');
 
         var svg = d3.select(parent).append("svg")
-            .attr("width", _width + _margin.left + _margin.right)
-            .attr("height", _height + _margin.top + _margin.bottom)
-          .append("g")
-            .attr("transform", "translate(" + _margin.left + "," + _margin.top + ")");
+            .attr("width", _width)
+            .attr("height", _height)
+          .append("g");
 
         _sankey = d3.sankey()
             .nodeWidth(15)
