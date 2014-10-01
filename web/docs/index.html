@@ -1680,6 +1680,35 @@ Filter the chart by specifying the filter and the dimension</p>
 <pre><code class="lang-js">//filter <span class="function_start"><span class="keyword">on</span> <span class="title">a</span></span> dimension <span class="keyword">with</span> a <span class="type">string</span>
 chart.filter(<span class="string">"csvColumnforRegion"</span>, <span class="string">"West"</span>);
 
+<span class="comment">#### .topBarHeight(Number)</span>
+Set <span class="keyword">the</span> height <span class="keyword">of</span> <span class="keyword">the</span> bar <span class="keyword">at</span> <span class="keyword">the</span> top <span class="keyword">of</span> <span class="keyword">the</span> treemap.
+
+<span class="comment">#### .width(Number)</span>
+Set <span class="keyword">the</span> width explicitly <span class="keyword">as</span> <span class="keyword">it</span> will be used <span class="keyword">for</span> calculating <span class="keyword">the</span> node rectangle sizes.
+
+<span class="comment">#### .height(Number)</span>
+Set <span class="keyword">the</span> height explicitly <span class="keyword">as</span> <span class="keyword">it</span> will be used <span class="keyword">for</span> calculating <span class="keyword">the</span> node rectangle sizes.
+
+<span class="comment">#### .dimColPairs([{dimension: someDimension, columnName: "column"}]) </span>
+Pass <span class="keyword">in</span> an array <span class="keyword">of</span> objects containing a dimension <span class="keyword">and</span> corresponding column <span class="property">name</span>
+Make sure <span class="keyword">the</span> array order matches <span class="keyword">the</span> order <span class="keyword">in</span> which <span class="keyword">the</span> dimensions should appear
+<span class="keyword">in</span> <span class="keyword">the</span> Treemap diagram <span class="keyword">from</span> top <span class="keyword">to</span> bottom.
+
+<span class="comment">#### .measureColumn([String]) </span>
+Set <span class="keyword">the</span> column <span class="property">name</span> <span class="keyword">that</span> <span class="keyword">contains</span> <span class="keyword">the</span> measure value <span class="keyword">for</span> <span class="keyword">the</span> chart.
+
+<span class="comment">#### .rootName(String)</span>
+The root <span class="property">name</span> <span class="keyword">is</span> <span class="keyword">the</span> displayed <span class="keyword">as</span> <span class="keyword">the</span> root parent <span class="type">text</span> <span class="keyword">in</span> <span class="keyword">the</span> bar <span class="keyword">at</span> <span class="keyword">the</span> top <span class="keyword">of</span> <span class="keyword">the</span> treemap.
+
+<span class="comment">#### .label(callback)</span>
+Pass <span class="keyword">in</span> a custom label function. These labels are what appear <span class="keyword">in</span> <span class="keyword">the</span> top left <span class="keyword">of</span> each rectangle.
+
+<span class="comment">#### .toolTip(callback)</span>
+Pass <span class="keyword">in</span> a custom tool tip function. These tool tips show <span class="type">text</span> <span class="keyword">for</span> <span class="keyword">the</span> rectangles <span class="function_start"><span class="keyword">on</span> <span class="title">hover</span></span>.
+
+<span class="comment">#### .titleBarCaption(callback)</span>
+Pass <span class="keyword">in</span> custom title bar caption function. The title bar <span class="type">text</span> <span class="keyword">is</span> show <span class="keyword">in</span> <span class="keyword">the</span> bar <span class="keyword">at</span> <span class="keyword">the</span> top.
+
 <span class="comment">## Sankey</span>
 
 Includes: [Base Mixin](<span class="comment">#base-mixin)</span>

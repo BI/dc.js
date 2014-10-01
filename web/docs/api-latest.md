@@ -2051,6 +2051,35 @@ Filter the chart by specifying the filter and the dimension
 //filter on a dimension with a string
 chart.filter("csvColumnforRegion", "West");
 
+#### .topBarHeight(Number)
+Set the height of the bar at the top of the treemap.
+
+#### .width(Number)
+Set the width explicitly as it will be used for calculating the node rectangle sizes.
+
+#### .height(Number)
+Set the height explicitly as it will be used for calculating the node rectangle sizes.
+
+#### .dimColPairs([{dimension: someDimension, columnName: "column"}]) 
+Pass in an array of objects containing a dimension and corresponding column name
+Make sure the array order matches the order in which the dimensions should appear
+in the Treemap diagram from top to bottom.
+
+#### .measureColumn([String]) 
+Set the column name that contains the measure value for the chart.
+
+#### .rootName(String)
+The root name is the displayed as the root parent text in the bar at the top of the treemap.
+
+#### .label(callback)
+Pass in a custom label function. These labels are what appear in the top left of each rectangle.
+
+#### .toolTip(callback)
+Pass in a custom tool tip function. These tool tips show text for the rectangles on hover.
+
+#### .titleBarCaption(callback)
+Pass in custom title bar caption function. The title bar text is show in the bar at the top.
+
 ## Sankey
 
 Includes: [Base Mixin](#base-mixin)

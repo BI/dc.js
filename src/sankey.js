@@ -40,11 +40,34 @@ chart.filter('columnNamefromCSV', 'singlefiltervalue');
 dc.sankey = function(parent, chartGroup) {
     var _chart = dc.capMixin(dc.baseMixin({}));
     var _sankey, _sankeyDataObject, _dimColPairs = [{}], _measureColumn;
-    var _width = 960,
-        _height = 500;
+    var _margin = {top: 1, right: 1, bottom: 6, left: 1}, //margins needed so sankey edges aren't cut off
+        _width = 960 - _margin.left - _margin.right,
+        _height = 500 - _margin.top - _margin.bottom;
+
     var _formatNumber = d3.format(",.0f"),
         _format = function(d) { return _formatNumber(d); },
         _color = d3.scale.category20();
+    var _linkToolTipFunc = function(d) { return d.source.name + " → " + d.target.name + "\n" + _format(d.value); };
+    var _nodeToolTipFunc = function(d) { return d.name + "\n" + _format(d.value); };    
+    var _labelFunc = function(d) { return d.name; };
+
+    _chart.label = function(_) {
+        if(!arguments.length) return _labelFunc;
+        _labelFunc = _;
+        return _chart;
+    };
+
+    _chart.nodeToolTip = function(_) {
+        if(!arguments.length) return _nodeToolTipFunc;
+        _nodeToolTipFunc = _;
+        return _chart;
+    };
+
+    _chart.linkToolTip = function(_) {
+        if(!arguments.length) return _linkToolTipFunc;
+        _linkToolTipFunc = _;
+        return _chart;
+    };
 
     //****change _filters to let this chart have multiple filters, one for each dimension
     //requires re-implementing a bunch of filter related functions
@@ -235,9 +258,10 @@ dc.sankey = function(parent, chartGroup) {
         _chart.root().html('');
 
         var svg = d3.select(parent).append("svg")
-            .attr("width", _width)
-            .attr("height", _height)
-          .append("g");
+            .attr("width", _width + _margin.left + _margin.right)
+            .attr("height", _height + _margin.top + _margin.bottom)
+          .append("g")
+            .attr("transform", "translate(" + _margin.left + "," + _margin.top + ")");
 
         _sankey = d3.sankey()
             .nodeWidth(15)
@@ -259,7 +283,7 @@ dc.sankey = function(parent, chartGroup) {
                       .sort(function(a, b) { return b.dy - a.dy; });
 
         link.append("title")
-            .text(function(d) { return d.source.name + " → " + d.target.name + "\n" + _format(d.value); });
+            .text(_linkToolTipFunc);
 
         var node = svg.append("g").selectAll(".node")
             .data(_sankeyDataObject.nodes)
@@ -284,7 +308,7 @@ dc.sankey = function(parent, chartGroup) {
             .style("fill", function(d) { return _color(d.name.replace(/ .*/, "")); })
             .style("stroke", function(d) { return d3.rgb(d.color).darker(2); })
           .append("title")
-            .text(function(d) { return d.name + "\n" + _format(d.value); });
+            .text(_nodeToolTipFunc);
 
         node.append("text")
             .attr("x", -6)
@@ -292,7 +316,7 @@ dc.sankey = function(parent, chartGroup) {
             .attr("dy", ".35em")
             .attr("text-anchor", "end")
             .attr("transform", null)
-            .text(function(d) { return d.name; })
+            .text(_labelFunc)
           .filter(function(d) { return d.x < _width / 2; })
             .attr("x", 6 + _sankey.nodeWidth())
             .attr("text-anchor", "start");

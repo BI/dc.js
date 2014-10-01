@@ -8557,7 +8557,7 @@ dc.treeMap = function (parent, chartGroup) {
     var _labelFunc = function(d) {return d.name;};
     var _titleBarFunc = function(d) {return d.parent ? _titleBarFunc(d.parent) + "." + d.name
 				: d.name;};
-	var _toolTipFunc = _labelFunc;
+	var _toolTipFunc = function(d) {return d.name;};
 
     _chart._mandatoryAttributes([]);
 
@@ -8688,56 +8688,92 @@ dc.treeMap = function (parent, chartGroup) {
 
     };
 
+    /**
+	#### .topBarHeight(Number)
+	Set the height of the bar at the top of the treemap.
+    **/
     _chart.topBarHeight = function(_) {
         if(!arguments.length) return _margin.top;
         _margin.top = _;
         return _chart;
     };
 
+    /**
+	#### .width(Number)
+	Set the width explicitly as it will be used for calculating the node rectangle sizes. 
+    **/
     _chart.width = function(_) {
         if(!arguments.length) return _width;
         _width = _;
         return _chart;
     };
 
+	/**
+	#### .height(Number)
+	Set the height explicitly as it will be used for calculating the node rectangle sizes. 
+    **/
     _chart.height = function(_) {
         if(!arguments.length) return _height;
         _height = _;
         return _chart;
     };
 
+    /**
+    #### .dimColPairs([{dimension: someDimension, columnName: "column"}]) 
+    Pass in an array of objects containing a dimension and corresponding column name
+    Make sure the array order matches the order in which the dimensions should appear
+    in the Treemap diagram from top to bottom. 
+    **/
     _chart.dimColPairs = function(_) {
         if(!arguments.length) return _dimColPairs;
         _dimColPairs = _;
         return _chart;
     };
 
+    /**
+    #### .measureColumn([String]) 
+    Set the column name that contains the measure value for the chart. 
+    **/
     _chart.measureColumn = function(_) {
         if(!arguments.length) return _measureColumn;
         _measureColumn = _;
         return _chart;
     };
 
+    /**
+	#### .rootName(String)
+	The root name is the displayed as the root parent text in the bar at the top of the treemap.
+    **/
     _chart.rootName = function(_) {
 		if(!arguments.length) return _rootName;
         _rootName = _;
         return _chart;
     };
 
-    //#### .label(callback)
-    //pass in a custom label function
+    /**
+    #### .label(callback)
+    Pass in a custom label function. These labels are what appear in the top left of each rectangle.
+    **/
     _chart.label = function(_) {
 		if(!arguments.length) return _labelFunc;
 		_labelFunc = _;
         return _chart;
     };
 
+    /**
+	#### .toolTip(callback)
+	Pass in a custom tool tip function. These tool tips show text for the rectangles on hover.
+    **/
     _chart.toolTip = function(_) {
     	if(!arguments.length) return _toolTipFunc;
 		_toolTipFunc = _;
         return _chart;
     };
 
+    /**
+	#### .titleBarCaption(callback)
+	Pass in custom title bar caption function. The title bar text is show in the bar at the top.
+    **/
     _chart.titleBarCaption = function(_) {
     	if(!arguments.length) return _titleBarFunc;
 		_titleBarFunc = _;
@@ -9505,11 +9541,34 @@ chart.filter('columnNamefromCSV', 'singlefiltervalue');
 dc.sankey = function(parent, chartGroup) {
     var _chart = dc.capMixin(dc.baseMixin({}));
     var _sankey, _sankeyDataObject, _dimColPairs = [{}], _measureColumn;
-    var _width = 960,
-        _height = 500;
+    var _margin = {top: 1, right: 1, bottom: 6, left: 1}, //margins needed so sankey edges aren't cut off
+        _width = 960 - _margin.left - _margin.right,
+        _height = 500 - _margin.top - _margin.bottom;
+
     var _formatNumber = d3.format(",.0f"),
         _format = function(d) { return _formatNumber(d); },
         _color = d3.scale.category20();
+    var _linkToolTipFunc = function(d) { return d.source.name + " → " + d.target.name + "\n" + _format(d.value); };
+    var _nodeToolTipFunc = function(d) { return d.name + "\n" + _format(d.value); };    
+    var _labelFunc = function(d) { return d.name; };
+
+    _chart.label = function(_) {
+        if(!arguments.length) return _labelFunc;
+        _labelFunc = _;
+        return _chart;
+    };
+
+    _chart.nodeToolTip = function(_) {
+        if(!arguments.length) return _nodeToolTipFunc;
+        _nodeToolTipFunc = _;
+        return _chart;
+    };
+
+    _chart.linkToolTip = function(_) {
+        if(!arguments.length) return _linkToolTipFunc;
+        _linkToolTipFunc = _;
+        return _chart;
+    };
 
     //****change _filters to let this chart have multiple filters, one for each dimension
     //requires re-implementing a bunch of filter related functions
@@ -9700,9 +9759,10 @@ dc.sankey = function(parent, chartGroup) {
         _chart.root().html('');
 
         var svg = d3.select(parent).append("svg")
-            .attr("width", _width)
-            .attr("height", _height)
-          .append("g");
+            .attr("width", _width + _margin.left + _margin.right)
+            .attr("height", _height + _margin.top + _margin.bottom)
+          .append("g")
+            .attr("transform", "translate(" + _margin.left + "," + _margin.top + ")");
 
         _sankey = d3.sankey()
             .nodeWidth(15)
@@ -9724,7 +9784,7 @@ dc.sankey = function(parent, chartGroup) {
                       .sort(function(a, b) { return b.dy - a.dy; });
 
         link.append("title")
-            .text(function(d) { return d.source.name + " → " + d.target.name + "\n" + _format(d.value); });
+            .text(_linkToolTipFunc);
 
         var node = svg.append("g").selectAll(".node")
             .data(_sankeyDataObject.nodes)
@@ -9749,7 +9809,7 @@ dc.sankey = function(parent, chartGroup) {
             .style("fill", function(d) { return _color(d.name.replace(/ .*/, "")); })
             .style("stroke", function(d) { return d3.rgb(d.color).darker(2); })
           .append("title")
-            .text(function(d) { return d.name + "\n" + _format(d.value); });
+            .text(_nodeToolTipFunc);
 
         node.append("text")
             .attr("x", -6)
@@ -9757,7 +9817,7 @@ dc.sankey = function(parent, chartGroup) {
             .attr("dy", ".35em")
             .attr("text-anchor", "end")
             .attr("transform", null)
-            .text(function(d) { return d.name; })
+            .text(_labelFunc)
           .filter(function(d) { return d.x < _width / 2; })
             .attr("x", 6 + _sankey.nodeWidth())
             .attr("text-anchor", "start");

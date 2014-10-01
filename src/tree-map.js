@@ -49,7 +49,7 @@ dc.treeMap = function (parent, chartGroup) {
     var _labelFunc = function(d) {return d.name;};
     var _titleBarFunc = function(d) {return d.parent ? _titleBarFunc(d.parent) + "." + d.name
 				: d.name;};
-	var _toolTipFunc = _labelFunc;
+	var _toolTipFunc = function(d) {return d.name;};
 
     _chart._mandatoryAttributes([]);
 
@@ -180,56 +180,92 @@ dc.treeMap = function (parent, chartGroup) {
 
     };
 
+    /**
+	#### .topBarHeight(Number)
+	Set the height of the bar at the top of the treemap.
+    **/
     _chart.topBarHeight = function(_) {
         if(!arguments.length) return _margin.top;
         _margin.top = _;
         return _chart;
     };
 
+    /**
+	#### .width(Number)
+	Set the width explicitly as it will be used for calculating the node rectangle sizes. 
+    **/
     _chart.width = function(_) {
         if(!arguments.length) return _width;
         _width = _;
         return _chart;
     };
 
+	/**
+	#### .height(Number)
+	Set the height explicitly as it will be used for calculating the node rectangle sizes. 
+    **/
     _chart.height = function(_) {
         if(!arguments.length) return _height;
         _height = _;
         return _chart;
     };
 
+    /**
+    #### .dimColPairs([{dimension: someDimension, columnName: "column"}]) 
+    Pass in an array of objects containing a dimension and corresponding column name
+    Make sure the array order matches the order in which the dimensions should appear
+    in the Treemap diagram from top to bottom. 
+    **/
     _chart.dimColPairs = function(_) {
         if(!arguments.length) return _dimColPairs;
         _dimColPairs = _;
         return _chart;
     };
 
+    /**
+    #### .measureColumn([String]) 
+    Set the column name that contains the measure value for the chart. 
+    **/
     _chart.measureColumn = function(_) {
         if(!arguments.length) return _measureColumn;
         _measureColumn = _;
         return _chart;
     };
 
+    /**
+	#### .rootName(String)
+	The root name is the displayed as the root parent text in the bar at the top of the treemap.
+    **/
     _chart.rootName = function(_) {
 		if(!arguments.length) return _rootName;
         _rootName = _;
         return _chart;
     };
 
-    //#### .label(callback)
-    //pass in a custom label function
+    /**
+    #### .label(callback)
+    Pass in a custom label function. These labels are what appear in the top left of each rectangle.
+    **/
     _chart.label = function(_) {
 		if(!arguments.length) return _labelFunc;
 		_labelFunc = _;
         return _chart;
     };
 
+    /**
+	#### .toolTip(callback)
+	Pass in a custom tool tip function. These tool tips show text for the rectangles on hover.
+    **/
     _chart.toolTip = function(_) {
     	if(!arguments.length) return _toolTipFunc;
 		_toolTipFunc = _;
         return _chart;
     };
 
+    /**
+	#### .titleBarCaption(callback)
+	Pass in custom title bar caption function. The title bar text is show in the bar at the top.
+    **/
     _chart.titleBarCaption = function(_) {
     	if(!arguments.length) return _titleBarFunc;
 		_titleBarFunc = _;
