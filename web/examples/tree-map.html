@@ -93,7 +93,8 @@ var treeMapTest = dc.treeMap("#chart")
                     .label(function(d) {return "hi " + d.name + d.value;})
                     .measureColumn('value')
                     .rootName("frodo")
-                    .titleBarCaption(function test(d) {return d.parent ? test(d.parent) + "+" + d.name : d.name;});
+                    .titleBarCaption(function test(d) {return d.parent ? test(d.parent) + "+" + d.name : d.name;})
+                    .toolTip(function(d) {return "Here's the value of " + d.name + ": " + d.value});
 
 var stateLiveGroup = stateLiveDimension.group().reduceSum(function(d) {return d.value;});
  barChartState = dc.rowChart("#barchart-state");
