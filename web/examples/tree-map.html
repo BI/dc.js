@@ -18,7 +18,7 @@ text {
   pointer-events: none;
 }
 
-.grandparent text {
+.crumbTrail text {
   font-weight: bold;
 }
 
@@ -28,20 +28,20 @@ rect.parent, rect.child {
 }
 
 rect.parent,
-.grandparent rect {
+.crumbTrail rect {
   stroke-width: 2px;
 }
 
-.grandparent rect {
+.crumbTrail rect {
   fill: red;
 }
 
-.grandparent:hover rect {
+.crumbTrail:hover rect {
   fill: #C80506;
 }
 
 .children rect.parent,
-.grandparent rect {
+.crumbTrail rect {
   cursor: pointer;
 }
 
@@ -86,7 +86,7 @@ dimColPairs = [{'dimension' : countryDimension, 'columnName' : 'countrycode'},
                {'dimension' : stateFromDimension, 'columnName' : 'state_from'},
                {'dimension' : stateLiveDimension, 'columnName' : 'state_live'}];
 
-var treeMapTest = dc.treeMap("#chart")
+treeMapTest = dc.treeMap("#chart")
                     .topBarHeight(25)
                     .height(200)
                     .dimColPairs(dimColPairs)

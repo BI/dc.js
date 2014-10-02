@@ -28,7 +28,9 @@ describe('dc.treeMap', function () {
                     .dimColPairs(dimColPairs)
                     .label(function(d) {return "hi " + d.name + " " + d.value;})
                     .measureColumn(measure_column)
-                    .rootName(rootName);
+                    .rootName(rootName)
+                    .titleBarCaption(function test(d) {return d.parent ? test(d.parent) + "+" + d.name : d.name;})
+                    .toolTip(function(d) {return "Here's the value of " + d.name + ": " + d.value;});
 
             chart.render();
 		});
@@ -48,18 +50,18 @@ describe('dc.treeMap', function () {
 			expect(svg.attr("height")).toBe(modHeight);
 		});
 
-		it('should have a grandparent element', function() {
-			var grandpaElement = chart.root().select("g.grandparent")[0][0];
+		it('should have a crumbTrail element', function() {
+			var grandpaElement = chart.root().select("g.crumbTrail")[0][0];
 			expect(grandpaElement).not.toBe(null);
 		});
 
 		it('should have the rootName text in the grandpa element', function() {
-			var text = chart.root().select("g.grandparent text").text();
+			var text = chart.root().select("g.crumbTrail text").text();
 			expect(text).toBe("frodo");
 		});
 
-		it('should have a grandparent rectangle the same width and height as specified', function() {
-			var rect = chart.root().select("g.grandparent rect");
+		it('should have a crumbTrail rectangle the same width and height as specified', function() {
+			var rect = chart.root().select("g.crumbTrail rect");
 			expect(rect.attr("width")).toBe('600');
 			expect(rect.attr("height")).toBe('25');
 		});
@@ -70,13 +72,13 @@ describe('dc.treeMap', function () {
 		});
 
 		it('should have two children in the depth element', function() {
-			var depthChildren = chart.root().selectAll("g.depth g.children")[0];
+			var depthChildren = chart.root().selectAll("g.depth")[0];
 			expect(depthChildren.length).toBe(2);
 		});
 
 		it('should have six child rectangles in the children', function() {
 			var childRectangles = chart.root().selectAll("g.depth g.children .child")[0];
-			expect(childRectangles.length).toBe(6);
+			expect(childRectangles.length).toBe(12); 
 		});
 
 		describe('filter changes', function() {

@@ -365,26 +365,23 @@ dc.treeMap = function (parent, chartGroup) {
 			.attr("transform", "translate(" + _margin.left + "," + _margin.top + ")")
 			.style("shape-rendering", "crispEdges");
 
-		var grandparent = svg.append("g")
-			.attr("class", "grandparent");
+		var crumbTrail = svg.append("g")
+			.attr("class", "crumbTrail");
 
-		grandparent.append("rect")
+		crumbTrail.append("rect")
 			.attr("y", -_margin.top)
 			.attr("width", _width)
 			.attr("height", _margin.top);
 
-		grandparent.append("text")
+		crumbTrail.append("text")
 			.attr("x", 6)
 			.attr("y", 6 - _margin.top)
 			.attr("dy", ".75em");
-
-		var fromZoom = false; 
-		if(_zoomLevel > 0) fromZoom = true; //flag useful for when filtering at a zoomed level
-
+        
 		initialize(_treeMapDataObject);
 		accumulate(_treeMapDataObject);
 		layout(_treeMapDataObject);
-		display(_treeMapDataObject.zoomLevelDrill(_zoomLevel), fromZoom);
+		display(_treeMapDataObject.zoomLevelDrill(_zoomLevel));
 
 		function initialize(root) {
 			root.x = root.y = 0;
@@ -413,6 +410,7 @@ dc.treeMap = function (parent, chartGroup) {
 		function layout(d) {
 			if (d._children) {
 				_treeMapd3.nodes({_children: d._children});
+
 				d._children.forEach(function(c) {
 					c.x = d.x + c.x * d.dx;
 					c.y = d.y + c.y * d.dy;
@@ -424,36 +422,37 @@ dc.treeMap = function (parent, chartGroup) {
 			}
 		}
 
-		function display(d, fromZoom) {
-
-			//**Must add the grandparent's child(aka parent) 
-			//so clicking the grandparent unfilter's the parent
-			if(d.parent) {
-				d.parent.selectedChild = {};
-				d.parent.selectedChild = d;
-			}
+		function display(currentRoot) {
 			
-			grandparent
-				.datum(d.parent)
+			crumbTrail
+				.datum(currentRoot.parent)
               .on("click", function(d) {
+                    
 					_zoomLevel --;
-					transition(d); 
+                    
+					
 					if (d) {
-						onClick(d.selectedChild); 
+                        // "un-filter" as we drill-up
+						onClick(currentRoot); 
 					}
+                    transition(d); 
+
+                    //second redraw to incase any redraw happens before the filter messes up the 
+                    //treemapobject data
+                    _chart.redraw();
 				})
 				.select("text")
-				.text(_titleBarFunc(d));
+				.text(_titleBarFunc(currentRoot));
 
-			var depthContainer = svg.insert("g", ".grandparent")
-				.datum(d)
+			var depthContainer = svg.insert("g", ".crumbTrail")
+				.datum(currentRoot)
 				.attr("class", "depth");
 
 			//container for each main parent box
 			//this box will then contain children outlines
 			//need clip path to hide excess text on smaller boxes
 			var depthContainerChildren = depthContainer.selectAll("g")
-				.data(d._children)
+				.data(currentRoot._children)
               .enter().append("g")
               	.attr("clip-path", function(d) {return "url(#" + dc.utils.nameToId(d.name) + "-clip-path)";});
 
@@ -474,7 +473,6 @@ dc.treeMap = function (parent, chartGroup) {
 						_zoomLevel ++;
 						transition(d); 
 						onClick(d);
-
 					}
 					else {
 						
@@ -527,21 +525,21 @@ dc.treeMap = function (parent, chartGroup) {
 				.text(_labelFunc)
 				.call(text);
 
-			if(fromZoom) transition(d);
+			transition(currentRoot);
 
 			//Do the zoom animation, and set each parent block 
 			//to take up as much space as it can proportionately
-			function transition(d) {
-				if (_transitioning || !d) return;
+			function transition(currentRoot) {
+				if (_transitioning || !currentRoot) return;
 				_transitioning = true;
 
-				var depthContainerChildren = display(d),
+				var depthContainerChildren = display(currentRoot),
 					parentTransition = depthContainer.transition().duration(_chart.transitionDuration()),
 					childTransition = depthContainerChildren.transition().duration(_chart.transitionDuration());
 
 				// Update the domain only after entering new elements.
-				x.domain([d.x, d.x + d.dx]);
-				y.domain([d.y, d.y + d.dy]);
+				x.domain([currentRoot.x, currentRoot.x + currentRoot.dx]);
+				y.domain([currentRoot.y, currentRoot.y + currentRoot.dy]);
 
 				// Enable anti-aliasing during the transition.
 				svg.style("shape-rendering", null);
