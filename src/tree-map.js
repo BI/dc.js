@@ -78,48 +78,48 @@ dc.treeMap = function (parent, chartGroup) {
         return filters;
     };
 
-    //Specify the dimension that goes along with the filter by providing column_name as the key.
+    //Specify the dimension that goes along with the filter by providing columnName as the key.
     //_filters = {regionDimension : ['West', 'East'], otherDimension : }
-    _chart.hasFilter = function (column_name, filterVal) {
+    _chart.hasFilter = function (columnName, filterVal) {
         if(!arguments.length) {
             if(Object.keys(_filters).length === 0) {
                 return false;
             }
             else //check that the filterArr has any filter values added for any dimensions
             {
-                return Object.keys(_filters).some(function(column_name) {
-                    var filterArray = _filters[column_name].filterArr;
+                return Object.keys(_filters).some(function(columnName) {
+                    var filterArray = _filters[columnName].filterArr;
                     return filterArray.length > 0;
                 });
             }
         }
 
-        return (_filters[column_name]) ? 
-                    _filters[column_name].filterArr.some(function(f) {return f === filterVal;}) : false;
+        return (_filters[columnName]) ? 
+                    _filters[columnName].filterArr.some(function(f) {return f === filterVal;}) : false;
     };
 
-    function removeFilter(column_name, filter) {
-        var dimension = lookupDimension(column_name);
-        _filters[column_name].filterArr.forEach(function(f, index) {
+    function removeFilter(columnName, filter) {
+        var dimension = lookupDimension(columnName);
+        _filters[columnName].filterArr.forEach(function(f, index) {
 
             if(f === filter) {
-                var removedFilter = _filters[column_name].filterArr.splice(index, 1);
+                var removedFilter = _filters[columnName].filterArr.splice(index, 1);
             }
         });
         applyFilters();
         _chart._invokeFilteredListener(dimension);
     }
 
-    function addFilter(column_name, filter) {
+    function addFilter(columnName, filter) {
         var stringify = JSON.stringify(_filters);
-        var dimension = lookupDimension(column_name);
-        if(!_filters[column_name]){
+        var dimension = lookupDimension(columnName);
+        if(!_filters[columnName]){
             
-            _filters[column_name] = {'dimension' : dimension, 'filterArr': []};
-            _filters[column_name].filterArr = [];
+            _filters[columnName] = {'dimension' : dimension, 'filterArr': []};
+            _filters[columnName].filterArr = [];
         }
         
-        _filters[column_name].filterArr.push(filter);
+        _filters[columnName].filterArr.push(filter);
 
         var stringify2 = JSON.stringify(_filters);
         applyFilters();
@@ -135,40 +135,40 @@ dc.treeMap = function (parent, chartGroup) {
     //Important function changes for looping through dimensions
     //and applying the filter handler
     function applyFilters() {
-        Object.keys(_filters).forEach(function(column_name) {
-            var filterArray = _filters[column_name].filterArr;
-            var keyDimension = _filters[column_name].dimension;
+        Object.keys(_filters).forEach(function(columnName) {
+            var filterArray = _filters[columnName].filterArr;
+            var keyDimension = _filters[columnName].dimension;
             var fs = _filterHandler(keyDimension, filterArray);
-            _filters[column_name].filterArr = fs ? fs : filterArray;
+            _filters[columnName].filterArr = fs ? fs : filterArray;
         });
     }
 
-    _chart.replaceFilter = function(column_name, filter) {
-        _filters[column_name].filterArr = [];
-        _charts.filter(column_name, filter);
+    _chart.replaceFilter = function(columnName, filter) {
+        _filters[columnName].filterArr = [];
+        _charts.filter(columnName, filter);
     };
 
     /**
-    //#### IMPORTANT .filter(column_name, filterValue)
+    //#### IMPORTANT .filter(columnName, filterValue)
     Filter the chart by specifying the filter and the dimension
     ```js
     //filter on a dimension with a string
     chart.filter("csvColumnforRegion", "West");
     **/
-    _chart.filter = function(column_name, filter) {
+    _chart.filter = function(columnName, filter) {
         if(!arguments.length) return _filters;
-        if(_chart.hasFilter(column_name, filter)) {
-            removeFilter(column_name, filter);
+        if(_chart.hasFilter(columnName, filter)) {
+            removeFilter(columnName, filter);
         }
         else {
-            addFilter(column_name, filter);
+            addFilter(columnName, filter);
         }
     };
 
     _chart.filterAll = function() {
-        Object.keys(_filters).forEach(function(column_name) {
-            _filters[column_name].filterArr = [];
-            var keyDimension = _filters[column_name].dimension;
+        Object.keys(_filters).forEach(function(columnName) {
+            _filters[columnName].filterArr = [];
+            var keyDimension = _filters[columnName].dimension;
             applyFilters();
             _chart._invokeFilteredListener(keyDimension);
         });
@@ -292,9 +292,9 @@ dc.treeMap = function (parent, chartGroup) {
     _chart.onClick = function (d) {
     
         var filter = d.name;
-        var dimensionTofilter = lookupDimension(d.column_name);
+        var dimensionTofilter = lookupDimension(d.columnName);
         dc.events.trigger(function () {
-            _chart.filter(d.column_name, filter);
+            _chart.filter(d.columnName, filter);
 
             //Manually redraw all other charts so the tree map can have the hierarchical behavior
             //with the multi dimensions
@@ -313,7 +313,7 @@ dc.treeMap = function (parent, chartGroup) {
     };
 
     function isSelectedNode(d) {
-		return _chart.hasFilter(d.column_name, d.name);
+		return _chart.hasFilter(d.columnName, d.name);
     }
 
     _chart.zoomLevel = function(d) {
@@ -382,7 +382,7 @@ dc.treeMap = function (parent, chartGroup) {
 		accumulate(_treeMapDataObject);
 		layout(_treeMapDataObject);
 		display(_treeMapDataObject.zoomLevelDrill(_zoomLevel));
-
+        console.log(_treeMapDataObject);
 		function initialize(root) {
 			root.x = root.y = 0;
 			root.dx = _width;
@@ -591,7 +591,7 @@ dc.treeMap = function (parent, chartGroup) {
 	// Return the tree data object
 	//Translate crossfilter multi dimensional tabular data into hierarchical tree data
 	function crossfilterToTreeMapData(dimColPairs, measure_column) {
-		var _tree = {name : _rootName, column_name : "root",
+		var _tree = {name : _rootName, columnName : "root",
 					children : []};
 
 		//loop over the rows, and then by column to populate the tree data
@@ -630,7 +630,7 @@ dc.treeMap = function (parent, chartGroup) {
 			var nodeChildren = findNodeChildrenDrill(row, columnName, columnIndex).children;
 			var newNode = {};
 			newNode.name = row[columnName];
-			newNode.column_name = columnName;
+			newNode.columnName = columnName;
 			if(columnIndex === (dimColPairs.length - 1)) {
 				newNode.value = Number(row[measure_column]);
 			}

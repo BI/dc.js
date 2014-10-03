@@ -2045,7 +2045,7 @@ var chart = dc.rowChart("#treeMap")
 chart.filter('columnNamefromCSV', 'singlefiltervalue');
 ```
 
-//#### IMPORTANT .filter(column_name, filterValue)
+//#### IMPORTANT .filter(columnName, filterValue)
 Filter the chart by specifying the filter and the dimension
 ```js
 //filter on a dimension with a string
