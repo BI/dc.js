@@ -8815,7 +8815,8 @@ dc.treeMap = function (parent, chartGroup) {
 
             //if going up a level remove filters from lower level
             if(!drillDown) {
-                _chart.filterAllSpecific(d._children[0].columnName);
+                if(_filters[d._children[0].columnName])
+                    _chart.filterAllSpecific(d._children[0].columnName);
             }
 
             //Manually redraw all other charts so the tree map can have the hierarchical behavior
