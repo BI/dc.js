@@ -175,6 +175,13 @@ dc.treeMap = function (parent, chartGroup) {
         
     };
 
+    _chart.filterAllSpecific = function(columnName) {
+        _filters[columnName].filterArr = [];
+        var keyDimension = _filters[columnName].dimension;
+        applyFilters();
+        _chart._invokeFilteredListener(keyDimension);
+    };
+
     _chart.filters = function() {
         return _filters;
 
@@ -280,21 +287,28 @@ dc.treeMap = function (parent, chartGroup) {
         return _chart;
     };
 
-    function onClick(d) {
+    function onClick(d, drillDown) {
         //if click event is blocked, then the element is being dragged so don't filter
         /*if(d3.event.defaultPrevented) 
             return;
         else 
         */
-        _chart.onClick(d);
+        _chart.onClick(d, drillDown);
     }
 
-    _chart.onClick = function (d) {
+    _chart.onClick = function (d, drillDown) {
     
         var filter = d.name;
         var dimensionTofilter = lookupDimension(d.columnName);
+
         dc.events.trigger(function () {
+            //this will add filter for drill down, and remove filter for going up
             _chart.filter(d.columnName, filter);
+
+            //if going up a level remove filters from lower level
+            if(!drillDown) {
+                _chart.filterAllSpecific(d._children[0].columnName);
+            }
 
             //Manually redraw all other charts so the tree map can have the hierarchical behavior
             //with the multi dimensions
@@ -382,7 +396,6 @@ dc.treeMap = function (parent, chartGroup) {
 		accumulate(_treeMapDataObject);
 		layout(_treeMapDataObject);
 		display(_treeMapDataObject.zoomLevelDrill(_zoomLevel));
-        console.log(_treeMapDataObject);
 		function initialize(root) {
 			root.x = root.y = 0;
 			root.dx = _width;
@@ -427,13 +440,11 @@ dc.treeMap = function (parent, chartGroup) {
 			crumbTrail
 				.datum(currentRoot.parent)
               .on("click", function(d) {
-                    
 					_zoomLevel --;
-                    
 					
 					if (d) {
                         // "un-filter" as we drill-up
-						onClick(currentRoot); 
+						onClick(currentRoot, false); 
 					}
                     transition(d); 
 
@@ -472,11 +483,11 @@ dc.treeMap = function (parent, chartGroup) {
 					if(d._children) {
 						_zoomLevel ++;
 						transition(d); 
-						onClick(d);
+						onClick(d, true);
 					}
 					else {
 						
-						onClick(d);
+						onClick(d, true);
 						if(_chart.hasFilter() && isSelectedNode(d)) {
 							//note: could not seem to get 'this' value in test spec
 							d3.select(this).classed("selected", true);
@@ -603,9 +614,6 @@ dc.treeMap = function (parent, chartGroup) {
 				insertNode(row, columnName, columnIndex);
 			});
 		});
-
-		// console.log("TREE");
-		// console.log(JSON.stringify(_tree, undefined, 2));
 
 		function insertNode(row, columnName, columnIndex) {
 			if(!nodesContains(row, columnName, columnIndex)) {
