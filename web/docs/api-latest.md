@@ -2051,6 +2051,16 @@ Filter the chart by specifying the filter and the dimension
 //filter on a dimension with a string
 chart.filter("csvColumnforRegion", "West");
 
+#### .crumbTrailX(Number)
+Set the X position of the crumb trail text within the top bar.
+
+#### .crumbTrailY(Number)
+Set the Y position of the crumb trail text within the top bar.
+
+#### .crumbTrailSize(String)
+Set the font height of the crumb trail text within the top bar.
+Example: .crumbTrailSize(".75em")
+
 #### .topBarHeight(Number)
 Set the height of the bar at the top of the treemap.
 

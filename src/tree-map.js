@@ -42,8 +42,8 @@ dc.treeMap = function (parent, chartGroup) {
 		_dimColPairs = [{}], _measureColumn, _rootName = "root",
 		_zoomLevel = 0;
 	var _margin = {top: 0, right: 0, bottom: 0, left: 0},
-		_width = 960,
-		_height = 500 - _margin.top - _margin.bottom,
+		_width = 960, _height = 500 - _margin.top - _margin.bottom,
+        _crumbTrailX = 6, _crumbTrailY = 6, _crumbTrailHeight = ".75em",
 		_transitioning;
     var _filters = {};
     var _labelFunc = function(d) {return d.name;};
@@ -185,6 +185,37 @@ dc.treeMap = function (parent, chartGroup) {
     _chart.filters = function() {
         return _filters;
 
+    };
+
+    /**
+    #### .crumbTrailX(Number)
+    Set the X position of the crumb trail text within the top bar.
+    **/
+    _chart.crumbTrailX = function(_) {
+        if(!arguments.length) return _crumbTrailX;
+        _crumbTrailX = _;
+        return _chart;
+    };
+
+    /**
+    #### .crumbTrailY(Number)
+    Set the Y position of the crumb trail text within the top bar.
+    **/
+    _chart.crumbTrailY = function(_) {
+        if(!arguments.length) return _crumbTrailY;
+        _crumbTrailY = _;
+        return _chart;
+    };
+
+    /**
+    #### .crumbTrailSize(String)
+    Set the font height of the crumb trail text within the top bar.
+    Example: .crumbTrailSize(".75em")
+    **/
+    _chart.crumbTrailHeight = function(_) {
+        if(!arguments.length) return _crumbTrailHeight;
+        _crumbTrailHeight = _;
+        return _chart;
     };
 
     /**
@@ -396,9 +427,9 @@ dc.treeMap = function (parent, chartGroup) {
 			.attr("height", _margin.top);
 
 		crumbTrail.append("text")
-			.attr("x", 6)
-			.attr("y", 6 - _margin.top)
-			.attr("dy", ".75em");
+			.attr("x", _crumbTrailX)
+			.attr("y", _crumbTrailY - _margin.top)
+			.attr("dy", _crumbTrailHeight);
         _currentRoot = _treeMapDataObject.zoomLevelDrill(_zoomLevel);
 		initialize(_treeMapDataObject);
 		accumulate(_treeMapDataObject);
@@ -446,7 +477,7 @@ dc.treeMap = function (parent, chartGroup) {
 
 		function display(currentRoot) {
 			_currentRoot = currentRoot;
-            
+
 			crumbTrail
 				.datum(currentRoot.parent)
               .on("click", function(d) {
