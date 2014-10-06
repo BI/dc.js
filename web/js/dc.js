@@ -8546,7 +8546,7 @@ chart.filter('columnNamefromCSV', 'singlefiltervalue');
 **/
 dc.treeMap = function (parent, chartGroup) {
 	var _chart = dc.baseMixin({});
-	var _treeMapd3, _treeMapDataObject,
+	var _treeMapd3, _treeMapDataObject, _currentRoot,
 		_dimColPairs = [{}], _measureColumn, _rootName = "root",
 		_zoomLevel = 0;
 	var _margin = {top: 0, right: 0, bottom: 0, left: 0},
@@ -8747,6 +8747,13 @@ dc.treeMap = function (parent, chartGroup) {
         return _chart;
     };
 
+    _chart.currentRoot = function(_) {
+        if(!arguments.length) return _currentRoot;
+        _currentRoot = _;
+        return _chart;
+        
+    };
+
     /**
 	#### .rootName(String)
 	The root name is the displayed as the root parent text in the bar at the top of the treemap.
@@ -8900,11 +8907,12 @@ dc.treeMap = function (parent, chartGroup) {
 			.attr("x", 6)
 			.attr("y", 6 - _margin.top)
 			.attr("dy", ".75em");
-        
+        _currentRoot = _treeMapDataObject.zoomLevelDrill(_zoomLevel);
 		initialize(_treeMapDataObject);
 		accumulate(_treeMapDataObject);
 		layout(_treeMapDataObject);
-		display(_treeMapDataObject.zoomLevelDrill(_zoomLevel));
+		display(_currentRoot);
+
 		function initialize(root) {
 			root.x = root.y = 0;
 			root.dx = _width;
@@ -8945,7 +8953,8 @@ dc.treeMap = function (parent, chartGroup) {
 		}
 
 		function display(currentRoot) {
-			
+			_currentRoot = currentRoot;
+            
 			crumbTrail
 				.datum(currentRoot.parent)
               .on("click", function(d) {
@@ -9190,7 +9199,7 @@ dc.treeMap = function (parent, chartGroup) {
 			for(var i = 0; i < (zoomLevel); i++) {
 				//children accessor changed to '_children' because 'children' gets overwritten 
 				//by the treemap layout when reinitializing from the zoomed state
-				childNode._children.some(function(childObj) { 
+				childNode.children.some(function(childObj) { 
 					var value = getFilterValue(i);
 					if(childObj.name === value) {
 						childNode = childObj;
