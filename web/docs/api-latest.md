@@ -2057,9 +2057,9 @@ Set the X position of the crumb trail text within the top bar.
 #### .crumbTrailY(Number)
 Set the Y position of the crumb trail text within the top bar.
 
-#### .crumbTrailSize(String)
+#### .crumbTrailHeight(String)
 Set the font height of the crumb trail text within the top bar.
-Example: .crumbTrailSize(".75em")
+Example: .crumbTrailHeight(".75em")
 
 #### .topBarHeight(Number)
 Set the height of the bar at the top of the treemap.

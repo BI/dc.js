@@ -8684,10 +8684,13 @@ dc.treeMap = function (parent, chartGroup) {
     };
 
     _chart.filterAllSpecific = function(columnName) {
-        _filters[columnName].filterArr = [];
-        var keyDimension = _filters[columnName].dimension;
-        applyFilters();
-        _chart._invokeFilteredListener(keyDimension);
+        if(_filters[columnName]) {
+            _filters[columnName].filterArr = [];
+            var keyDimension = _filters[columnName].dimension;
+            applyFilters();
+            _chart._invokeFilteredListener(keyDimension);
+        }
+        
     };
 
     _chart.filters = function() {
@@ -8716,9 +8719,9 @@ dc.treeMap = function (parent, chartGroup) {
     };
 
     /**
-    #### .crumbTrailSize(String)
+    #### .crumbTrailHeight(String)
     Set the font height of the crumb trail text within the top bar.
-    Example: .crumbTrailSize(".75em")
+    Example: .crumbTrailHeight(".75em")
     **/
     _chart.crumbTrailHeight = function(_) {
         if(!arguments.length) return _crumbTrailHeight;
@@ -8853,8 +8856,7 @@ dc.treeMap = function (parent, chartGroup) {
 
             //if going up a level remove filters from lower level
             if(!drillDown) {
-                if(_filters[d._children[0].columnName])
-                    _chart.filterAllSpecific(d._children[0].columnName);
+                _chart.filterAllSpecific(d._children[0].columnName);
             }
 
             //Manually redraw all other charts so the tree map can have the hierarchical behavior

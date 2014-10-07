@@ -8719,9 +8719,9 @@ dc.treeMap = function (parent, chartGroup) {
     };
 
     /**
-    #### .crumbTrailSize(String)
+    #### .crumbTrailHeight(String)
     Set the font height of the crumb trail text within the top bar.
-    Example: .crumbTrailSize(".75em")
+    Example: .crumbTrailHeight(".75em")
     **/
     _chart.crumbTrailHeight = function(_) {
         if(!arguments.length) return _crumbTrailHeight;
