@@ -46,7 +46,7 @@ dc.treeMap = function (parent, chartGroup) {
         _crumbTrailX = 6, _crumbTrailY = 6, _crumbTrailHeight = ".75em",
 		_transitioning;
     var _filters = {};
-    var _labelFunc = function(d) {return d.name;};
+    var _labelFuncsArray = [function(d) {return d.name;}];
     var _titleBarFunc = function(d) {return d.parent ? _titleBarFunc(d.parent) + "." + d.name
 				: d.name;};
 	var _toolTipFunc = function(d) {return d.name;};
@@ -294,9 +294,9 @@ dc.treeMap = function (parent, chartGroup) {
     #### .label(callback)
     Pass in a custom label function. These labels are what appear in the top left of each rectangle.
     **/
-    _chart.label = function(_) {
-		if(!arguments.length) return _labelFunc;
-		_labelFunc = _;
+    _chart.labelFunctions = function(_) {
+		if(!arguments.length) return _labelFuncsArray;
+		_labelFuncsArray = _;
         return _chart;
     };
 
@@ -404,6 +404,9 @@ dc.treeMap = function (parent, chartGroup) {
 		var y = d3.scale.linear()
 			.domain([0, _height])
 			.range([0, _height]);
+        var myRenderThis = this;
+        myRenderThis.x = x;
+        myRenderThis.y = y;
 
 		_treeMapd3 = d3.layout.treemap()
 			.children(function(d, depth) { return depth ? null : d._children; })
@@ -574,10 +577,17 @@ dc.treeMap = function (parent, chartGroup) {
               .append("title")
 				.text(_toolTipFunc);
 
-			depthContainerChildren.append("text")
-				.attr("dy", ".75em")
-				.text(_labelFunc)
-				.call(text);
+            // var parentWidth = depthContainerChildren.select("rect parent").attr("width");
+         /*   _labelFuncsArray.forEach(function(func) {
+                depthContainerChildren.append("text")
+                .attr("dy", ".75em")
+                .text(func)
+                .call(text);
+            });*/
+            _labelFuncsArray.forEach(function(func){
+                func.call(myRenderThis, depthContainerChildren);
+            });
+			
 
 			transition(currentRoot);
 
@@ -609,7 +619,10 @@ dc.treeMap = function (parent, chartGroup) {
 				// Transition to the new view.
 				parentTransition.selectAll("text").call(text).style("fill-opacity", 0);
 				childTransition.selectAll("text").call(text).style("fill-opacity", 1);
-				parentTransition.selectAll("rect").call(rect);
+				// _labelFuncsArray.forEach(function(func){
+    //                 func.call(myRenderThis, parentTransition);
+    //             });
+                parentTransition.selectAll("rect").call(rect);
 				childTransition.selectAll("rect").call(rect);
 
 				// Remove the old node when the transition is finished.

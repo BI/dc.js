@@ -91,9 +91,27 @@ treeMapTest = dc.treeMap("#chart")
                     .height(200)
                     .crumbTrailX(10)
                     .crumbTrailY(10)
-                    .crumbTrailSize(".75em")
+                    .crumbTrailHeight(".75em")
                     .dimColPairs(dimColPairs)
-                    .label(function(d) {return "hi " + d.name + d.value;})
+                    .labelFunctions([
+                      function(data) {
+                        var topLevelThis = this;
+                        data.append('text')
+                          .text(function(d){return d.name;})
+                          .attr("x", function(d) {return topLevelThis.x(d.x) + 6;})
+                          .attr("y", function(d) {return topLevelThis.y(d.y) + 6;})
+                          .attr("dy", ".75em");
+                      },
+                      function(data) {
+                        var topLevelThis = this;
+                        data.append('text')
+                          .text(function(d){return d.value;})
+                          // .attr("dominant-baseline", "central");
+                          .attr("x", function(d) {return topLevelThis.x(d.dx)/2;})
+                          .attr("y", function(d) {return topLevelThis.y(d.y);});
+                          // .attr("dx", function(d) {return topLevelThis.x(d.dx)/2;})
+                          // .attr("dy", function(d) {return topLevelThis.y(d.dy)-10});
+                      }])
                     .measureColumn('value')
                     .rootName("frodo")
                     .titleBarCaption(function test(d) {return d.parent ? test(d.parent) + "+" + d.name : d.name;})
