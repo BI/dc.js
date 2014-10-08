@@ -8353,7 +8353,8 @@ dc.arcGauge = function (parent, chartGroup) {
         _startAngle,
         _endAngle,
         _arc,
-        _innerRadius = 30, _outerRadius = 45;
+        _innerRadius = 30, _outerRadius = 45,
+        _height, _width;
 
     //dimension is not required because this component only has one dimension
     _chart._mandatoryAttributes (['group']);
@@ -8369,6 +8370,18 @@ dc.arcGauge = function (parent, chartGroup) {
         return _chart.valueAccessor()(valObj);
 
     });
+
+    _chart.width = function(_) {
+        if(!arguments.length) return _width;
+        _width = _;
+        return _chart;
+    };
+
+    _chart.height = function(_) {
+        if(!arguments.length) return _height;
+        _height = _;
+        return _chart;
+    };
 
     _chart.innerRadius = function(_) {
         if(!arguments.length) return _innerRadius;
@@ -8492,6 +8505,8 @@ dc.arcGauge = function (parent, chartGroup) {
         _chart.root().html('');
 
         var svgArc = _chart.root().append('svg')
+            .attr("width", _width)
+            .attr("height", _height)
              .append("g");
 
         initializeArc(svgArc);
