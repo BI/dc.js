@@ -55,30 +55,56 @@ dc.arcGauge = function (parent, chartGroup) {
 
     });
 
+    /**
+        ####.width(Number)
+        Explicitly set the width of the svg container. Outer radius get computed based on half
+        of either the width or height, depending on which is smaller. 
+    **/
     _chart.width = function(_) {
         if(!arguments.length) return _width;
         _width = _;
         return _chart;
     };
 
+    /**
+        ####.height(Number)
+        Explicitly set the height of the svg container. Outer radius get computed based on half
+        of either the width or height, depending on which is smaller. 
+    **/
     _chart.height = function(_) {
         if(!arguments.length) return _height;
         _height = _;
         return _chart;
     };
 
+    /**
+        ####.innerRadius(Number)
+        Explicitly set the inner radius of the arc. This is not needed if height or width of the 
+        chart is set(Recommend just setting height and width). Inner radius will get computed
+        based on the _innerRadiusRatio * _outerRadius.
+    **/
     _chart.innerRadius = function(_) {
         if(!arguments.length) return _innerRadius;
         _innerRadius = _;
         return _chart;
     };
 
+    /**
+        ####.outerRadius(Number)
+        Explicitly set the outer radius of the donut. This is not needed if height or width of the 
+        chart is set(Recommend just setting height and width). 
+    **/
     _chart.outerRadius = function(_) {
         if(!arguments.length) return _outerRadius;
         _outerRadius = _;
         return _chart;
     };
 
+    /**
+        ####.innerRadiusRatio(Number)
+        Explicitly set the ratio of the inner radius compared to the outer radius. This allows for
+        custom thickness of the arc. Default is 2/3.
+    **/
     _chart.innerRadiusRatio = function(_) {
         if(!arguments.length) return _innerRadiusRatio;
         _innerRadiusRatio = _;

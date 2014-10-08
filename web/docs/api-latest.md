@@ -1992,6 +1992,27 @@ arc = dc.arcGauge("#total-funding-arc")
                                });
 ```
 
+####.width(Number)
+Explicitly set the width of the svg container. Outer radius get computed based on half
+of either the width or height, depending on which is smaller.
+
+####.height(Number)
+Explicitly set the height of the svg container. Outer radius get computed based on half
+of either the width or height, depending on which is smaller.
+
+####.innerRadius(Number)
+Explicitly set the inner radius of the arc. This is not needed if height or width of the 
+chart is set(Recommend just setting height and width). Inner radius will get computed
+based on the _innerRadiusRatio * _outerRadius.
+
+####.outerRadius(Number)
+Explicitly set the outer radius of the donut. This is not needed if height or width of the 
+chart is set(Recommend just setting height and width).
+
+####.innerRadiusRatio(Number)
+Explicitly set the ratio of the inner radius compared to the outer radius. This allows for
+custom thickness of the arc. Default is 2/3.
+
 ####.startAngle(numberofdegrees)
 Start angle of the component arc in degrees. Remember 0 and 360 are at 12 o'clock.
 
