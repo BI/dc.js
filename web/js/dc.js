@@ -8353,8 +8353,9 @@ dc.arcGauge = function (parent, chartGroup) {
         _startAngle,
         _endAngle,
         _arc,
-        _innerRadius = 30, _outerRadius = 45,
-        _height, _width;
+        _innerRadius, _outerRadius,
+        _height, _width,
+        _innerRadiusRatio = 2/3;
 
     //dimension is not required because this component only has one dimension
     _chart._mandatoryAttributes (['group']);
@@ -8394,6 +8395,13 @@ dc.arcGauge = function (parent, chartGroup) {
         _outerRadius = _;
         return _chart;
     };
+
+    _chart.innerRadiusRatio = function(_) {
+        if(!arguments.length) return _innerRadiusRatio;
+        _innerRadiusRatio = _;
+        return _chart;
+    };
+
     /**
         ####.startAngle(numberofdegrees)
         Start angle of the component arc in degrees. Remember 0 and 360 are at 12 o'clock. 
@@ -8493,6 +8501,9 @@ dc.arcGauge = function (parent, chartGroup) {
         //set some defaults for start/end angle, and values
         _startAngle = (_startAngle === undefined) ? -115 : _chart.startAngle();
         _endAngle = (_endAngle === undefined) ? 115 : _chart.endAngle();
+        _outerRadius = _outerRadius || d3.min([_chart.width(), _chart.height()]) / 2;
+        _innerRadius = _innerRadius || _innerRadiusRatio * _outerRadius;
+
         _arc = d3.svg.arc()
             .innerRadius(_innerRadius)
             .outerRadius(_outerRadius)

@@ -8,6 +8,7 @@
 <body>
 
 <div id="arc" ></div>
+<div id="arc-specified-height"></div>
 
 <script type="text/javascript" src="../js/d3.js"></script>
 <script type="text/javascript" src="../js/crossfilter.js"></script>
@@ -32,7 +33,15 @@ var arc = dc.arcGauge('#arc')
 	.valueAccessor(function(d){return d;})
 	.totalCapacity(data.groupAll().reduceSum(function(d){return d.value;}).value());
 
-arc.render();
+var arcHeightSpecified = dc.arcGauge("#arc-specified-height")
+	.height(200)
+	.width(180)
+	.dimension(stateDimension)
+	.group(stateValueSumGroup)
+	.valueAccessor(function(d) {return d;})
+	.totalCapacity(data.groupAll().reduceSum(function(d){return d.value;}).value());
+
+dc.renderAll();
 </script>
 
 </body>
