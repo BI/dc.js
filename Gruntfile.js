@@ -41,7 +41,7 @@ module.exports = function (grunt) {
                 src: ['src/**/*.js','Gruntfile.js', 'spec/**/*.js', 'web/stock.js'],
                 options: {
                     indent: 4,
-                    ignores: ['src/banner.js','src/footer.js','src/d3.box.js']
+                    ignores: ['src/banner.js','src/footer.js','src/d3.box.js', 'src/tree-map.js']
                 }
             }
         },
@@ -295,6 +295,7 @@ module.exports.jsFiles = [
     "src/stack-mixin.js",
     "src/cap-mixin.js",
     "src/bubble-mixin.js",
+    "src/hierarchy-mixin.js",
     "src/pie-chart.js",
     "src/bar-chart.js",
     "src/line-chart.js",

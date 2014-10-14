@@ -2,7 +2,7 @@ describe('dc.sankey', function () {
 	var chart;
 	var stateFromDimension, stateLiveDimension, regionDimension, countryDimension;
 	var crossfilterdata;
-	var dimColPairs, measure_column = "value", testNodeName = "us";
+	var levels, measureColumn = "value", testNodeName = "us";
 
 	describe('creation', function(){
 		beforeEach(function () {
@@ -13,7 +13,7 @@ describe('dc.sankey', function () {
 			regionDimension = crossfilterdata.dimension(function(d){return d.region;});
 			countryDimension = crossfilterdata.dimension(function(d){return d.countrycode;});
 
-			var dimColPairs = [{'dimension' : stateFromDimension, 'columnName' : 'state_from'},
+			var levels = [{'dimension' : stateFromDimension, 'columnName' : 'state_from'},
                     {'dimension' : stateLiveDimension, 'columnName' : 'state_live'},
                     {'dimension' : regionDimension, 'columnName' : 'region'},
                     {'dimension' : countryDimension, 'columnName' : 'countrycode'}];
@@ -22,8 +22,8 @@ describe('dc.sankey', function () {
 			var parent = appendChartID(id);
 
 			chart = dc.sankey("#" + id)
-						.dimColPairs(dimColPairs)
-						.measureColumn(measure_column);
+						.levels(levels)
+						.measureColumn(measureColumn);
             chart.render();
 		});
 
@@ -70,11 +70,11 @@ describe('dc.sankey', function () {
 			it('should have the correct filters applied to the chart', function() {
 				var filterObj = chart.filters().region;
 				var dimension = filterObj.dimension;
-				var filterArray = filterObj.filterArr;
+				var filterValues = filterObj.filterValues;
 
 				expect(filterObj).toBeDefined();
 				expect(dimension).toBeDefined();
-				expect(filterArray.indexOf('Central')).toBe(0);
+				expect(filterValues.indexOf('Central')).toBe(0);
 			});
 
             it('should highlight selected nodes', function() {
@@ -90,10 +90,10 @@ describe('dc.sankey', function () {
 
             it('should remove all filters using filterAll', function() {
 					var filterObj = chart.filters().region;
-					expect(filterObj.filterArr.indexOf('Central')).toEqual(0); //filter exists
+					expect(filterObj.filterValues.indexOf('Central')).toEqual(0); //filter exists
 					chart.filterAll();
 					chart.render();
-					expect(filterObj.filterArr.indexOf('Central')).toEqual(-1); //filter was removed
+					expect(filterObj.filterValues.indexOf('Central')).toEqual(-1); //filter was removed
 				});
 
 			afterEach(function() {
@@ -116,13 +116,13 @@ describe('dc.sankey', function () {
 
             it('onClick should trigger filtering of according to node from data list', function() {
                 chart.onClick(sankObjNodeCal);
-                expect(chart.filter().state_from.filterArr[0]).toEqual("California");
+                expect(chart.filter().state_from.filterValues[0]).toEqual("California");
             });
 
             it('onClick should reset filter if clicked twice', function() {
                 chart.onClick(sankObjNodeCal);
                 chart.onClick(sankObjNodeCal);
-                expect(chart.filter().state_from.filterArr.length).toEqual(0);
+                expect(chart.filter().state_from.filterValues.length).toEqual(0);
             });
 
             it('should trigger filtering of mutliple nodes from data list', function() {

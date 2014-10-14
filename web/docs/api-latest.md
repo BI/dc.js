@@ -9,7 +9,7 @@
   * [Stack Mixin](#stack-mixin)
   * [Cap Mixin](#cap-mixin)
   * [Bubble Mixin](#bubble-mixin)
-  * [Pie Chart](#pie-chart)
+  * [Hierarchy Mixin](#hierarchy-mixin)
   * [Bar Chart](#bar-chart)
   * [Line Chart](#line-chart)
   * [Data Count Widget](#data-count-widget)
@@ -30,6 +30,7 @@
   * [Geo Bubble Overlay Chart](#geo-bubble-overlay-chart)
   * [Arc Gauge](#arc-gauge)
   * [Tree Map](#tree-map)
+  * [Sankey](#sankey)
 
 #### Version 2.0.0-alpha.2
 
@@ -860,6 +861,24 @@ then no label will be rendered.  Default: 10
 #### .maxBubbleRelativeSize([relativeSize])
 Get or set the maximum relative size of a bubble to the length of x axis. This value is useful
 when the difference in radius between bubbles is too great. Default: 0.3
+
+## Hierarchy Mixin
+
+The Hierarchy Mixin provides support for hierarchical mutli dimensional filtering.
+
+#### .filter(columnName, filterValues)
+Filter the chart by specifying the column name and filter values.
+This differs from the normal chart.filter("value") api that comes with Base mixin.
+Returns the _filters object containing all of the specified dimensions and filters.
+```js
+//filter on a dimension with a string
+chart.filter("csvColumnforRegion", "West");
+
+#### .levels([{dimension: someDimension, columnName: "column"}]) 
+Pass in an array of objects containing a dimension and corresponding column name
+
+#### .measureColumn([String]) 
+Set the column name that contains the measure value for the chart.
 
 ## Pie Chart
 
@@ -2066,12 +2085,6 @@ var chart = dc.rowChart("#treeMap")
 chart.filter('columnNamefromCSV', 'singlefiltervalue');
 ```
 
-//#### IMPORTANT .filter(columnName, filterValue)
-Filter the chart by specifying the filter and the dimension
-```js
-//filter on a dimension with a string
-chart.filter("csvColumnforRegion", "West");
-
 #### .crumbTrailX(Number)
 Set the X position of the crumb trail text within the top bar.
 
@@ -2090,14 +2103,6 @@ Set the width explicitly as it will be used for calculating the node rectangle s
 
 #### .height(Number)
 Set the height explicitly as it will be used for calculating the node rectangle sizes.
-
-#### .dimColPairs([{dimension: someDimension, columnName: "column"}]) 
-Pass in an array of objects containing a dimension and corresponding column name
-Make sure the array order matches the order in which the dimensions should appear
-in the Treemap diagram from top to bottom.
-
-#### .measureColumn([String]) 
-Set the column name that contains the measure value for the chart.
 
 #### .rootName(String)
 The root name is the displayed as the root parent text in the bar at the top of the treemap.
@@ -2148,24 +2153,8 @@ var chart = dc.sankey("#sankey")
 chart.filter('columnNamefromCSV', 'singlefiltervalue');
 ```
 
-#### .filter(columnName, filterValue)
-Filter the chart by specifying the column name and filter value.
-This differs from the normal chart.filter("value") api that comes with Base mixin.
-Returns the _filters object containing all of the specified dimensions and filters.
-```js
-//filter on a dimension with a string
-chart.filter("csvColumnforRegion", "West");
-
 #### .width(Number)
 Specify the width of the SVG. Default is 960
 
 #### .height(Number)
 Specify the height of the SVG. Default is 500
-
-#### .dimColPairs([{dimension: someDimension, columnName: "column"}]) 
-Pass in an array of objects containing a dimension and corresponding column name
-Make sure the array order matches the order in which the dimensions should appear
-in the Sankey diagram from left to right.
-
-#### .measureColumn([String]) 
-Set the column name that contains the measure value for the chart.

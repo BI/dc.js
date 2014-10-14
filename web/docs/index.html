@@ -124,7 +124,7 @@
 <li><a href="#stack-mixin">Stack Mixin</a></li>
 <li><a href="#cap-mixin">Cap Mixin</a></li>
 <li><a href="#bubble-mixin">Bubble Mixin</a></li>
-<li><a href="#pie-chart">Pie Chart</a></li>
+<li><a href="#hierarchy-mixin">Hierarchy Mixin</a></li>
 <li><a href="#bar-chart">Bar Chart</a></li>
 <li><a href="#line-chart">Line Chart</a></li>
 <li><a href="#data-count-widget">Data Count Widget</a></li>
@@ -145,6 +145,7 @@
 <li><a href="#geo-bubble-overlay-chart">Geo Bubble Overlay Chart</a></li>
 <li><a href="#arc-gauge">Arc Gauge</a></li>
 <li><a href="#tree-map">Tree Map</a></li>
+<li><a href="#sankey">Sankey</a></li>
 </ul>
 <h4 id="version-2-0-0-alpha-2">Version 2.0.0-alpha.2</h4>
 <p>The entire dc.js library is scoped under the <strong>dc</strong> name space. It does not introduce anything else
@@ -764,34 +765,54 @@ then no label will be rendered.  Default: 10</p>
 <h4 id="-maxbubblerelativesize-relativesize-">.maxBubbleRelativeSize([relativeSize])</h4>
 <p>Get or set the maximum relative size of a bubble to the length of x axis. This value is useful
 when the difference in radius between bubbles is too great. Default: 0.3</p>
-<h2 id="pie-chart">Pie Chart</h2>
-<p>Includes: <a href="#cap-mixin">Cap Mixin</a>, <a href="#color-mixin">Color Mixin</a>, <a href="#base-mixin">Base Mixin</a></p>
-<p>The pie chart implementation is usually used to visualize a small categorical distribution.  The pie
-chart uses keyAccessor to determine the slices, and valueAccessor to calculate the size of each
-slice relative to the sum of all values. Slices are ordered by <code>.ordering</code> which defaults to sorting
-by key.</p>
-<p>Examples:</p>
-<ul>
-<li><a href="http://dc-js.github.com/dc.js/">Nasdaq 100 Index</a></li>
-</ul>
-<h4 id="dc-piechart-parent-chartgroup-">dc.pieChart(parent[, chartGroup])</h4>
-<p>Create a pie chart instance and attaches it to the given parent element.</p>
-<p>Parameters:</p>
-<ul>
-<li><p>parent : string | node | selection - any valid
-<a href="https://github.com/mbostock/d3/wiki/Selections#selecting-elements">d3 single selector</a> specifying
-a dom block element such as a div; or a dom element or d3 selection.</p>
-</li>
-<li><p>chartGroup : string (optional) - name of the chart group this chart instance should be placed in.
-Interaction with a chart will only trigger events and redraws within the chart’s group.</p>
-</li>
-</ul>
-<p>Returns:
-A newly created pie chart instance</p>
-<pre><code class="lang-js">// <span class="operator"><span class="keyword">create</span> a pie chart under #chart-container1 element <span class="keyword">using</span> the <span class="keyword">default</span> <span class="keyword">global</span> chart <span class="keyword">group</span>
-var chart1 = dc.pieChart(<span class="string">"#chart-container1"</span>);</span>
-// <span class="operator"><span class="keyword">create</span> a pie chart under #chart-container2 element <span class="keyword">using</span> chart <span class="keyword">group</span> A
-var chart2 = dc.pieChart(<span class="string">"#chart-container2"</span>, <span class="string">"chartGroupA"</span>);</span></code></pre>
+<h2 id="hierarchy-mixin">Hierarchy Mixin</h2>
+<p>The Hierarchy Mixin provides support for hierarchical mutli dimensional filtering.</p>
+<h4 id="-filter-columnname-filtervalues-">.filter(columnName, filterValues)</h4>
+<p>Filter the chart by specifying the column name and filter values.
+This differs from the normal chart.filter(“value”) api that comes with Base mixin.
+Returns the _filters object containing all of the specified dimensions and filters.</p>
+<pre><code class="lang-js">//filter <span class="function_start"><span class="keyword">on</span> <span class="title">a</span></span> dimension <span class="keyword">with</span> a <span class="type">string</span>
+chart.filter(<span class="string">"csvColumnforRegion"</span>, <span class="string">"West"</span>);
+
+<span class="comment">#### .levels([{dimension: someDimension, columnName: "column"}]) </span>
+Pass <span class="keyword">in</span> an array <span class="keyword">of</span> objects containing a dimension <span class="keyword">and</span> corresponding column <span class="property">name</span>
+
+<span class="comment">#### .measureColumn([String]) </span>
+Set <span class="keyword">the</span> column <span class="property">name</span> <span class="keyword">that</span> <span class="keyword">contains</span> <span class="keyword">the</span> measure value <span class="keyword">for</span> <span class="keyword">the</span> chart.
+
+<span class="comment">## Pie Chart</span>
+
+Includes: [Cap Mixin](<span class="comment">#cap-mixin), [Color Mixin](#color-mixin), [Base Mixin](#base-mixin)</span>
+
+The pie chart implementation <span class="keyword">is</span> usually used <span class="keyword">to</span> visualize a small categorical distribution.  The pie
+chart uses keyAccessor <span class="keyword">to</span> determine <span class="keyword">the</span> slices, <span class="keyword">and</span> valueAccessor <span class="keyword">to</span> calculate <span class="keyword">the</span> size <span class="keyword">of</span> each
+slice relative <span class="keyword">to</span> <span class="keyword">the</span> sum <span class="keyword">of</span> all values. Slices are ordered <span class="keyword">by</span> `.ordering` which defaults <span class="keyword">to</span> sorting
+<span class="keyword">by</span> key.
+
+Examples:
+
+* [Nasdaq <span class="number">100</span> Index](http://dc-js.github.com/dc.js/)
+
+<span class="comment">#### dc.pieChart(parent[, chartGroup])</span>
+Create a pie chart instance <span class="keyword">and</span> attaches <span class="keyword">it</span> <span class="keyword">to</span> <span class="keyword">the</span> <span class="keyword">given</span> parent element.
+
+Parameters:
+
+* parent : <span class="type">string</span> | node | selection - any valid
+[d3 single selector](https://github.com/mbostock/d3/wiki/Selections<span class="comment">#selecting-elements) specifying</span>
+a dom block element such <span class="keyword">as</span> a <span class="keyword">div</span>; <span class="keyword">or</span> a dom element <span class="keyword">or</span> d3 selection.
+
+* chartGroup : <span class="type">string</span> (optional) - <span class="property">name</span> <span class="keyword">of</span> <span class="keyword">the</span> chart group this chart instance should be placed <span class="keyword">in</span>.
+Interaction <span class="keyword">with</span> a chart will only trigger events <span class="keyword">and</span> redraws within <span class="keyword">the</span> chart's group.
+
+Returns:
+A newly created pie chart instance
+
+```js
+// create a pie chart under <span class="comment">#chart-container1 element using the default global chart group</span>
+var chart1 = dc.pieChart(<span class="string">"#chart-container1"</span>);
+// create a pie chart under <span class="comment">#chart-container2 element using chart group A</span>
+var chart2 = dc.pieChart(<span class="string">"#chart-container2"</span>, <span class="string">"chartGroupA"</span>);</code></pre>
 <h4 id="-slicescap-cap-">.slicesCap([cap])</h4>
 <p>Get or set the maximum number of slices the pie chart will generate. The top slices are determined by
 value from high to low. Other slices exeeding the cap will be rolled up into one single <em>Others</em> slice.
@@ -1691,73 +1712,45 @@ var chart = dc.rowChart(<span class="string">"#treeMap"</span>)
 
 //filter manually <span class="keyword">by</span> passing <span class="keyword">in</span> <span class="keyword">the</span> column <span class="property">name</span>, <span class="keyword">and</span> filter value like this
 chart.filter('columnNamefromCSV', 'singlefiltervalue');</code></pre>
-<p>//#### IMPORTANT .filter(columnName, filterValue)
-Filter the chart by specifying the filter and the dimension</p>
-<pre><code class="lang-js">//filter <span class="function_start"><span class="keyword">on</span> <span class="title">a</span></span> dimension <span class="keyword">with</span> a <span class="type">string</span>
-chart.filter(<span class="string">"csvColumnforRegion"</span>, <span class="string">"West"</span>);
-
-<span class="comment">#### .crumbTrailX(Number)</span>
-Set <span class="keyword">the</span> X position <span class="keyword">of</span> <span class="keyword">the</span> crumb trail <span class="type">text</span> within <span class="keyword">the</span> top bar.
-
-<span class="comment">#### .crumbTrailY(Number)</span>
-Set <span class="keyword">the</span> Y position <span class="keyword">of</span> <span class="keyword">the</span> crumb trail <span class="type">text</span> within <span class="keyword">the</span> top bar.
-
-<span class="comment">#### .crumbTrailHeight(String)</span>
-Set <span class="keyword">the</span> font height <span class="keyword">of</span> <span class="keyword">the</span> crumb trail <span class="type">text</span> within <span class="keyword">the</span> top bar.
-Example: .crumbTrailHeight(<span class="string">".75em"</span>)
-
-<span class="comment">#### .topBarHeight(Number)</span>
-Set <span class="keyword">the</span> height <span class="keyword">of</span> <span class="keyword">the</span> bar <span class="keyword">at</span> <span class="keyword">the</span> top <span class="keyword">of</span> <span class="keyword">the</span> treemap.
-
-<span class="comment">#### .width(Number)</span>
-Set <span class="keyword">the</span> width explicitly <span class="keyword">as</span> <span class="keyword">it</span> will be used <span class="keyword">for</span> calculating <span class="keyword">the</span> node rectangle sizes.
-
-<span class="comment">#### .height(Number)</span>
-Set <span class="keyword">the</span> height explicitly <span class="keyword">as</span> <span class="keyword">it</span> will be used <span class="keyword">for</span> calculating <span class="keyword">the</span> node rectangle sizes.
-
-<span class="comment">#### .dimColPairs([{dimension: someDimension, columnName: "column"}]) </span>
-Pass <span class="keyword">in</span> an array <span class="keyword">of</span> objects containing a dimension <span class="keyword">and</span> corresponding column <span class="property">name</span>
-Make sure <span class="keyword">the</span> array order matches <span class="keyword">the</span> order <span class="keyword">in</span> which <span class="keyword">the</span> dimensions should appear
-<span class="keyword">in</span> <span class="keyword">the</span> Treemap diagram <span class="keyword">from</span> top <span class="keyword">to</span> bottom.
-
-<span class="comment">#### .measureColumn([String]) </span>
-Set <span class="keyword">the</span> column <span class="property">name</span> <span class="keyword">that</span> <span class="keyword">contains</span> <span class="keyword">the</span> measure value <span class="keyword">for</span> <span class="keyword">the</span> chart.
-
-<span class="comment">#### .rootName(String)</span>
-The root <span class="property">name</span> <span class="keyword">is</span> <span class="keyword">the</span> displayed <span class="keyword">as</span> <span class="keyword">the</span> root parent <span class="type">text</span> <span class="keyword">in</span> <span class="keyword">the</span> bar <span class="keyword">at</span> <span class="keyword">the</span> top <span class="keyword">of</span> <span class="keyword">the</span> treemap.
-
-<span class="comment">#### .label(callback)</span>
-Pass <span class="keyword">in</span> a custom label function. These labels are what appear <span class="keyword">in</span> <span class="keyword">the</span> top left <span class="keyword">of</span> each rectangle.
-
-<span class="comment">#### .toolTip(callback)</span>
-Pass <span class="keyword">in</span> a custom tool tip function. These tool tips show <span class="type">text</span> <span class="keyword">for</span> <span class="keyword">the</span> rectangles <span class="function_start"><span class="keyword">on</span> <span class="title">hover</span></span>.
-
-<span class="comment">#### .titleBarCaption(callback)</span>
-Pass <span class="keyword">in</span> custom title bar caption function. The title bar <span class="type">text</span> <span class="keyword">is</span> show <span class="keyword">in</span> <span class="keyword">the</span> bar <span class="keyword">at</span> <span class="keyword">the</span> top.
-
-<span class="comment">## Sankey</span>
-
-Includes: [Base Mixin](<span class="comment">#base-mixin)</span>
-
-
-<span class="comment">#### dc.sankey(parent[, chartGroup])</span>
-Create a Sankey chart <span class="keyword">that</span> shows how crossfilter dimensions flow <span class="keyword">into</span> other dimensions. 
-Multiple dimensions can be used. 
-
-Parameters:
-
-* parent : <span class="type">string</span> | node | selection - any valid
-[d3 single selector](https://github.com/mbostock/d3/wiki/Selections<span class="comment">#selecting-elements) specifying</span>
-a dom block element such <span class="keyword">as</span> a <span class="keyword">div</span>; <span class="keyword">or</span> a dom element <span class="keyword">or</span> d3 selection.
-
-* chartGroup : <span class="type">string</span> (optional) - <span class="property">name</span> <span class="keyword">of</span> <span class="keyword">the</span> chart group this chart instance should be placed <span class="keyword">in</span>.
-Interaction <span class="keyword">with</span> a chart will only trigger events <span class="keyword">and</span> redraws within <span class="keyword">the</span> chart's group.
-
-Returns:
-A newly created sankey instance
-
-```js
-//setup <span class="keyword">the</span> dimension/column <span class="property">name</span> array needed <span class="keyword">to</span> translate crossfilter data <span class="keyword">into</span> <span class="keyword">the</span> sankey 
+<h4 id="-crumbtrailx-number-">.crumbTrailX(Number)</h4>
+<p>Set the X position of the crumb trail text within the top bar.</p>
+<h4 id="-crumbtraily-number-">.crumbTrailY(Number)</h4>
+<p>Set the Y position of the crumb trail text within the top bar.</p>
+<h4 id="-crumbtrailheight-string-">.crumbTrailHeight(String)</h4>
+<p>Set the font height of the crumb trail text within the top bar.
+Example: .crumbTrailHeight(“.75em”)</p>
+<h4 id="-topbarheight-number-">.topBarHeight(Number)</h4>
+<p>Set the height of the bar at the top of the treemap.</p>
+<h4 id="-width-number-">.width(Number)</h4>
+<p>Set the width explicitly as it will be used for calculating the node rectangle sizes.</p>
+<h4 id="-height-number-">.height(Number)</h4>
+<p>Set the height explicitly as it will be used for calculating the node rectangle sizes.</p>
+<h4 id="-rootname-string-">.rootName(String)</h4>
+<p>The root name is the displayed as the root parent text in the bar at the top of the treemap.</p>
+<h4 id="-label-callback-">.label(callback)</h4>
+<p>Pass in a custom label function. These labels are what appear in the top left of each rectangle.</p>
+<h4 id="-tooltip-callback-">.toolTip(callback)</h4>
+<p>Pass in a custom tool tip function. These tool tips show text for the rectangles on hover.</p>
+<h4 id="-titlebarcaption-callback-">.titleBarCaption(callback)</h4>
+<p>Pass in custom title bar caption function. The title bar text is show in the bar at the top.</p>
+<h2 id="sankey">Sankey</h2>
+<p>Includes: <a href="#base-mixin">Base Mixin</a></p>
+<h4 id="dc-sankey-parent-chartgroup-">dc.sankey(parent[, chartGroup])</h4>
+<p>Create a Sankey chart that shows how crossfilter dimensions flow into other dimensions. 
+Multiple dimensions can be used. </p>
+<p>Parameters:</p>
+<ul>
+<li><p>parent : string | node | selection - any valid
+<a href="https://github.com/mbostock/d3/wiki/Selections#selecting-elements">d3 single selector</a> specifying
+a dom block element such as a div; or a dom element or d3 selection.</p>
+</li>
+<li><p>chartGroup : string (optional) - name of the chart group this chart instance should be placed in.
+Interaction with a chart will only trigger events and redraws within the chart’s group.</p>
+</li>
+</ul>
+<p>Returns:
+A newly created sankey instance</p>
+<pre><code class="lang-js">//setup <span class="keyword">the</span> dimension/column <span class="property">name</span> array needed <span class="keyword">to</span> translate crossfilter data <span class="keyword">into</span> <span class="keyword">the</span> sankey 
 //data structure
 var dimensionColumnnamePairs = [{'dimension' : someDimension, 'columnName' : 'columnNamefromCSV'},
                                {'dimension' : anotherDimension, 'columnName' : 'anotherColumnName'}];
@@ -1770,23 +1763,10 @@ var chart = dc.sankey(<span class="string">"#sankey"</span>)
 
 //filter manually <span class="keyword">by</span> passing <span class="keyword">in</span> <span class="keyword">the</span> column <span class="property">name</span>, <span class="keyword">and</span> filter value like this
 chart.filter('columnNamefromCSV', 'singlefiltervalue');</code></pre>
-<h4 id="-filter-columnname-filtervalue-">.filter(columnName, filterValue)</h4>
-<p>Filter the chart by specifying the column name and filter value.
-This differs from the normal chart.filter(“value”) api that comes with Base mixin.
-Returns the _filters object containing all of the specified dimensions and filters.
-```js
-//filter on a dimension with a string
-chart.filter(“csvColumnforRegion”, “West”);</p>
 <h4 id="-width-number-">.width(Number)</h4>
 <p>Specify the width of the SVG. Default is 960</p>
 <h4 id="-height-number-">.height(Number)</h4>
 <p>Specify the height of the SVG. Default is 500</p>
-<h4 id="-dimcolpairs-dimension-somedimension-columnname-column-">.dimColPairs([{dimension: someDimension, columnName: “column”}])</h4>
-<p>Pass in an array of objects containing a dimension and corresponding column name
-Make sure the array order matches the order in which the dimensions should appear
-in the Sankey diagram from left to right.</p>
-<h4 id="-measurecolumn-string-">.measureColumn([String])</h4>
-<p>Set the column name that contains the measure value for the chart.</p>
 
   </body>
 </html>
