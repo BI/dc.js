@@ -199,8 +199,6 @@ dc.sankey = function(parent, chartGroup) {
     }
 
     _chart.onClick = function (d) {
-        console.log("node clicked:");
-        console.log(d);
         var filter = d.name;
         dc.events.trigger(function () {
             _chart.filter(d.column_name, filter);
