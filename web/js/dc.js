@@ -3489,10 +3489,10 @@ dc.hierarchyMixin = function(_chart) {
     };
 
     _chart.initData = function () {
-    	//do nothing in hierarchy mixin, should be overridden by sub-function
-    	//The hierarchical data is not a good fit for crossfilter, so this function
-    	//should be used to translate tabular crossfilter data into your own hierarchical data structure. 
-    	return _chart;
+        //do nothing in hierarchy mixin, should be overridden by sub-function
+        //The hierarchical data is not a good fit for crossfilter, so this function
+        //should be used to translate tabular crossfilter data into your own hierarchical data structure. 
+        return _chart;
     };
 
 
@@ -8788,13 +8788,19 @@ dc.treeMap = function (parent, chartGroup) {
 		_width = 960, _height = 500 - _margin.top - _margin.bottom,
         _crumbTrailX = 6, _crumbTrailY = 6, _crumbTrailHeight = ".75em",
 		_transitioning;
-    var _filters = {};
     var _labelFunc = function(d) {return d.name;};
     var _titleBarFunc = function(d) {return d.parent ? _titleBarFunc(d.parent) + "." + d.name
 				: d.name;};
 	var _toolTipFunc = function(d) {return d.name;};
 
     _chart.transitionDuration(700); // good default
+
+    dc.override(_chart, "filterAll", function() {
+    	_chart._filterAll();
+    	_zoomLevel = 0;
+    	_currentRoot = _treeMapDataObject;
+
+    });
 
     /**
     #### .crumbTrailX(Number)
