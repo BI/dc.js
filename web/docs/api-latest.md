@@ -9,7 +9,7 @@
   * [Stack Mixin](#stack-mixin)
   * [Cap Mixin](#cap-mixin)
   * [Bubble Mixin](#bubble-mixin)
-  * [Pie Chart](#pie-chart)
+  * [Hierarchy Mixin](#hierarchy-mixin)
   * [Bar Chart](#bar-chart)
   * [Line Chart](#line-chart)
   * [Data Count Widget](#data-count-widget)
@@ -29,6 +29,8 @@
   * [Bar Gauge](#bar-gauge)
   * [Geo Bubble Overlay Chart](#geo-bubble-overlay-chart)
   * [Arc Gauge](#arc-gauge)
+  * [Tree Map](#tree-map)
+  * [Sankey](#sankey)
 
 #### Version 2.0.0-alpha.2
 
@@ -859,6 +861,24 @@ then no label will be rendered.  Default: 10
 #### .maxBubbleRelativeSize([relativeSize])
 Get or set the maximum relative size of a bubble to the length of x axis. This value is useful
 when the difference in radius between bubbles is too great. Default: 0.3
+
+## Hierarchy Mixin
+
+The Hierarchy Mixin provides support for hierarchical mutli dimensional filtering.
+
+#### .filter(columnName, filterValues)
+Filter the chart by specifying the column name and filter values.
+This differs from the normal chart.filter("value") api that comes with Base mixin.
+Returns the _filters object containing all of the specified dimensions and filters.
+```js
+//filter on a dimension with a string
+chart.filter("csvColumnforRegion", "West");
+
+#### .levels([{dimension: someDimension, columnName: "column"}]) 
+Pass in an array of objects containing a dimension and corresponding column name
+
+#### .measureColumn([String]) 
+Set the column name that contains the measure value for the chart.
 
 ## Pie Chart
 
@@ -1991,6 +2011,27 @@ arc = dc.arcGauge("#total-funding-arc")
                                });
 ```
 
+####.width(Number)
+Explicitly set the width of the svg container. Outer radius get computed based on half
+of either the width or height, depending on which is smaller.
+
+####.height(Number)
+Explicitly set the height of the svg container. Outer radius get computed based on half
+of either the width or height, depending on which is smaller.
+
+####.innerRadius(Number)
+Explicitly set the inner radius of the arc. This is not needed if height or width of the 
+chart is set(Recommend just setting height and width). Inner radius will get computed
+based on the _innerRadiusRatio * _outerRadius.
+
+####.outerRadius(Number)
+Explicitly set the outer radius of the donut. This is not needed if height or width of the 
+chart is set(Recommend just setting height and width).
+
+####.innerRadiusRatio(Number)
+Explicitly set the ratio of the inner radius compared to the outer radius. This allows for
+custom thickness of the arc. Default is 2/3.
+
 ####.startAngle(numberofdegrees)
 Start angle of the component arc in degrees. Remember 0 and 360 are at 12 o'clock.
 
@@ -2007,3 +2048,113 @@ to the correct amount of degrees to fill in the arc.
 
 #### .initializeArc(ParentSelector)
 Add the background and foreground arcs. Also do the animation of the arc filling/emptying.
+
+## Tree Map 
+
+Includes: [Base Mixin](#base-mixin)
+
+
+#### dc.treeMap(parent[, chartGroup])
+Create a Tree Map chart that uses multiple crossfilter dimensions in a hierarchical data structure.
+
+Parameters:
+
+* parent : string | node | selection - any valid
+[d3 single selector](https://github.com/mbostock/d3/wiki/Selections#selecting-elements) specifying
+a dom block element such as a div; or a dom element or d3 selection.
+
+* chartGroup : string (optional) - name of the chart group this chart instance should be placed in.
+Interaction with a chart will only trigger events and redraws within the chart's group.
+
+Returns:
+A newly created tree map instance
+
+```js
+//setup the dimension/column name array in the order of root -> children
+//data structure
+var dimensionColumnnamePairs = [{'dimension' : someRootDimension, 'columnName' : 'columnNamefromCSV'},
+                               {'dimension' : aChildDimension, 'columnName' : 'anotherColumnName'}];
+//which column name from the CSV contains the value for measuring the data
+var measure_column = 'value';
+// create a row chart under #sankey element using the default global chart group
+var chart = dc.rowChart("#treeMap")
+               .dimColPairs(dimensionColumnnamePairs)
+               .measure_column(measure_column);
+
+//filter manually by passing in the column name, and filter value like this
+chart.filter('columnNamefromCSV', 'singlefiltervalue');
+```
+
+#### .crumbTrailX(Number)
+Set the X position of the crumb trail text within the top bar.
+
+#### .crumbTrailY(Number)
+Set the Y position of the crumb trail text within the top bar.
+
+#### .crumbTrailHeight(String)
+Set the font height of the crumb trail text within the top bar.
+Example: .crumbTrailHeight(".75em")
+
+#### .topBarHeight(Number)
+Set the height of the bar at the top of the treemap.
+
+#### .width(Number)
+Set the width explicitly as it will be used for calculating the node rectangle sizes.
+
+#### .height(Number)
+Set the height explicitly as it will be used for calculating the node rectangle sizes.
+
+#### .rootName(String)
+The root name is the displayed as the root parent text in the bar at the top of the treemap.
+
+#### .label(callback)
+Pass in a custom label function. These labels are what appear in the top left of each rectangle.
+
+#### .toolTip(callback)
+Pass in a custom tool tip function. These tool tips show text for the rectangles on hover.
+
+#### .titleBarCaption(callback)
+Pass in custom title bar caption function. The title bar text is show in the bar at the top.
+
+## Sankey
+
+Includes: [Base Mixin](#base-mixin)
+
+
+#### dc.sankey(parent[, chartGroup])
+Create a Sankey chart that shows how crossfilter dimensions flow into other dimensions. 
+Multiple dimensions can be used. 
+
+Parameters:
+
+* parent : string | node | selection - any valid
+[d3 single selector](https://github.com/mbostock/d3/wiki/Selections#selecting-elements) specifying
+a dom block element such as a div; or a dom element or d3 selection.
+
+* chartGroup : string (optional) - name of the chart group this chart instance should be placed in.
+Interaction with a chart will only trigger events and redraws within the chart's group.
+
+Returns:
+A newly created sankey instance
+
+```js
+//setup the dimension/column name array needed to translate crossfilter data into the sankey 
+//data structure
+var dimensionColumnnamePairs = [{'dimension' : someDimension, 'columnName' : 'columnNamefromCSV'},
+                               {'dimension' : anotherDimension, 'columnName' : 'anotherColumnName'}];
+//which column name from the CSV contains the value for measuring the data
+var measure_column = 'value';
+// create a sankey chart under #sankey element using the default global chart group
+var chart = dc.sankey("#sankey")
+               .dimColPairs(dimensionColumnnamePairs)
+               .measure_column(measure_column);
+
+//filter manually by passing in the column name, and filter value like this
+chart.filter('columnNamefromCSV', 'singlefiltervalue');
+```
+
+#### .width(Number)
+Specify the width of the SVG. Default is 960
+
+#### .height(Number)
+Specify the height of the SVG. Default is 500

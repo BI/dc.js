@@ -15,6 +15,7 @@
   ],
   "dependencies": {
     "d3": "3.x",
-    "crossfilter": "1.x"
+    "crossfilter": "1.x",
+    "d3-plugins": "git://github.com/d3/d3-plugins.git"
   }
 }
