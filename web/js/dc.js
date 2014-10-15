@@ -3317,6 +3317,189 @@ dc.bubbleMixin = function (_chart) {
 };
 
 /**
+## Hierarchy Mixin
+
+The Hierarchy Mixin provides support for hierarchical mutli dimensional filtering.
+
+**/
+
+dc.hierarchyMixin = function(_chart) {
+	var _levels = [], _measureColumn, _filters = {};
+
+    var _filterHandler = function (dimension, filters) {
+        dimension.filter(null);
+
+        if (filters.length === 0)
+            dimension.filter(null);
+        else
+            dimension.filterFunction(function (d) {
+                for(var i = 0; i < filters.length; i++) {
+                    var filter = filters[i];
+                    if (filter.isFiltered && filter.isFiltered(d)) {
+                        return true;
+                    } else if (filter <= d && filter >= d) {
+                        return true;
+                    }
+                }
+                return false;
+            });
+
+        return filters;
+    };
+
+    //Specify the dimension that goes along with the filter by providing columnName as the key.
+    //_filters = {regionDimension : ['West', 'East'], otherDimension : }
+    _chart.hasFilter = function (columnName, filterValue) {
+        if(!arguments.length) {
+            if(Object.keys(_filters).length === 0) {
+                return false;
+            }
+            else //check that the filterValues has any filter values added for any dimensions
+            {
+                return Object.keys(_filters).some(function(columnName) {
+                    var filterValues = _filters[columnName].filterValues;
+                    return filterValues.length > 0;
+                });
+            }
+        }
+
+        return (_filters[columnName]) ? 
+                    _filters[columnName].filterValues.some(function(f) {return f === filterValue;}) : false;
+    };
+
+    function removeFilter(columnName, filterValue) {
+        var dimension = _chart.lookupDimension(columnName);
+        _filters[columnName].filterValues.forEach(function(f, index) {
+            if(f === filterValue) {
+                var removedFilter = _filters[columnName].filterValues.splice(index, 1);
+            }
+        });
+        applyFilters();
+        _chart._invokeFilteredListener(dimension);
+    }
+
+    function addFilter(columnName, filterValue) {
+        var dimension = function() {return _chart.lookupDimension(columnName);};
+        if(!_filters[columnName]){
+            _filters[columnName] = {'dimension' : dimension, 'filterValues': []};
+        }
+        
+        _filters[columnName].filterValues.push(filterValue);
+
+        applyFilters();
+        _chart._invokeFilteredListener(dimension);
+    }
+
+    function resetFilters() {
+        _filters = {};
+        applyFilters();
+        _chart._invokeFilteredListener(null);
+    }
+
+    //Important function changes for looping through dimensions
+    //and applying the filter handler
+    function applyFilters() {
+        Object.keys(_filters).forEach(function(columnName) {
+            var filterValues = _filters[columnName].filterValues;
+            var keyDimension = _filters[columnName].dimension();
+            var fs = _filterHandler(keyDimension, filterValues);
+            _filters[columnName].filterValues = fs ? fs : filterValues;
+        });
+    }
+
+    _chart.replaceFilter = function(columnName, filterValue) {
+        _filters[columnName].filterValues = [];
+        _charts.filter(columnName, filterValue);
+    };
+
+    /**
+    #### .filter(columnName, filterValues)
+    Filter the chart by specifying the column name and filter values.
+    This differs from the normal chart.filter("value") api that comes with Base mixin.
+    Returns the _filters object containing all of the specified dimensions and filters.
+    ```js
+    //filter on a dimension with a string
+    chart.filter("csvColumnforRegion", "West");
+    **/
+    _chart.filter = function(columnName, filterValue) {
+        if(!arguments.length) return _filters;
+        if(_chart.hasFilter(columnName, filterValue)) {
+            removeFilter(columnName, filterValue);
+        }
+        else {
+            addFilter(columnName, filterValue);
+        }
+    };
+
+    _chart.filterAll = function() {
+        Object.keys(_filters).forEach(function(columnName) {
+            _filters[columnName].filterValues = [];
+            var keyDimension = _filters[columnName].dimension();
+            applyFilters();
+            _chart._invokeFilteredListener(keyDimension);
+        });
+        
+    };
+
+    _chart.filterAllForLevel = function(columnName) {
+        if(_filters[columnName]) {
+            _filters[columnName].filterValues = [];
+            var keyDimension = _filters[columnName].dimension;
+            applyFilters();
+            _chart._invokeFilteredListener(keyDimension);
+        }
+        
+    };
+
+    _chart.filters = function() {
+        return _filters;
+
+    };
+
+    _chart.lookupDimension = function(d) {
+        var dimension ='';
+        _levels.forEach(function(level) {
+            if(level.columnName === d) {
+                dimension = level.dimension;
+            }
+        });
+        return dimension;
+    };
+
+    _chart._mandatoryAttributes([]);
+
+    /**
+    #### .levels([{dimension: someDimension, columnName: "column"}]) 
+    Pass in an array of objects containing a dimension and corresponding column name
+    **/
+    _chart.levels = function(_) {
+        if(!arguments.length) return _levels;
+        _levels = _;
+        return _chart;
+    };
+
+    /**
+    #### .measureColumn([String]) 
+    Set the column name that contains the measure value for the chart. 
+    **/
+    _chart.measureColumn = function(_) {
+        if(!arguments.length) return _measureColumn;
+        _measureColumn = _;
+        return _chart;
+    };
+
+    _chart.initData = function () {
+        //do nothing in hierarchy mixin, should be overridden by sub-function
+        //The hierarchical data is not a good fit for crossfilter, so this function
+        //should be used to translate tabular crossfilter data into your own hierarchical data structure. 
+        return _chart;
+    };
+
+
+
+	return _chart;
+};
+/**
 ## Pie Chart
 
 Includes: [Cap Mixin](#cap-mixin), [Color Mixin](#color-mixin), [Base Mixin](#base-mixin)
@@ -8353,7 +8536,9 @@ dc.arcGauge = function (parent, chartGroup) {
         _startAngle,
         _endAngle,
         _arc,
-        _innerRadius = 30, _outerRadius = 45;
+        _innerRadius, _outerRadius,
+        _height, _width,
+        _innerRadiusRatio = 2/3;
 
     //dimension is not required because this component only has one dimension
     _chart._mandatoryAttributes (['group']);
@@ -8370,17 +8555,62 @@ dc.arcGauge = function (parent, chartGroup) {
 
     });
 
+    /**
+        ####.width(Number)
+        Explicitly set the width of the svg container. Outer radius get computed based on half
+        of either the width or height, depending on which is smaller. 
+    **/
+    _chart.width = function(_) {
+        if(!arguments.length) return _width;
+        _width = _;
+        return _chart;
+    };
+
+    /**
+        ####.height(Number)
+        Explicitly set the height of the svg container. Outer radius get computed based on half
+        of either the width or height, depending on which is smaller. 
+    **/
+    _chart.height = function(_) {
+        if(!arguments.length) return _height;
+        _height = _;
+        return _chart;
+    };
+
+    /**
+        ####.innerRadius(Number)
+        Explicitly set the inner radius of the arc. This is not needed if height or width of the 
+        chart is set(Recommend just setting height and width). Inner radius will get computed
+        based on the _innerRadiusRatio * _outerRadius.
+    **/
     _chart.innerRadius = function(_) {
         if(!arguments.length) return _innerRadius;
         _innerRadius = _;
         return _chart;
     };
 
+    /**
+        ####.outerRadius(Number)
+        Explicitly set the outer radius of the donut. This is not needed if height or width of the 
+        chart is set(Recommend just setting height and width). 
+    **/
     _chart.outerRadius = function(_) {
         if(!arguments.length) return _outerRadius;
         _outerRadius = _;
         return _chart;
     };
+
+    /**
+        ####.innerRadiusRatio(Number)
+        Explicitly set the ratio of the inner radius compared to the outer radius. This allows for
+        custom thickness of the arc. Default is 2/3.
+    **/
+    _chart.innerRadiusRatio = function(_) {
+        if(!arguments.length) return _innerRadiusRatio;
+        _innerRadiusRatio = _;
+        return _chart;
+    };
+
     /**
         ####.startAngle(numberofdegrees)
         Start angle of the component arc in degrees. Remember 0 and 360 are at 12 o'clock. 
@@ -8469,6 +8699,7 @@ dc.arcGauge = function (parent, chartGroup) {
         foreground.datum({endAngle: degreesToRadians(oldFillAngle)})
             .attr("d", _arc);
         
+
         foreground.transition()
             .duration(_chart.transitionDuration())
             .call(arcTween, degreesToRadians(newFillAngle));
@@ -8479,6 +8710,9 @@ dc.arcGauge = function (parent, chartGroup) {
         //set some defaults for start/end angle, and values
         _startAngle = (_startAngle === undefined) ? -115 : _chart.startAngle();
         _endAngle = (_endAngle === undefined) ? 115 : _chart.endAngle();
+        _outerRadius = _outerRadius || d3.min([_chart.width(), _chart.height()]) / 2;
+        _innerRadius = _innerRadius || _innerRadiusRatio * _outerRadius;
+
         _arc = d3.svg.arc()
             .innerRadius(_innerRadius)
             .outerRadius(_outerRadius)
@@ -8491,10 +8725,13 @@ dc.arcGauge = function (parent, chartGroup) {
         _chart.root().html('');
 
         var svgArc = _chart.root().append('svg')
+            .attr("width", _width)
+            .attr("height", _height)
              .append("g");
-             
 
         initializeArc(svgArc);
+        _chart.select("g").attr("transform", "translate(" + _chart.outerRadius() + "," +  _chart.outerRadius() + ")");
+
     };
 
     _chart._doRedraw = function(){
@@ -8504,6 +8741,1191 @@ dc.arcGauge = function (parent, chartGroup) {
     return _chart.anchor(parent, chartGroup);
 };
 
+/**
+## Tree Map 
+
+Includes: [Base Mixin](#base-mixin)
+
+
+#### dc.treeMap(parent[, chartGroup])
+Create a Tree Map chart that uses multiple crossfilter dimensions in a hierarchical data structure.
+
+Parameters:
+
+* parent : string | node | selection - any valid
+ [d3 single selector](https://github.com/mbostock/d3/wiki/Selections#selecting-elements) specifying
+ a dom block element such as a div; or a dom element or d3 selection.
+
+* chartGroup : string (optional) - name of the chart group this chart instance should be placed in.
+ Interaction with a chart will only trigger events and redraws within the chart's group.
+
+Returns:
+A newly created tree map instance
+
+```js
+//setup the dimension/column name array in the order of root -> children
+//data structure
+var dimensionColumnnamePairs = [{'dimension' : someRootDimension, 'columnName' : 'columnNamefromCSV'},
+                                {'dimension' : aChildDimension, 'columnName' : 'anotherColumnName'}];
+//which column name from the CSV contains the value for measuring the data
+var measure_column = 'value';
+// create a row chart under #sankey element using the default global chart group
+var chart = dc.rowChart("#treeMap")
+                .dimColPairs(dimensionColumnnamePairs)
+                .measure_column(measure_column);
+
+//filter manually by passing in the column name, and filter value like this
+chart.filter('columnNamefromCSV', 'singlefiltervalue');
+```
+
+**/
+dc.treeMap = function (parent, chartGroup) {
+	var _chart = dc.hierarchyMixin(dc.baseMixin({}));
+	var _treeMapd3, _treeMapDataObject, _currentRoot,
+		_rootName = "root",
+		_zoomLevel = 0;
+	var _margin = {top: 0, right: 0, bottom: 0, left: 0},
+		_width = 960, _height = 500 - _margin.top - _margin.bottom,
+        _crumbTrailX = 6, _crumbTrailY = 6, _crumbTrailHeight = ".75em",
+		_transitioning;
+    var _labelFunc = function(d) {return d.name;};
+    var _titleBarFunc = function(d) {return d.parent ? _titleBarFunc(d.parent) + "." + d.name
+				: d.name;};
+	var _toolTipFunc = function(d) {return d.name;};
+
+    _chart.transitionDuration(700); // good default
+
+    dc.override(_chart, "filterAll", function() {
+    	_chart._filterAll();
+    	_zoomLevel = 0;
+    	_currentRoot = _treeMapDataObject;
+
+    });
+
+    /**
+    #### .crumbTrailX(Number)
+    Set the X position of the crumb trail text within the top bar.
+    **/
+    _chart.crumbTrailX = function(_) {
+        if(!arguments.length) return _crumbTrailX;
+        _crumbTrailX = _;
+        return _chart;
+    };
+
+    /**
+    #### .crumbTrailY(Number)
+    Set the Y position of the crumb trail text within the top bar.
+    **/
+    _chart.crumbTrailY = function(_) {
+        if(!arguments.length) return _crumbTrailY;
+        _crumbTrailY = _;
+        return _chart;
+    };
+
+    /**
+    #### .crumbTrailHeight(String)
+    Set the font height of the crumb trail text within the top bar.
+    Example: .crumbTrailHeight(".75em")
+    **/
+    _chart.crumbTrailHeight = function(_) {
+        if(!arguments.length) return _crumbTrailHeight;
+        _crumbTrailHeight = _;
+        return _chart;
+    };
+
+    /**
+	#### .topBarHeight(Number)
+	Set the height of the bar at the top of the treemap.
+    **/
+    _chart.topBarHeight = function(_) {
+        if(!arguments.length) return _margin.top;
+        _margin.top = _;
+        return _chart;
+    };
+
+    /**
+	#### .width(Number)
+	Set the width explicitly as it will be used for calculating the node rectangle sizes. 
+    **/
+    _chart.width = function(_) {
+        if(!arguments.length) return _width;
+        _width = _;
+        return _chart;
+    };
+
+	/**
+	#### .height(Number)
+	Set the height explicitly as it will be used for calculating the node rectangle sizes. 
+    **/
+    _chart.height = function(_) {
+        if(!arguments.length) return _height;
+        _height = _;
+        return _chart;
+    };
+
+    _chart.currentRoot = function(_) {
+        if(!arguments.length) return _currentRoot;
+        _currentRoot = _;
+        return _chart;
+        
+    };
+
+    /**
+	#### .rootName(String)
+	The root name is the displayed as the root parent text in the bar at the top of the treemap.
+    **/
+    _chart.rootName = function(_) {
+		if(!arguments.length) return _rootName;
+        _rootName = _;
+        return _chart;
+    };
+
+    /**
+    #### .label(callback)
+    Pass in a custom label function. These labels are what appear in the top left of each rectangle.
+    **/
+    _chart.label = function(_) {
+		if(!arguments.length) return _labelFunc;
+		_labelFunc = _;
+        return _chart;
+    };
+
+    /**
+	#### .toolTip(callback)
+	Pass in a custom tool tip function. These tool tips show text for the rectangles on hover.
+    **/
+    _chart.toolTip = function(_) {
+    	if(!arguments.length) return _toolTipFunc;
+		_toolTipFunc = _;
+        return _chart;
+    };
+
+    /**
+	#### .titleBarCaption(callback)
+	Pass in custom title bar caption function. The title bar text is show in the bar at the top.
+    **/
+    _chart.titleBarCaption = function(_) {
+    	if(!arguments.length) return _titleBarFunc;
+		_titleBarFunc = _;
+        return _chart;
+    };
+
+    _chart.initData = function () {
+        if(_chart.levels() && _chart.measureColumn()) {
+            _treeMapDataObject = crossfilterToTreeMapData(_chart.levels(), _chart.measureColumn());
+        }
+        else throw "Must provide dimension column array and measure_column";
+        return _chart;
+    };
+
+    function onClick(d, drillDown) {
+        //if click event is blocked, then the element is being dragged so don't filter
+        /*if(d3.event.defaultPrevented) 
+            return;
+        else 
+        */
+        _chart.onClick(d, drillDown);
+    }
+
+    _chart.onClick = function (d, drillDown) {
+    
+        var filter = d.name;
+        var dimensionTofilter = _chart.lookupDimension(d.columnName);
+
+        dc.events.trigger(function () {
+            //this will add filter for drill down, and remove filter for going up
+            _chart.filter(d.columnName, filter);
+
+            //if going up a level remove filters from lower level
+            if(!drillDown) {
+                _chart.filterAllForLevel(d._children[0].columnName);
+            }
+
+            //Manually redraw all other charts so the tree map can have the hierarchical behavior
+            //with the multi dimensions
+            var charts = dc.chartRegistry.list(_chart.chartGroup());
+            for (var i = 0; i < charts.length; ++i) {
+				if(charts[i] !== _chart) {
+					charts[i].redraw();
+				}
+			}
+			if(dc._renderlet !== null)
+				dc._renderlet(group);
+
+        });
+
+        
+    };
+
+    function isSelectedNode(d) {
+		return _chart.hasFilter(d.columnName, d.name);
+    }
+
+    _chart.zoomLevel = function(d) {
+		if(!arguments.length) return _zoomLevel;
+        _zoomLevel = _;
+        return _chart;
+    };
+
+    _chart._doRender = function() {
+		_chart.initData();
+		_chart.root().classed('dc-tree-map', true);
+		_chart.root().classed('dc-chart', false);
+		_chart.root().html('');
+
+		_chart.root()
+			.style("width", _width + "px")
+			.style("height", _height + _margin.top + _margin.bottom +  "px");
+
+		var x = d3.scale.linear()
+		.domain([0, _width])
+		.range([0, _width]);
+
+		var y = d3.scale.linear()
+			.domain([0, _height])
+			.range([0, _height]);
+
+		_treeMapd3 = d3.layout.treemap()
+			.children(function(d, depth) { return depth ? null : d._children; })
+			.sort(function(a, b) { return a.value - b.value; })
+			.ratio(_height / _width * 0.5 * (1 + Math.sqrt(5)))
+			.round(false);
+
+		var svg = d3.select(parent).append("svg")
+			.attr("width", _width + _margin.left + _margin.right)
+			.attr("height", _height + _margin.bottom + _margin.top)
+			.style("margin-left", -_margin.left + "px")
+			.style("margin.right", -_margin.right + "px")
+          .append("g")
+			.attr("transform", "translate(" + _margin.left + "," + _margin.top + ")")
+			.style("shape-rendering", "crispEdges");
+
+		var crumbTrail = svg.append("g")
+			.attr("class", "crumbTrail");
+
+		crumbTrail.append("rect")
+			.attr("y", -_margin.top)
+			.attr("width", _width)
+			.attr("height", _margin.top);
+
+		crumbTrail.append("text")
+			.attr("x", _crumbTrailX)
+			.attr("y", _crumbTrailY - _margin.top)
+			.attr("dy", _crumbTrailHeight);
+        _currentRoot = _treeMapDataObject.zoomLevelDrill(_zoomLevel);
+		initialize(_treeMapDataObject);
+		accumulate(_treeMapDataObject);
+		layout(_treeMapDataObject);
+		display(_currentRoot);
+
+		function initialize(root) {
+			root.x = root.y = 0;
+			root.dx = _width;
+			root.dy = _height;
+			root.depth = 0;
+		}
+
+		// Aggregate the values for internal nodes. This is normally done by the
+		// treemap layout, but not here because of our custom implementation.
+		// We also take a snapshot of the original children (_children) to avoid
+		// the children being overwritten when when layout is computed.
+		function accumulate(d) {
+			return (d._children = d.children) ?
+			d.value = d.children.reduce(function(p, v) { return p + accumulate(v); }, 0)
+			: d.value;
+		}
+
+		// Compute the treemap layout recursively such that each group of siblings
+		// uses the same size (1×1) rather than the dimensions of the parent cell.
+		// This optimizes the layout for the current zoom state. Note that a wrapper
+		// object is created for the parent node for each group of siblings so that
+		// the parent’s dimensions are not discarded as we recurse. Since each group
+		// of sibling was laid out in 1×1, we must rescale to fit using absolute
+		// coordinates. This lets us use a viewport to zoom.
+		function layout(d) {
+			if (d._children) {
+				_treeMapd3.nodes({_children: d._children});
+
+				d._children.forEach(function(c) {
+					c.x = d.x + c.x * d.dx;
+					c.y = d.y + c.y * d.dy;
+					c.dx *= d.dx;
+					c.dy *= d.dy;
+					c.parent = d;
+					layout(c);
+				});
+			}
+		}
+
+		function display(currentRoot) {
+			_currentRoot = currentRoot;
+
+			crumbTrail
+				.datum(currentRoot.parent)
+              .on("click", function(d) {
+					_zoomLevel --;
+					
+					if (d) {
+                        // "un-filter" as we drill-up
+						onClick(currentRoot, false); 
+					}
+                    transition(d); 
+
+                    //second redraw to incase any redraw happens before the filter messes up the 
+                    //treemapobject data
+                    _chart.redraw();
+				})
+				.select("text")
+				.text(_titleBarFunc(currentRoot));
+
+			var depthContainer = svg.insert("g", ".crumbTrail")
+				.datum(currentRoot)
+				.attr("class", "depth");
+
+			//container for each main parent box
+			//this box will then contain children outlines
+			//need clip path to hide excess text on smaller boxes
+			var depthContainerChildren = depthContainer.selectAll("g")
+				.data(currentRoot._children)
+              .enter().append("g")
+              	.attr("clip-path", function(d) {return "url(#" + dc.utils.nameToId(d.name) + "-clip-path)";});
+
+			depthContainerChildren.filter(function(d) { return d._children || d; })
+				.classed("children", true)
+				.classed("deselected", function(d) {
+					if(!d._children) {
+						return (_chart.hasFilter()) ? !isSelectedNode(d) : false;
+					}
+				})
+				.classed("selected", function(d) {
+					if(!d._children) {
+						return (_chart.hasFilter()) ? isSelectedNode(d) : false;
+					}
+				})
+				.on("click",function(d) {
+					if(d._children) {
+						_zoomLevel ++;
+						transition(d); 
+						onClick(d, true);
+					}
+					else {
+						
+						onClick(d, true);
+						if(_chart.hasFilter() && isSelectedNode(d)) {
+							//note: could not seem to get 'this' value in test spec
+							d3.select(this).classed("selected", true);
+							d3.select(this).classed("deselected", false);
+						}
+						else if(!_chart.hasFilter() || !isSelectedNode(d)) {
+							d3.select(this).classed("deselected", true);
+							d3.select(this).classed("selected", false);
+						}
+					}
+				});
+
+			depthContainerChildren.selectAll(".child")
+				.data(function(d) { return d._children || [d]; })
+              .enter().append("rect")
+				.attr("class", "child")
+				.classed("deselected", function(d) {
+					if(!d._children) {
+						return (_chart.hasFilter()) ? !isSelectedNode(d) : false;
+					}
+					else return false;
+				})
+				.classed("selected", function(d) {
+					var isOnlyChild = (_zoomLevel === (_chart.levels().length -1));
+
+					if(!d._children && !isOnlyChild) {
+						return (_chart.hasFilter()) ? isSelectedNode(d) : false;
+					}
+					else return false; 
+				})
+				.call(rect);
+
+			depthContainerChildren.append("defs").append("clipPath")
+				.attr("id", function(d) {return dc.utils.nameToId(d.name) + "-clip-path";})
+				.append("rect")
+				.attr("class", "clip-path-parent")
+				.call(rect);
+
+			depthContainerChildren.append("rect")
+				.attr("class", "parent")
+				.call(rect)
+              .append("title")
+				.text(_toolTipFunc);
+
+			depthContainerChildren.append("text")
+				.attr("dy", ".75em")
+				.text(_labelFunc)
+				.call(text);
+
+			transition(currentRoot);
+
+			//Do the zoom animation, and set each parent block 
+			//to take up as much space as it can proportionately
+			function transition(currentRoot) {
+				if (_transitioning || !currentRoot) return;
+				_transitioning = true;
+
+				var depthContainerChildren = display(currentRoot),
+					parentTransition = depthContainer.transition().duration(_chart.transitionDuration()),
+					childTransition = depthContainerChildren.transition().duration(_chart.transitionDuration());
+
+				// Update the domain only after entering new elements.
+				x.domain([currentRoot.x, currentRoot.x + currentRoot.dx]);
+				y.domain([currentRoot.y, currentRoot.y + currentRoot.dy]);
+
+				// Enable anti-aliasing during the transition.
+				svg.style("shape-rendering", null);
+
+				// Draw child nodes on top of parent nodes.
+				svg.selectAll(".depth").sort(function(a, b) {
+					return a.depth - b.depth; 
+				});
+				
+				// Fade-in entering text.
+				depthContainerChildren.selectAll("text").style("fill-opacity", 0);
+
+				// Transition to the new view.
+				parentTransition.selectAll("text").call(text).style("fill-opacity", 0);
+				childTransition.selectAll("text").call(text).style("fill-opacity", 1);
+				parentTransition.selectAll("rect").call(rect);
+				childTransition.selectAll("rect").call(rect);
+
+				// Remove the old node when the transition is finished.
+				parentTransition.remove().each("end", function() {
+					svg.style("shape-rendering", "crispEdges");
+					_transitioning = false;
+				});
+			}
+
+			return depthContainerChildren;
+		}
+
+		function text(textLabel) {
+			textLabel.attr("x", function(d) { return x(d.x) + 6; })
+				.attr("y", function(d) { return y(d.y) + 6; });
+		}
+
+		function rect(nodeRect) {
+			nodeRect.attr("x", function(d) { return x(d.x); })
+				.attr("y", function(d) { return y(d.y); })
+				.attr("width", function(d) { return x(d.x + d.dx) - x(d.x); })
+				.attr("height", function(d) { return y(d.y + d.dy) - y(d.y); });
+		}
+	};
+
+	_chart._doRedraw = function() {
+		return _chart._doRender();
+	};
+
+	return _chart.anchor(parent, chartGroup);
+
+	//#### .crossfilterToTreeMapData([{dimension : someDim, columnName : "colName"}...], String)
+	// Return the tree data object
+	//Translate crossfilter multi dimensional tabular data into hierarchical tree data
+	function crossfilterToTreeMapData(dimColPairs, measure_column) {
+		var _tree = {name : _rootName, columnName : "root",
+					children : []};
+
+		//loop over the rows, and then by column to populate the tree data
+		var rows = dimColPairs[0].dimension.top(Infinity);
+
+		rows.forEach(function(row) {
+			dimColPairs.forEach(function(dimColObj, columnIndex) {
+				var columnName = dimColObj.columnName;
+				insertNode(row, columnName, columnIndex);
+			});
+		});
+
+		function insertNode(row, columnName, columnIndex) {
+			if(!nodesContains(row, columnName, columnIndex)) {
+				pushChild(row, columnName, columnIndex);
+			}
+			else if(columnIndex === (dimColPairs.length - 1)) {
+				//node already existed and this is a leaf so it has a value
+				addLeafValue(row, columnName, columnIndex);
+			}
+		}
+
+		function nodesContains(row, columnName, columnIndex) {
+			//traverse through index level of children to get the children we want
+			var nodeChildren = findNodeChildrenDrill(row, columnName, columnIndex).children;
+
+			return nodeChildren.some(function(childObj) {
+				return childObj.name === row[columnName];
+			});
+		}
+
+		function pushChild(row, columnName, columnIndex) {
+			var nodeChildren = findNodeChildrenDrill(row, columnName, columnIndex).children;
+			var newNode = {};
+			newNode.name = row[columnName];
+			newNode.columnName = columnName;
+			if(columnIndex === (dimColPairs.length - 1)) {
+				newNode.value = Number(row[measure_column]);
+			}
+			else newNode.children = [];
+			nodeChildren.push(newNode);
+		}
+
+		function addLeafValue(row, columnName, columnIndex) {
+			var nodeChildren = findNodeChildrenDrill(row, columnName, columnIndex).children;
+			var existingNode; 
+			nodeChildren.forEach(function(childObj) {
+				if(childObj.name === row[columnName]) {
+					existingNode = childObj;
+				}
+			});
+			existingNode.value = Number(existingNode.value) + Number(row[measure_column]);
+		}
+
+		//#### .findNodeChildrenDrill(Object, String, Number)
+		//Drill down until at the correct child object, this function is used internally
+		function findNodeChildrenDrill(row, columnName, columnIndex) {
+			var childNode = _tree; //array of child objects
+			for (var i = 0; i < columnIndex; i++) {
+				childNode.children.some(function(childObj) {
+					var fieldValue = row[dimColPairs[i].columnName];
+					if(childObj.name === fieldValue) {
+						childNode = childObj;
+					}
+				});
+			}
+
+			return childNode;
+		}
+
+		//#### .zoomLevelDrill(Number)
+		//Drill down to the child node by zoom level, this function is used externally
+		_tree.zoomLevelDrill = function(zoomLevel) {
+			var childNode = _tree;
+
+			for(var i = 0; i < (zoomLevel); i++) {
+				//children accessor changed to '_children' because 'children' gets overwritten 
+				//by the treemap layout when reinitializing from the zoomed state
+				childNode.children.some(function(childObj) { 
+					var value = getFilterValue(i);
+					if(childObj.name === value) {
+						childNode = childObj;
+					}
+				});	
+			}
+
+			return childNode;
+		};
+
+		function getFilterValue(zoomLevel) {
+			var dimension = dimColPairs[zoomLevel].dimension;
+			var columnName = dimColPairs[zoomLevel].columnName;
+			return dimension.top(Infinity)[0][columnName]; //assuming that each level of the tree map only has one value in the filter
+		}
+
+		return _tree;
+	}
+
+};
+d3.sankey = function() {
+  var sankey = {},
+      nodeWidth = 24,
+      nodePadding = 8,
+      size = [1, 1],
+      nodes = [],
+      links = [];
+
+  sankey.nodeWidth = function(_) {
+    if (!arguments.length) return nodeWidth;
+    nodeWidth = +_;
+    return sankey;
+  };
+
+  sankey.nodePadding = function(_) {
+    if (!arguments.length) return nodePadding;
+    nodePadding = +_;
+    return sankey;
+  };
+
+  sankey.nodes = function(_) {
+    if (!arguments.length) return nodes;
+    nodes = _;
+    return sankey;
+  };
+
+  sankey.links = function(_) {
+    if (!arguments.length) return links;
+    links = _;
+    return sankey;
+  };
+
+  sankey.size = function(_) {
+    if (!arguments.length) return size;
+    size = _;
+    return sankey;
+  };
+
+  sankey.layout = function(iterations) {
+    computeNodeLinks();
+    computeNodeValues();
+    computeNodeBreadths();
+    computeNodeDepths(iterations);
+    computeLinkDepths();
+    return sankey;
+  };
+
+  sankey.relayout = function() {
+    computeLinkDepths();
+    return sankey;
+  };
+
+  sankey.link = function() {
+    var curvature = .5;
+
+    function link(d) {
+      var x0 = d.source.x + d.source.dx,
+          x1 = d.target.x,
+          xi = d3.interpolateNumber(x0, x1),
+          x2 = xi(curvature),
+          x3 = xi(1 - curvature),
+          y0 = d.source.y + d.sy + d.dy / 2,
+          y1 = d.target.y + d.ty + d.dy / 2;
+      return "M" + x0 + "," + y0
+           + "C" + x2 + "," + y0
+           + " " + x3 + "," + y1
+           + " " + x1 + "," + y1;
+    }
+
+    link.curvature = function(_) {
+      if (!arguments.length) return curvature;
+      curvature = +_;
+      return link;
+    };
+
+    return link;
+  };
+
+  // Populate the sourceLinks and targetLinks for each node.
+  // Also, if the source and target are not objects, assume they are indices.
+  function computeNodeLinks() {
+    nodes.forEach(function(node) {
+      node.sourceLinks = [];
+      node.targetLinks = [];
+    });
+    links.forEach(function(link) {
+      var source = link.source,
+          target = link.target;
+      if (typeof source === "number") source = link.source = nodes[link.source];
+      if (typeof target === "number") target = link.target = nodes[link.target];
+      source.sourceLinks.push(link);
+      target.targetLinks.push(link);
+    });
+  }
+
+  // Compute the value (size) of each node by summing the associated links.
+  function computeNodeValues() {
+    nodes.forEach(function(node) {
+      node.value = Math.max(
+        d3.sum(node.sourceLinks, value),
+        d3.sum(node.targetLinks, value)
+      );
+    });
+  }
+
+  // Iteratively assign the breadth (x-position) for each node.
+  // Nodes are assigned the maximum breadth of incoming neighbors plus one;
+  // nodes with no incoming links are assigned breadth zero, while
+  // nodes with no outgoing links are assigned the maximum breadth.
+  function computeNodeBreadths() {
+    var remainingNodes = nodes,
+        nextNodes,
+        x = 0;
+
+    while (remainingNodes.length) {
+      nextNodes = [];
+      remainingNodes.forEach(function(node) {
+        node.x = x;
+        node.dx = nodeWidth;
+        node.sourceLinks.forEach(function(link) {
+          if (nextNodes.indexOf(link.target) < 0) {
+            nextNodes.push(link.target);
+          }
+        });
+      });
+      remainingNodes = nextNodes;
+      ++x;
+    }
+
+    //
+    moveSinksRight(x);
+    scaleNodeBreadths((size[0] - nodeWidth) / (x - 1));
+  }
+
+  function moveSourcesRight() {
+    nodes.forEach(function(node) {
+      if (!node.targetLinks.length) {
+        node.x = d3.min(node.sourceLinks, function(d) { return d.target.x; }) - 1;
+      }
+    });
+  }
+
+  function moveSinksRight(x) {
+    nodes.forEach(function(node) {
+      if (!node.sourceLinks.length) {
+        node.x = x - 1;
+      }
+    });
+  }
+
+  function scaleNodeBreadths(kx) {
+    nodes.forEach(function(node) {
+      node.x *= kx;
+    });
+  }
+
+  function computeNodeDepths(iterations) {
+    var nodesByBreadth = d3.nest()
+        .key(function(d) { return d.x; })
+        .sortKeys(d3.ascending)
+        .entries(nodes)
+        .map(function(d) { return d.values; });
+
+    //
+    initializeNodeDepth();
+    resolveCollisions();
+    for (var alpha = 1; iterations > 0; --iterations) {
+      relaxRightToLeft(alpha *= .99);
+      resolveCollisions();
+      relaxLeftToRight(alpha);
+      resolveCollisions();
+    }
+
+    function initializeNodeDepth() {
+      var ky = d3.min(nodesByBreadth, function(nodes) {
+        return (size[1] - (nodes.length - 1) * nodePadding) / d3.sum(nodes, value);
+      });
+
+      nodesByBreadth.forEach(function(nodes) {
+        nodes.forEach(function(node, i) {
+          node.y = i;
+          node.dy = node.value * ky;
+        });
+      });
+
+      links.forEach(function(link) {
+        link.dy = link.value * ky;
+      });
+    }
+
+    function relaxLeftToRight(alpha) {
+      nodesByBreadth.forEach(function(nodes, breadth) {
+        nodes.forEach(function(node) {
+          if (node.targetLinks.length) {
+            var y = d3.sum(node.targetLinks, weightedSource) / d3.sum(node.targetLinks, value);
+            node.y += (y - center(node)) * alpha;
+          }
+        });
+      });
+
+      function weightedSource(link) {
+        return center(link.source) * link.value;
+      }
+    }
+
+    function relaxRightToLeft(alpha) {
+      nodesByBreadth.slice().reverse().forEach(function(nodes) {
+        nodes.forEach(function(node) {
+          if (node.sourceLinks.length) {
+            var y = d3.sum(node.sourceLinks, weightedTarget) / d3.sum(node.sourceLinks, value);
+            node.y += (y - center(node)) * alpha;
+          }
+        });
+      });
+
+      function weightedTarget(link) {
+        return center(link.target) * link.value;
+      }
+    }
+
+    function resolveCollisions() {
+      nodesByBreadth.forEach(function(nodes) {
+        var node,
+            dy,
+            y0 = 0,
+            n = nodes.length,
+            i;
+
+        // Push any overlapping nodes down.
+        nodes.sort(ascendingDepth);
+        for (i = 0; i < n; ++i) {
+          node = nodes[i];
+          dy = y0 - node.y;
+          if (dy > 0) node.y += dy;
+          y0 = node.y + node.dy + nodePadding;
+        }
+
+        // If the bottommost node goes outside the bounds, push it back up.
+        dy = y0 - nodePadding - size[1];
+        if (dy > 0) {
+          y0 = node.y -= dy;
+
+          // Push any overlapping nodes back up.
+          for (i = n - 2; i >= 0; --i) {
+            node = nodes[i];
+            dy = node.y + node.dy + nodePadding - y0;
+            if (dy > 0) node.y -= dy;
+            y0 = node.y;
+          }
+        }
+      });
+    }
+
+    function ascendingDepth(a, b) {
+      return a.y - b.y;
+    }
+  }
+
+  function computeLinkDepths() {
+    nodes.forEach(function(node) {
+      node.sourceLinks.sort(ascendingTargetDepth);
+      node.targetLinks.sort(ascendingSourceDepth);
+    });
+    nodes.forEach(function(node) {
+      var sy = 0, ty = 0;
+      node.sourceLinks.forEach(function(link) {
+        link.sy = sy;
+        sy += link.dy;
+      });
+      node.targetLinks.forEach(function(link) {
+        link.ty = ty;
+        ty += link.dy;
+      });
+    });
+
+    function ascendingSourceDepth(a, b) {
+      return a.source.y - b.source.y;
+    }
+
+    function ascendingTargetDepth(a, b) {
+      return a.target.y - b.target.y;
+    }
+  }
+
+  function center(node) {
+    return node.y + node.dy / 2;
+  }
+
+  function value(link) {
+    return link.value;
+  }
+
+  return sankey;
+};
+
+/**
+## Sankey
+
+Includes: [Base Mixin](#base-mixin)
+
+
+#### dc.sankey(parent[, chartGroup])
+Create a Sankey chart that shows how crossfilter dimensions flow into other dimensions. 
+Multiple dimensions can be used. 
+
+Parameters:
+
+* parent : string | node | selection - any valid
+ [d3 single selector](https://github.com/mbostock/d3/wiki/Selections#selecting-elements) specifying
+ a dom block element such as a div; or a dom element or d3 selection.
+
+* chartGroup : string (optional) - name of the chart group this chart instance should be placed in.
+ Interaction with a chart will only trigger events and redraws within the chart's group.
+
+Returns:
+A newly created sankey instance
+
+```js
+//setup the dimension/column name array needed to translate crossfilter data into the sankey 
+//data structure
+var dimensionColumnnamePairs = [{'dimension' : someDimension, 'columnName' : 'columnNamefromCSV'},
+                                {'dimension' : anotherDimension, 'columnName' : 'anotherColumnName'}];
+//which column name from the CSV contains the value for measuring the data
+var measure_column = 'value';
+// create a sankey chart under #sankey element using the default global chart group
+var chart = dc.sankey("#sankey")
+                .dimColPairs(dimensionColumnnamePairs)
+                .measure_column(measure_column);
+
+//filter manually by passing in the column name, and filter value like this
+chart.filter('columnNamefromCSV', 'singlefiltervalue');
+```
+
+**/
+dc.sankey = function(parent, chartGroup) {
+    var _chart = dc.hierarchyMixin(dc.baseMixin({}));
+    var _sankey, _sankeyDataObject;
+    var _margin = {top: 1, right: 1, bottom: 6, left: 1}, //margins needed so sankey edges aren't cut off
+        _width = 960 - _margin.left - _margin.right,
+        _height = 500 - _margin.top - _margin.bottom;
+
+    var _formatNumber = d3.format(",.0f"),
+        _format = function(d) { return _formatNumber(d); },
+        _color = d3.scale.category20();
+    var _linkToolTipFunc = function(d) { return d.source.name + " → " + d.target.name + "\n" + _format(d.value); };
+    var _nodeToolTipFunc = function(d) { return d.name + "\n" + _format(d.value); };    
+    var _labelFunc = function(d) { return d.name; };
+
+    _chart.label = function(_) {
+        if(!arguments.length) return _labelFunc;
+        _labelFunc = _;
+        return _chart;
+    };
+
+    _chart.nodeToolTip = function(_) {
+        if(!arguments.length) return _nodeToolTipFunc;
+        _nodeToolTipFunc = _;
+        return _chart;
+    };
+
+    _chart.linkToolTip = function(_) {
+        if(!arguments.length) return _linkToolTipFunc;
+        _linkToolTipFunc = _;
+        return _chart;
+    };
+
+    _chart.transitionDuration(450); // good default
+
+    /**
+    #### .width(Number)
+    Specify the width of the SVG. Default is 960
+    **/
+    _chart.width = function(_) {
+        if(!arguments.length) return _width;
+        _width = _;
+        return _chart;
+    };
+
+    /**
+    #### .height(Number)
+    Specify the height of the SVG. Default is 500
+    **/
+    _chart.height = function(_) {
+        if(!arguments.length) return _height;
+        _height = _;
+        return _chart;
+    };
+    
+    _chart.initData = function () {
+        if(_chart.levels() && _chart.measureColumn()) {
+            _sankeyDataObject = crossfilterToSankeyData(_chart.levels(), _chart.measureColumn());
+        }
+        else throw "Must provide dimension column array and measure_column";
+        return _chart;
+    };
+
+    _chart._doRender = function() {
+        _chart.initData();
+        _chart.root().classed('dc-sankey', true);
+        _chart.root().classed('dc-chart', false);
+        _chart.root().html('');
+
+        var svg = d3.select(parent).append("svg")
+            .attr("width", _width + _margin.left + _margin.right)
+            .attr("height", _height + _margin.top + _margin.bottom)
+          .append("g")
+            .attr("transform", "translate(" + _margin.left + "," + _margin.top + ")");
+
+        _sankey = d3.sankey()
+            .nodeWidth(15)
+            .nodePadding(10)
+            .size([_width, _height]);
+
+        var path = _sankey.link();
+        _sankey
+            .nodes(_sankeyDataObject.nodes)
+            .links(_sankeyDataObject.links)
+            .layout(32);
+
+        var link = svg.append("g").selectAll(".link")
+                      .data(_sankeyDataObject.links)
+                    .enter().append("path")
+                      .attr("class", "link")
+                      .attr("d", path)
+                      .style("stroke-width", function(d) { return Math.max(1, d.dy); })
+                      .sort(function(a, b) { return b.dy - a.dy; });
+
+        link.append("title")
+            .text(_linkToolTipFunc);
+
+        var node = svg.append("g").selectAll(".node")
+            .data(_sankeyDataObject.nodes)
+        .enter().append("g")
+            .attr("class", function(d) {return "node " + dc.utils.nameToId(d.name);})
+            .attr("transform", function(d) { return "translate(" + d.x + "," + d.y + ")"; })
+            .on("click", onClick)
+        .call(d3.behavior.drag()
+            .origin(function(d) { return d; })
+            .on("dragstart", dragstarted)
+            .on("drag", dragmove)
+            .on("dragend", dragended))
+            .classed("deselected", function (d) {
+                return (_chart.hasFilter()) ? !isSelectedNode(d) : false;
+            })
+            .classed("selected", function (d) {
+                return (_chart.hasFilter()) ? isSelectedNode(d) : false;
+            });
+        node.append("rect")
+            .attr("height", function(d) { return d.dy; })
+            .attr("width", _sankey.nodeWidth())
+            .style("fill", function(d) { return _color(d.name.replace(/ .*/, "")); })
+            .style("stroke", function(d) { return d3.rgb(d.color).darker(2); })
+          .append("title")
+            .text(_nodeToolTipFunc);
+
+        node.append("text")
+            .attr("x", -6)
+            .attr("y", function(d) { return d.dy / 2; })
+            .attr("dy", ".35em")
+            .attr("text-anchor", "end")
+            .attr("transform", null)
+            .text(_labelFunc)
+          .filter(function(d) { return d.x < _width / 2; })
+            .attr("x", 6 + _sankey.nodeWidth())
+            .attr("text-anchor", "start");
+
+        function dragstarted(d) {
+            //this makes elements come to top, but interferes with listeners 
+            //this.parentNode.appendChild(this); 
+        }
+
+        function dragmove(d) {
+            d3.select(this).attr("transform", "translate(" + d.x + "," + (d.y = Math.max(0, Math.min(_height - d.dy, d3.event.y))) + ")");
+            _sankey.relayout();
+            link.attr("d", path);
+        }
+
+        function dragended(d) {
+
+        }
+    };
+
+    function isSelectedNode (d) {
+        return _chart.hasFilter(d.column_name, d.name);
+    }
+
+    function onClick(d) {
+        //if click event is blocked, then the element is being dragged so don't filter
+        if(d3.event.defaultPrevented) 
+            return;
+        else 
+            _chart.onClick(d);
+        
+    }
+
+    _chart.onClick = function (d) {
+        var filter = d.name;
+        dc.events.trigger(function () {
+            _chart.filter(d.column_name, filter);
+            _chart.redrawGroup();
+        });
+    };
+
+    _chart._doRedraw = function() {
+        return _chart._doRender();
+    };
+
+    return _chart.anchor(parent, chartGroup);
+
+    //**Translate the crossfilter dimensions to a sankey data structure
+    function crossfilterToSankeyData(dimColPairs, measure_column) {
+
+        //Dimensions provided are the source for creating the Sankey Node/Link 
+        //data structure
+        var t = {nodes: [], links: []};
+
+        //Create nodes for each row field value 
+        dimColPairs.forEach(function(dimColPair) {
+            var columnName = dimColPair.columnName;
+            var s = dimColPair.dimension.top(Infinity);
+            s.forEach(function(row){
+                insertNodes(row, columnName);
+                
+            });
+        });
+
+        //Important to do the linking only after all of the nodes have been created
+        dimColPairs.forEach(function(dimColPair, index) {
+            var columnName = dimColPair.columnName;
+            var s = dimColPair.dimension.top(Infinity);
+
+            s.forEach(function(row){
+                insertOrUpdateLinks(row, columnName, index);
+            });
+        });
+
+
+        function insertNodes(row, columnName) {
+            var column = columnName;
+            if (!nodesContains(row, column)){
+                t.nodes.push({name: row[column], column_name: column});
+            }   
+        }
+        
+        function insertOrUpdateLinks(row, columnName, index) {
+            var column = columnName;
+            if (index < (dimColPairs.length-1)) {
+                var nextNodeColumn = dimColPairs[index+1].columnName;
+                insertOrUpdateLink({name: row[column], column: column}, {name: row[nextNodeColumn], column: nextNodeColumn}, row[measure_column]);
+            }
+        }
+        
+        function insertOrUpdateLink(source, target, value){
+            var foundLink = findLink(source,target);
+            if(foundLink) {
+                foundLink.value = foundLink.value + Number(value);
+            }
+            else {
+                t.links.push(newLink(source, target, value));
+            }
+        }
+        
+        function findLink(source, target){
+            var sourceIndex = indexForNode(source);
+            var targetIndex = indexForNode(target);
+            var len = t.links.length;
+            for(var i=0;i<len;i++){
+                var currentLink = t.links[i];
+                if(currentLink.source === sourceIndex && currentLink.target === targetIndex){
+                    return currentLink;
+                }
+            }
+            return false;
+        }
+        
+        function newLink(source, target, value){
+            return {source: indexForNode(source), target: indexForNode(target), value: Number(value)};
+        }
+       
+        function indexForNode(node){
+            var len = t.nodes.length;
+            for(var i=0;i<len;i++){
+                var currentNode = t.nodes[i];
+                if (currentNode.name === node.name && currentNode.column_name === node.column) return i;
+            }
+
+            return -1; //hopefully never happens
+        }
+       
+        function nodesContains(row, column){
+            return t.nodes.some(function(node){ return node.name === row[column] && node.column_name === column;});
+        }
+       
+        function linksContains(source, target){
+       
+        }
+        
+        return t;
+    }
+};
 // Renamed functions
 
 dc.abstractBubbleChart = dc.bubbleMixin;

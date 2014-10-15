@@ -1,5 +1,5 @@
 describe('dc.arcGauge', function () {
-	var chart, data;
+	var chart, chartHeightSpecified, data;
 	var dimension, group;
 	var totalCapacity, maxValue, regionDimension;
 	describe('creation', function(){
@@ -15,12 +15,22 @@ describe('dc.arcGauge', function () {
 			var id = "arc-gauge";
 			var parent = appendChartID(id);
 
+            var idHeightSpecified= "arc-gauge-height-specified";
+            var parentHeightSpecified = appendChartID(idHeightSpecified);
+
 			chart = dc.arcGauge("#" + id)
                                 .group(group)
                                 .valueAccessor(function(d){return d;})
                                 .totalCapacity(maxValue);
 
-            chart.render();
+            chartHeightSpecified = dc.arcGauge("#" + idHeightSpecified)
+                                .height(200)
+                                .width(180)
+                                .innerRadiusRatio(0.5)
+                                .group(group)
+                                .valueAccessor(function(d){return d;})
+                                .totalCapacity(maxValue);
+            dc.renderAll();
 		});
 
 
@@ -69,6 +79,16 @@ describe('dc.arcGauge', function () {
                 //unfilter after each case
                 regionDimension.filterAll();
             });
+        });
+
+        it('should have correct calculated radii values when only height is specified', function() {
+            expect(chartHeightSpecified.innerRadius()).toBe(45); //ratio of .5 * outer radius
+            expect(chartHeightSpecified.outerRadius()).toBe(90); //.5 of the smaller between width and height.
+        });
+
+        it('should have the correct width and height of the svg', function() {
+            expect(chartHeightSpecified.root().select("svg").attr("width")).toBe("180");
+            expect(chartHeightSpecified.root().select("svg").attr("height")).toBe("200");
         });
 
 	});

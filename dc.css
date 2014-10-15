@@ -323,3 +323,10 @@ div.dc-chart {
 .dc-arc-gauge-foreground {
     fill: #04ADB0;
 }
+
+.dc-sankey g.node.Central rect{
+    stroke: blue;    
+}
+
+
+
