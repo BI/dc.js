@@ -9099,7 +9099,7 @@ dc.treeMap = function (parent, chartGroup) {
 				})
 				.classed("selected", function(d) {
 					if(!d._children) {
-						return (_chart.hasFilter()) ? isSelectedNode(d) : true;
+						return (_chart.hasFilter()) ? isSelectedNode(d) : false;
 					}
 				})
 				.on("click",function(d) {
@@ -9135,6 +9135,7 @@ dc.treeMap = function (parent, chartGroup) {
 				})
 				.classed("selected", function(d) {
 					var isOnlyChild = (_zoomLevel === (_chart.levels().length -1));
+
 					if(!d._children && !isOnlyChild) {
 						return (_chart.hasFilter()) ? isSelectedNode(d) : false;
 					}
