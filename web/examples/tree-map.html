@@ -1,0 +1,125 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <title>dc.js - Tree Map Example</title>
+    <meta charset="UTF-8">
+    <!-- <link rel="stylesheet" type="text/css" href="../css/dc.css"/> -->
+    
+</head>
+<body>
+<div id="chart"></div>
+<style>
+ 
+  #chart {
+  background: #ddd;
+}
+
+text {
+  pointer-events: none;
+}
+
+.crumbTrail text {
+  font-weight: bold;
+}
+
+rect.parent, rect.child {
+  fill: none;
+  stroke: #fff;
+}
+
+rect.parent,
+.crumbTrail rect {
+  stroke-width: 2px;
+}
+
+.crumbTrail rect {
+  fill: red;
+}
+
+.crumbTrail:hover rect {
+  fill: #C80506;
+}
+
+.children rect.parent,
+.crumbTrail rect {
+  cursor: pointer;
+}
+
+.children rect.parent {
+  fill: #bbb;
+  fill-opacity: .5;
+}
+
+.children.selected rect.parent {
+  fill: red;
+}
+rect.child.selected {
+  /*fill: red;*/
+}
+.children:hover rect.child {
+  fill: #bbb;
+}
+
+</style>
+<div id="tree-map"></div>
+<div id="barchart-state"></div>
+<div id="barchart-region"></div>
+
+<script type="text/javascript" src="../js/d3.js"></script>
+<script type="text/javascript" src="../js/crossfilter.js"></script>
+<script type="text/javascript" src="../js/dc.js"></script>
+<script type="text/javascript" src="../../spec/helpers/fixtures.js"></script>
+<form>
+  <label><input type="radio" name="mode" value="size" checked> Size</label>
+  <label><input type="radio" name="mode" value="count"> Count</label>
+</form>
+<script src="http://d3js.org/d3.v3.min.js"></script>
+<script>
+var data = crossfilter(loadDateFixtureSankey());
+var stateFromDimension, stateLiveDimension, regionDimension, countryDimension;
+stateFromDimension = data.dimension(function(d){return d.state_from;});
+stateLiveDimension = data.dimension(function(d){return d.state_live;});
+regionDimension = data.dimension(function(d){return d.region;});
+countryDimension = data.dimension(function(d){return d.countrycode;});
+dimColPairs = [{'dimension' : countryDimension, 'columnName' : 'countrycode'},
+               {'dimension' : regionDimension, 'columnName' : 'region'},
+               {'dimension' : stateFromDimension, 'columnName' : 'state_from'},
+               {'dimension' : stateLiveDimension, 'columnName' : 'state_live'}];
+
+treeMapTest = dc.treeMap("#chart")
+                    .topBarHeight(45)
+                    .height(200)
+                    .crumbTrailX(10)
+                    .crumbTrailY(10)
+                    .crumbTrailHeight(".75em")
+                    .levels(dimColPairs)
+                    .label(function(d) {return "hi " + d.name + d.value;})
+                    .measureColumn('value')
+                    .rootName("frodo")
+                    .titleBarCaption(function test(d) {return d.parent ? test(d.parent) + "+" + d.name : d.name;})
+                    .toolTip(function(d) {return "Here's the value of " + d.name + ": " + d.value});
+
+var stateLiveGroup = stateLiveDimension.group().reduceSum(function(d) {return d.value;});
+ barChartState = dc.rowChart("#barchart-state");
+barChartState
+  .width(300)
+  .height(200)
+  .dimension(stateLiveDimension)
+  .group(stateLiveGroup);
+
+var regionGroup = regionDimension.group().reduceSum(function(d) {return d.value;});
+ barChartRegion = dc.rowChart("#barchart-region");
+barChartRegion
+  .width(300)
+  .height(200)
+  .dimension(regionDimension)
+  .group(regionGroup);
+
+dc.renderAll();
+
+
+</script>
+
+
+</body>
+</html>
