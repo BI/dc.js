@@ -31,19 +31,73 @@ totalFundingBar = dc.barGauge("#total-funding-gauge")
 **/
 dc.barGauge = function (parent, chartGroup) {
 
-    var _chart = dc.baseMixin({});
+    var _chart = dc.marginMixin(dc.baseMixin({}));
     var _filledValue,
         _oldValue,
         _totalCapacity,
-        _orientation = 'vertical',
-        _thickness = 25,
-        _longness = 100;
-
+        _orientation = 'horizontal',
+        _gap = 0,
+        _height = null, _width = null,
+        _xAxis = d3.svg.axis().orient("bottom"), _x, _g,
+        _drawScale = false, _markers,
+        _markerPadding = {top:5,right:5,bottom:5,left:5},
+        _markerFormatCallback = d3.format(".2f");
 
     //dimension is not required because this component only has one dimension
     _chart._mandatoryAttributes (['group']);
 
     _chart.transitionDuration(450); // good default
+
+    function calculateAxisScale() {
+        if(!_x ) {
+            var extent = [0, _chart.totalCapacity()];
+            //_x lets us use d3 to scale the real input value to the output value
+            _x = d3.scale.linear().domain(extent)
+                .range([0, _chart.effectiveWidth()]);
+        }
+        _xAxis.scale(_x);
+    }
+
+    function drawAxis() {
+        var axisG = _g.select("g.axis");
+
+        calculateAxisScale();
+
+        if(axisG.empty()) {
+            axisG = _g.append("g").attr("class", "axis")
+                .attr("transform", "translate(0, " + _chart.effectiveHeight()+ ")");
+            dc.transition(axisG, _chart.transitionDuration())
+                .call(_xAxis);
+        }
+    }
+
+    function drawGridLines() {
+        _g.selectAll("g.tick")
+            .select("line.grid-line")
+            .remove();
+
+        _g.selectAll("g.tick")
+            .append("line")
+            .attr("class", "grid-line")
+            .attr("x1", 0)
+            .attr("y1", 0)
+            .attr("x2", 0)
+            .attr("y2", function() {
+                return -_chart.effectiveHeight();
+            });
+    }
+
+    _chart.height = function(_) {
+        if(!arguments.length) return _height;
+        _height = _;
+        return _chart;
+    };
+
+    _chart.width = function(_) {
+        if(!arguments.length) return _width;
+        _width = _;
+        return _chart;
+    };
 
     _chart.value = function() {
         return _chart.data();
@@ -65,34 +119,25 @@ dc.barGauge = function (parent, chartGroup) {
         return _chart;
     };
 
+    /**
+    #### .gap([gap])
+    Get or set the vertical gap space between rows on a particular row chart instance. Default gap is 5px;
 
-    _chart.thickness = function(_) {
-        if(!arguments.length) return _thickness;
-        _thickness = _;
+    **/
+    _chart.gap = function (_) {
+        if (!arguments.length) return _gap;
+        _gap = _;
         return _chart;
     };
 
-//TODO: add functionality for setting the longness, right now longness is 100% of parent element
-/*
-    _chart.longness = function(_) {
-        if(!arguments.length) return _longness;
-        _longness = _;
-        if(_orientation === 'vertical') {
-            newX = _thickness;
-            newY = _longness;
-        }
-        else if(_orientation === 'horizontal') {
-            newX = _longness;
-            newY = _thickness;
-        }
-
-        _chart.root().selectAll('.svg-container-container')
-            .selectAll('rect')
-            .attr('width', newX)
-            .attr('height', newY);
+    /**
+    #### .markerPadding(Object)
+    **/
+    _chart.markerPadding = function (_) {
+        if (!arguments.length) return _markerPadding;
+        _markerPadding = _;
         return _chart;
     };
-*/
 
     /**
         #### .totalCapacity(number)
@@ -117,60 +162,189 @@ dc.barGauge = function (parent, chartGroup) {
     };
 
     /**
+        #### .drawScale(boolean)
+        Explicitly set whether or not to draw the scale. 
+    **/
+    _chart.drawScale = function(_) {
+        if(!arguments.length) return _drawScale;
+        _drawScale = _;
+        return _chart;
+    };
+
+    // _chart.addMarker = function(_) {
+    //     _markers.push(_);
+    // };
+
+    // _chart.clearMarkers = function() {
+    //     _markers = [];
+    // };
+
+    _chart.setMarkers = function(_) {
+        if (!arguments.length) return _markers.call(_chart);
+        _markers = d3.functor(_);
+        _chart.expireCache();
+        return _chart;
+    };
+
+    function placeMarkers(markers) {
+        if(!arguments.length) {
+            _markers().forEach(function(marker) {
+                var markerGroup = _g.select("g.marker-labels-top")
+                  .append("g")
+                    .classed("marker-tick", true)
+                    .attr("transform","translate(" + _x(marker.value) + ", 0)");
+
+                markerGroup.append("title")
+                    .text(_markerFormatCallback(marker.value));
+                markerGroup.append("text")
+                    .text(marker.statName)
+                    .attr("style", "text-anchor: middle")
+                    .attr("transform", "translate(0," + -_markerPadding.bottom + ")");
+
+                var textWidth = markerGroup.select("text").property("offsetWidth");
+                var textHeight = markerGroup.select("text").property("offsetHeight");
+
+                markerGroup.insert("rect", "text")
+                    .classed("marker-rect", true)
+                    .attr("x", -textWidth/2 - _markerPadding.left)
+                    .attr("y", -textHeight - _markerPadding.top - _markerPadding.bottom)
+                    .attr("width", textWidth + _markerPadding.left + _markerPadding.right)
+                    .attr("height", textHeight + _markerPadding.top + _markerPadding.bottom);
+
+                markerGroup.append("line")
+                    .classed("marker-line", true)
+                    .attr("x1", 0)
+                    .attr("y1", 0)
+                    .attr("x2", 0)
+                    .attr("y2", 5);
+                    
+                    // .attr("x", (_markerFormatCallback) ? _markerFormatCallback(_x(marker.value)) : _x(marker.value));
+                    
+                
+            });
+            return;
+        }
+
+        markers.forEach(function(marker) {
+            var markerGroup = _g.select("g.marker-labels-top")
+                    .append("g")
+                    .classed("marker-tick", true)
+                    .attr("transform","translate(" + _x(marker.value) + ", 0)");
+            markerGroup.append("text")
+                .text(marker.statName)
+                .attr("style", "text-anchor: middle")
+                .attr("transform", "translate(0," + -_markerPadding.bottom + ")");
+
+            var textWidth = markerGroup.select("text").property("offsetWidth");
+            var textHeight = markerGroup.select("text").property("offsetHeight");
+
+            markerGroup.insert("rect", "text")
+                .classed("marker-rect", true)
+                .attr("x", -textWidth/2 - _markerPadding.left)
+                .attr("y", -textHeight - _markerPadding.top - _markerPadding.bottom)
+                .attr("width", textWidth + _markerPadding.left + _markerPadding.right)
+                .attr("height", textHeight + _markerPadding.top + _markerPadding.bottom);
+
+            markerGroup.append("line")
+                .classed("marker-line", true)
+                .attr("x1", 0)
+                .attr("y1", 0)
+                .attr("x2", 0)
+                .attr("y2", 5);
+        });
+
+    }
+
+    _chart.markerFormat = function(_) {
+        if(!arguments.length) return _markerFormatCallback;
+        _markerFormatCallback = _;
+        return _chart;
+        
+    };
+
+    /**
         #### .initializeRectangles(ParentSelector, number, number, string)
         Add the background and foreground rectangles. Set the foreground
         rectangle to the calculated fill percantage.
     **/
-    var initializeRectangles = function(selector, thickness, longness, orientation) {
+    var initializeRectangles = function(orientation) {
         //the percentage value will be how much the bar is actually filled up
-        var _percentFilled = _filledValue/_totalCapacity() * 100;
-        var _oldpercentFilled = _oldValue/_totalCapacity() * 100;
+        var _percentFilled = (_filledValue/_totalCapacity() * 100 <= 100) ? _filledValue/_totalCapacity() * 100 : 100;
+        var _oldpercentFilled = (_oldValue/_totalCapacity() * 100 <= 100) ? _oldValue/_totalCapacity() * 100 : 100;
         var filledX, filledY,
             newFilledX, newFilledY,
             offsetX, offsetY,
-            containingX, containingY;
+            containingX, containingY,
+            actualThickness, myRectangle;
 
         if(orientation == 'vertical') {
-            filledX = thickness;
-            filledY = _oldpercentFilled + "%";
+            //NEED TO FIX
+            actualThickness = _chart.width() - _chart.margins().left - _chart.margins().right - 2*_gap;
+            filledX = actualThickness;
+            filledY = _chart.effectiveHeight() * (_oldpercentFilled/100);
             newFilledX = filledX;
-            newFilledY = _percentFilled + "%";
-            containingX = thickness;
-            containingY = longness + "%";
-            offsetX = 0;
-            offsetY = longness - _percentFilled + "%";
+            newFilledY = _chart.effectiveHeight() * (_percentFilled/100);
+            containingX = actualThickness;
+            containingY = _chart.effectiveHeight();
+            offsetX = _gap;
+            offsetY = 100 - _percentFilled + "%";
+            _height = _chart.root().select("svg").property('offsetHeight');
+            _chart.root().select('svg')
+                .attr("width", _chart.width());
+
+            _g.append('rect')
+              .classed("dc-bar-gauge-background", true)
+              .attr('width', function(){ return containingX;})
+              .attr('height', function(){return containingY;})
+              .attr('x', 0)
+              .attr('y', 0);
+            _g.append('rect')
+                .classed("dc-bar-gauge-foreground", true)
+                .attr('width', function(){return filledX;})
+                .attr('height', function(){return filledY;})
+                .attr('x', offsetX)
+                .attr('y', offsetY);
+            myRectangle = _chart.selectAll('.dc-bar-gauge-foreground');
+            myRectangle.transition()
+                .duration(_chart.transitionDuration())
+                .ease('ease-out')
+                .attr('width', function(){return newFilledX;})
+                .attr('height', function(){return newFilledY;});
+            
         }
         else { //horizontal
-            filledX = _oldpercentFilled + "%";
-            filledY = thickness;
-            newFilledX = _percentFilled + "%";
+            actualThickness = _chart.height() - _chart.margins().top - _chart.margins().bottom - 2*_gap;
+            filledX = _chart.effectiveWidth() * (_oldpercentFilled/100);
+            filledY = actualThickness;
+            newFilledX = _chart.effectiveWidth() * (_percentFilled/100) ;
             newFilledY = filledY;
-            containingX = longness + "%";
-            containingY = thickness;
+            containingX = _chart.effectiveWidth();
+            containingY = actualThickness;
             offsetX = 0;
-            offsetY = 0;
-        }
+            offsetY = _gap;
+            _width = _chart.root().select("svg").property('offsetWidth');
+            _chart.root().select('svg')
+                .attr("height", _chart.height());
 
-        selector.selectAll('rect')
-          .data(['0'])
-        .enter().append('rect')
-          .classed("dc-bar-gauge-background", true)
-          .attr('width', function(){ return containingX;})
-          .attr('height', function(){return containingY;})
-          .attr('x', 0)
-          .attr('y', 0);
-        selector.append('rect')
-            .classed("dc-bar-gauge-foreground", true)
-            .attr('width', function(){return filledX;})
-            .attr('height', function(){return filledY;})
-            .attr('x', offsetX)
-            .attr('y', offsetY);
-        var myRectangle = _chart.selectAll('.dc-bar-gauge-foreground');
-        myRectangle.transition()
-            .duration(_chart.transitionDuration())
-            .ease('ease-out')
-            .attr('width', function(){return newFilledX;})
-            .attr('height', function(){return newFilledY;});
+            _g.append('rect')
+              .classed("dc-bar-gauge-background", true)
+              .attr('width', function(){ return containingX;})
+              .attr('height', function(){return containingY;})
+              .attr('x', 0)
+              .attr('y', offsetY);
+            _g.append('rect')
+                .classed("dc-bar-gauge-foreground", true)
+                .attr('width', function(){return filledX;})
+                .attr('height', function(){return filledY;})
+                .attr('x', offsetX)
+                .attr('y', offsetY);
+            myRectangle = _chart.selectAll('.dc-bar-gauge-foreground');
+            myRectangle.transition()
+                .duration(_chart.transitionDuration())
+                .ease('ease-out')
+                .attr('width', function(){return newFilledX;})
+                .attr('height', function(){return newFilledY;});
+        }
     };
 
     _chart._doRender = function () {
@@ -179,9 +353,20 @@ dc.barGauge = function (parent, chartGroup) {
         _chart.root().classed('dc-bar-gauge', true);
         _chart.root().classed('dc-chart', false);
         _chart.root().html('');
-        var svgBar = _chart.root().append('svg');
-        initializeRectangles(svgBar, _thickness, _longness, _orientation);
+        _chart.resetSvg();
 
+        _g = _chart.svg()
+            .append('g')
+            .attr("transform", "translate(" + _chart.margins().left + "," + _chart.margins().top + ")");
+
+        if(_drawScale === true) {
+            _g.append("g").classed("marker-labels-top", true);
+            drawAxis();
+            drawGridLines();
+            placeMarkers();
+        }
+
+        initializeRectangles(_orientation);
 
 
     };

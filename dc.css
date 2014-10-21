@@ -328,5 +328,42 @@ div.dc-chart {
     stroke: blue;    
 }
 
+.dc-bar-gauge-background {
+    fill: #04ADB0;
+    opacity: .7;
+}
+
+.dc-bar-gauge-foreground {
+    fill: #9BE8D4; 
+    opacity: .7;
+}
+
+.dc-bar-gauge .axis path, .axis line {
+    fill: none;
+    stroke: #000;
+    shape-rendering: crispEdges;
+    opacity: .5;
+}
+
+.dc-bar-gauge .axis text {
+    font: 10px sans-serif;
+}
+
+.dc-bar-gauge .grid-line {
+    fill: none;
+    stroke: #ccc;
+    opacity: .5;
+    shape-rendering: crispEdges;
+}
 
 
+.dc-bar-gauge .marker-line {
+    fill:none;
+    stroke: #000;
+    opacity: 1;
+    shape-rendering: crispEdges;
+}
+
+.dc-bar-gauge .marker-rect {
+    fill: green;
+}

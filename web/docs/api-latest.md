@@ -1927,12 +1927,20 @@ totalFundingBar = dc.barGauge("#total-funding-gauge")
 #### .orientation(string)
 Set the orientation of the bar 'horizontal' or 'vertical'.
 
+#### .gap([gap])
+Get or set the vertical gap space between rows on a particular row chart instance. Default gap is 5px;
+
+#### .markerPadding(Object)
+
 #### .totalCapacity(number)
 Explicitly set total capacity.
 
 #### .filledValue(number)
 Explicitly set filled value. 
 The filled value will be used to get the percentage the bar is filled.
+
+#### .drawScale(boolean)
+Explicitly set whether or not to draw the scale.
 
 #### .initializeRectangles(ParentSelector, number, number, string)
 Add the background and foreground rectangles. Set the foreground
