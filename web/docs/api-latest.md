@@ -1942,6 +1942,12 @@ The filled value will be used to get the percentage the bar is filled.
 #### .drawScale(boolean)
 Explicitly set whether or not to draw the scale.
 
+#### .markerFormat(Function)
+Pass a formatter function like d3.format() to format marker values.
+
+#### .tickFormat(Function)
+Pass a formatter function like d3.format() to format tick values.
+
 #### .initializeRectangles(ParentSelector, number, number, string)
 Add the background and foreground rectangles. Set the foreground
 rectangle to the calculated fill percantage.

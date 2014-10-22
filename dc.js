@@ -8077,7 +8077,7 @@ dc.barGauge = function (parent, chartGroup) {
         _xAxis = d3.svg.axis().orient("bottom"), _x, _g,
         _drawScale = false, _markers,
         _markerPadding = {top:5,right:5,bottom:5,left:5},
-        _markerFormat = d3.format(".2f");
+        _markerFormat = d3.format(".2f"), _tickFormat = d3.format(",.0f");
 
     //dimension is not required because this component only has one dimension
     _chart._mandatoryAttributes (['group']);
@@ -8090,6 +8090,7 @@ dc.barGauge = function (parent, chartGroup) {
         _x = d3.scale.linear().domain(extent)
             .range([0, _chart.effectiveWidth()]);
         _xAxis.scale(_x);
+        _xAxis.tickFormat(_tickFormat);
     }
 
     function drawAxis() {
@@ -8287,11 +8288,25 @@ dc.barGauge = function (parent, chartGroup) {
 
     }
 
+    /**
+        #### .markerFormat(Function)
+        Pass a formatter function like d3.format() to format marker values. 
+    **/
     _chart.markerFormat = function(_) {
         if(!arguments.length) return _markerFormat;
         _markerFormat = _;
         return _chart;
         
+    };
+
+    /**
+        #### .tickFormat(Function)
+        Pass a formatter function like d3.format() to format tick values. 
+    **/
+    _chart.tickFormat = function(_) {
+        if(!arguments.length) return _tickFormat;
+        _tickFormat = _;
+        return _chart;
     };
 
     /**
@@ -8320,9 +8335,9 @@ dc.barGauge = function (parent, chartGroup) {
             containingY = _chart.effectiveHeight();
             offsetX = _gap;
             offsetY = 100 - _percentFilled + "%";
-            _height = _chart.root().select("svg").property('offsetHeight');
             _chart.root().select('svg')
-                .attr("width", _chart.width());
+                .attr("width", _chart.width())
+                .attr("height", _chart.height());
 
             _g.append('rect')
                 .classed("dc-bar-gauge-background", true)
@@ -8357,9 +8372,9 @@ dc.barGauge = function (parent, chartGroup) {
             containingY = actualThickness;
             offsetX = 0;
             offsetY = _gap;
-            _width = _chart.root().select("svg").property('offsetWidth');
             _chart.root().select('svg')
-                .attr("height", _chart.height());
+                .attr("height", _chart.height())
+                .attr("width", _chart.width());
 
             _g.append('rect')
                 .classed("dc-bar-gauge-background", true)
