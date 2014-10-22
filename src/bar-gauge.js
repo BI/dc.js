@@ -46,7 +46,7 @@ dc.barGauge = function (parent, chartGroup) {
     //dimension is not required because this component only has one dimension
     _chart._mandatoryAttributes (['group']);
 
-    _chart.transitionDuration(450); // good default
+    _chart.transitionDuration(700); // good default
 
     function calculateAxisScale() {
         var extent = [0, _chart.totalCapacity()];
@@ -335,9 +335,8 @@ dc.barGauge = function (parent, chartGroup) {
                 .attr('x', offsetX)
                 .attr('y', offsetY);
             myRectangle = _chart.selectAll('.dc-bar-gauge-foreground');
-            myRectangle.transition()
-                .duration(_chart.transitionDuration())
-                .ease('ease-out')
+
+            dc.transition(myRectangle, _chart.transitionDuration())
                 .attr('width', function(){return newFilledX;})
                 .attr('height', function(){return newFilledY;});
         }
