@@ -8077,7 +8077,7 @@ dc.barGauge = function (parent, chartGroup) {
         _xAxis = d3.svg.axis().orient("bottom"), _x, _g,
         _drawScale = false, _markers,
         _markerPadding = {top:5,right:5,bottom:5,left:5},
-        _markerFormatCallback = d3.format(".2f");
+        _markerFormat = d3.format(".2f");
 
     //dimension is not required because this component only has one dimension
     _chart._mandatoryAttributes (['group']);
@@ -8227,7 +8227,7 @@ dc.barGauge = function (parent, chartGroup) {
                     .attr("transform","translate(" + _x(marker.value) + ", 0)");
 
                 markerGroup.append("title")
-                    .text(_markerFormatCallback(marker.value));
+                    .text(_markerFormat(marker.value));
                 markerGroup.append("text")
                     .text(marker.statName)
                     .attr("style", "text-anchor: middle")
@@ -8250,7 +8250,7 @@ dc.barGauge = function (parent, chartGroup) {
                     .attr("x2", 0)
                     .attr("y2", 5);
                     
-                    // .attr("x", (_markerFormatCallback) ? _markerFormatCallback(_x(marker.value)) : _x(marker.value));
+                    // .attr("x", (_markerFormat) ? _markerFormat(_x(marker.value)) : _x(marker.value));
                     
                 
             });
@@ -8288,8 +8288,8 @@ dc.barGauge = function (parent, chartGroup) {
     }
 
     _chart.markerFormat = function(_) {
-        if(!arguments.length) return _markerFormatCallback;
-        _markerFormatCallback = _;
+        if(!arguments.length) return _markerFormat;
+        _markerFormat = _;
         return _chart;
         
     };
@@ -8325,21 +8325,24 @@ dc.barGauge = function (parent, chartGroup) {
                 .attr("width", _chart.width());
 
             _g.append('rect')
-              .classed("dc-bar-gauge-background", true)
-              .attr('width', function(){ return containingX;})
-              .attr('height', function(){return containingY;})
-              .attr('x', 0)
-              .attr('y', 0);
+                .classed("dc-bar-gauge-background", true)
+                .attr('width', function(){ return containingX;})
+                .attr('height', function(){return containingY;})
+                .attr('x', 0)
+                .attr('y', 0)
+              .append("title")
+                .text(_markerFormat(_filledValue));
             _g.append('rect')
                 .classed("dc-bar-gauge-foreground", true)
                 .attr('width', function(){return filledX;})
                 .attr('height', function(){return filledY;})
                 .attr('x', offsetX)
-                .attr('y', offsetY);
+                .attr('y', offsetY)
+              .append("title")
+                .text(_markerFormat(_filledValue));
             myRectangle = _chart.selectAll('.dc-bar-gauge-foreground');
-            myRectangle.transition()
-                .duration(_chart.transitionDuration())
-                .ease('ease-out')
+
+            dc.transition(myRectangle, _chart.transitionDuration())
                 .attr('width', function(){return newFilledX;})
                 .attr('height', function(){return newFilledY;});
             
@@ -8359,17 +8362,21 @@ dc.barGauge = function (parent, chartGroup) {
                 .attr("height", _chart.height());
 
             _g.append('rect')
-              .classed("dc-bar-gauge-background", true)
-              .attr('width', function(){ return containingX;})
-              .attr('height', function(){return containingY;})
-              .attr('x', 0)
-              .attr('y', offsetY);
+                .classed("dc-bar-gauge-background", true)
+                .attr('width', function(){ return containingX;})
+                .attr('height', function(){return containingY;})
+                .attr('x', 0)
+                .attr('y', offsetY)
+              .append("title")
+                .text(_markerFormat(_filledValue));
             _g.append('rect')
                 .classed("dc-bar-gauge-foreground", true)
                 .attr('width', function(){return filledX;})
                 .attr('height', function(){return filledY;})
                 .attr('x', offsetX)
-                .attr('y', offsetY);
+                .attr('y', offsetY)
+              .append("title")
+                .text(_markerFormat(_filledValue));
             myRectangle = _chart.selectAll('.dc-bar-gauge-foreground');
 
             dc.transition(myRectangle, _chart.transitionDuration())
