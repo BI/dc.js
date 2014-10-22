@@ -8077,7 +8077,14 @@ dc.barGauge = function (parent, chartGroup) {
         _xAxis = d3.svg.axis().orient("bottom"), _x, _g,
         _drawScale = false, _markers,
         _markerPadding = {top:5,right:5,bottom:5,left:5},
-        _markerFormat = d3.format(".2f"), _tickFormat = d3.format(",.0f");
+        _markerFormat = d3.format(".2f"), _tickFormat = d3.format(",.0f"),
+        _markerTitle = function(marker) {
+            var title = "";
+            if(marker.member) {
+                title = title + marker.member + ": ";
+            }
+            return title + _markerFormat(marker.value);
+        };
 
     //dimension is not required because this component only has one dimension
     _chart._mandatoryAttributes (['group']);
@@ -8219,6 +8226,12 @@ dc.barGauge = function (parent, chartGroup) {
         return _chart;
     };
 
+    _chart.markerTitle = function(_) {
+        if (!arguments.length) return _markerTitle; 
+        _markerTitle = _;
+        return _chart;
+    };
+
     function placeMarkers(markers) {
         if(!arguments.length) {
             _markers().forEach(function(marker) {
@@ -8228,7 +8241,7 @@ dc.barGauge = function (parent, chartGroup) {
                     .attr("transform","translate(" + _x(marker.value) + ", 0)");
 
                 markerGroup.append("title")
-                    .text(_markerFormat(marker.value));
+                    .text(_markerTitle(marker));
                 markerGroup.append("text")
                     .text(marker.statName)
                     .attr("style", "text-anchor: middle")
@@ -8413,9 +8426,9 @@ dc.barGauge = function (parent, chartGroup) {
             .attr("transform", "translate(" + _chart.margins().left + "," + _chart.margins().top + ")");
 
         if(_drawScale === true) {
-            _g.append("g").classed("marker-labels-top", true);
             drawAxis();
             drawGridLines();
+            _g.append("g").classed("marker-labels-top", true);
             placeMarkers();
         }
 
