@@ -8085,12 +8085,10 @@ dc.barGauge = function (parent, chartGroup) {
     _chart.transitionDuration(450); // good default
 
     function calculateAxisScale() {
-        if(!_x ) {
-            var extent = [0, _chart.totalCapacity()];
-            //_x lets us use d3 to scale the real input value to the output value
-            _x = d3.scale.linear().domain(extent)
-                .range([0, _chart.effectiveWidth()]);
-        }
+        var extent = [0, _chart.totalCapacity()];
+        //_x lets us use d3 to scale the real input value to the output value
+        _x = d3.scale.linear().domain(extent)
+            .range([0, _chart.effectiveWidth()]);
         _xAxis.scale(_x);
     }
 
@@ -8099,12 +8097,10 @@ dc.barGauge = function (parent, chartGroup) {
 
         calculateAxisScale();
 
-        if(axisG.empty()) {
-            axisG = _g.append("g").attr("class", "axis")
-                .attr("transform", "translate(0, " + _chart.effectiveHeight()+ ")");
-            dc.transition(axisG, _chart.transitionDuration())
-                .call(_xAxis);
-        }
+        axisG = _g.append("g").attr("class", "axis")
+            .attr("transform", "translate(0, " + _chart.effectiveHeight()+ ")");
+        dc.transition(axisG, _chart.transitionDuration())
+            .call(_xAxis);
     }
 
     function drawGridLines() {
