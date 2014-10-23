@@ -47,8 +47,7 @@ dc.treeMap = function (parent, chartGroup) {
 		_transitioning;
     var _filters = {};
     var _labelFuncsArray = [function(d) {return d.name;}];
-    var _titleBarFunc = function(d) {return d.parent ? _titleBarFunc(d.parent) + "." + d.name
-				: d.name;};
+    var _titleBarFunc = function(d) {return d.parent ? _titleBarFunc(d.parent) + "." + d.name : d.name;};
 	var _toolTipFunc = function(d) {return d.name;};
 
     _chart._mandatoryAttributes([]);
@@ -305,7 +304,7 @@ dc.treeMap = function (parent, chartGroup) {
 	Pass in a custom tool tip function. These tool tips show text for the rectangles on hover.
     **/
     _chart.toolTip = function(_) {
-    	if(!arguments.length) return _toolTipFunc;
+        if(!arguments.length) return _toolTipFunc;
 		_toolTipFunc = _;
         return _chart;
     };
@@ -315,7 +314,7 @@ dc.treeMap = function (parent, chartGroup) {
 	Pass in custom title bar caption function. The title bar text is show in the bar at the top.
     **/
     _chart.titleBarCaption = function(_) {
-    	if(!arguments.length) return _titleBarFunc;
+        if(!arguments.length) return _titleBarFunc;
 		_titleBarFunc = _;
         return _chart;
     };
@@ -511,7 +510,7 @@ dc.treeMap = function (parent, chartGroup) {
 			var depthContainerChildren = depthContainer.selectAll("g")
 				.data(currentRoot._children)
               .enter().append("g")
-              	.attr("clip-path", function(d) {return "url(#" + dc.utils.nameToId(d.name) + "-clip-path)";});
+                .attr("clip-path", function(d) {return "url(#" + dc.utils.nameToId(d.name) + "-clip-path)";});
 
 			depthContainerChildren.filter(function(d) { return d._children || d; })
 				.classed("children", true)
@@ -582,7 +581,7 @@ dc.treeMap = function (parent, chartGroup) {
             _labelFuncsArray.forEach(function(func, index){
                 depthContainerChildren[0].forEach(function(textElement) {
                     func(d3.select(textElement).append("text").classed("label_" + index, true), scale);
-                })
+                });
                 
             });
 			
