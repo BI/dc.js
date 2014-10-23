@@ -1932,6 +1932,14 @@ Get or set the vertical gap space between rows on a particular row chart instanc
 
 #### .markerPadding(Object)
 
+#### .markerWidth(Number)
+Explicitly set marker width. The marker dimensions are set based on the marker text offset dimensions.
+Setting this explicitly is useful for when a resize/redraw occurs and the text is momentarily 0x0.
+
+#### .markerHeight(Number)
+Explicitly set marker height. The marker dimensions are set based on the marker text offset dimensions.
+Setting this explicitly is useful for when a resize/redraw occurs and the text is momentarily 0x0.
+
 #### .totalCapacity(number)
 Explicitly set total capacity.
 

@@ -48,7 +48,8 @@ dc.barGauge = function (parent, chartGroup) {
                 title = title + marker.member + ": ";
             }
             return title + _markerFormat(marker.value);
-        };
+        },
+        _defaultMarkerHeight = 40, _defaultMarkerWidth = 20;
 
     //dimension is not required because this component only has one dimension
     _chart._mandatoryAttributes (['group']);
@@ -144,6 +145,28 @@ dc.barGauge = function (parent, chartGroup) {
     };
 
     /**
+    #### .markerWidth(Number)
+    Explicitly set marker width. The marker dimensions are set based on the marker text offset dimensions.
+    Setting this explicitly is useful for when a resize/redraw occurs and the text is momentarily 0x0.
+    **/
+    _chart.defaultMarkerWidth = function (_) {
+        if (!arguments.length) return _defaultMarkerWidth;
+        _defaultMarkerWidth = _;
+        return _chart;
+    };
+
+    /**
+    #### .markerHeight(Number)
+    Explicitly set marker height. The marker dimensions are set based on the marker text offset dimensions.
+    Setting this explicitly is useful for when a resize/redraw occurs and the text is momentarily 0x0.
+    **/
+    _chart.defaultMarkerHeight = function (_) {
+        if (!arguments.length) return _defaultMarkerHeight;
+        _defaultMarkerHeight = _;
+        return _chart;
+    };
+
+    /**
         #### .totalCapacity(number)
         Explicitly set total capacity.
     **/
@@ -214,12 +237,15 @@ dc.barGauge = function (parent, chartGroup) {
                 var textWidth = markerGroup.select("text").property("offsetWidth");
                 var textHeight = markerGroup.select("text").property("offsetHeight");
 
+                //need default height/width incase parent text elements are hidden in dom resulting in height/width of zero
+                var appliedTextWidth = (textWidth > 0) ? textWidth : _defaultMarkerWidth; 
+                var appliedTextHeight = (textHeight > 0) ? textHeight : _defaultMarkerHeight;
                 markerGroup.insert("rect", "text")
                     .classed("marker-rect", true)
-                    .attr("x", -textWidth/2 - _markerPadding.left)
-                    .attr("y", -textHeight - _markerPadding.top - _markerPadding.bottom)
-                    .attr("width", textWidth + _markerPadding.left + _markerPadding.right)
-                    .attr("height", textHeight + _markerPadding.top + _markerPadding.bottom);
+                    .attr("x", -appliedTextWidth/2 - _markerPadding.left)
+                    .attr("y", -appliedTextHeight - _markerPadding.top - _markerPadding.bottom)
+                    .attr("width", appliedTextWidth + _markerPadding.left + _markerPadding.right)
+                    .attr("height", appliedTextHeight + _markerPadding.top + _markerPadding.bottom);
 
                 markerGroup.append("line")
                     .classed("marker-line", true)
