@@ -41,7 +41,7 @@ dc.barGauge = function (parent, chartGroup) {
         _xAxis = d3.svg.axis().orient("bottom"), _x, _g,
         _drawScale = false, _markers,
         _markerPadding = {top:5,right:5,bottom:5,left:5},
-        _markerFormat = d3.format(".2f"), _tickFormat = d3.format(",.0f"),
+        _markerFormat = d3.format(".0f"), _tickFormat = d3.format(",.0f"),
         _markerTitle = function(marker) {
             var title = "";
             if(marker.member) {
