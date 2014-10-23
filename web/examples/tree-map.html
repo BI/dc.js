@@ -94,28 +94,41 @@ treeMapTest = dc.treeMap("#chart")
                     .crumbTrailHeight(".75em")
                     .dimColPairs(dimColPairs)
                     .labelFunctions([
-                      function(data) {
-                        var topLevelThis = this;
-                        data.append('text')
-                          .text(function(d){return d.name;})
-                          .attr("x", function(d) {return topLevelThis.x(d.x) + 6;})
-                          .attr("y", function(d) {return topLevelThis.y(d.y) + 6;})
-                          .attr("dy", ".75em");
+                      function(textElement, scale, o) {
+                        var opacity = (o !== undefined) ? o : 1;
+
+                        function text(t) {
+                          t.text(function(d){return d.name;})
+                          .attr("x", function(d) {return scale.x(d.x) + 6;})
+                          .attr("y", function(d) {return scale.y(d.y) + 6;})
+                          .attr("dy", ".75em")
+                          // .classed("label_1", true)
+                          .style("fill-opacity", opacity);
+                        }
+
+                        textElement.call(text);
+                      
                       },
-                      function(data) {
-                        var topLevelThis = this;
-                        data.append('text')
-                          .text(function(d){return d.value;})
-                          // .attr("dominant-baseline", "central");
-                          .attr("x", function(d) {return topLevelThis.x(d.dx)/2;})
-                          .attr("y", function(d) {return topLevelThis.y(d.y);});
-                          // .attr("dx", function(d) {return topLevelThis.x(d.dx)/2;})
-                          // .attr("dy", function(d) {return topLevelThis.y(d.dy)-10});
+                      function(textElement, scale, o) {
+                        var opacity = (o !== undefined) ? o : 1;
+                        function text(t) {
+                          t.text(function(d){return d.value;})
+                          .attr("text-anchor", "middle")
+                          .attr("x", function(d) {return scale.x((d.dx + d.x))/2;})
+                          .attr("y", function(d) {return scale.y(d.dy+ d.y) - 3;})
+                          .attr("font-size", function(d) {return (Math.pow(d.dy*16, 0.5));})
+                          .attr("font-family", "Abel")
+                          .style("fill-opacity", opacity);
+                        }
+
+                        textElement.call(text);
+
+                          
                       }])
                     .measureColumn('value')
                     .rootName("frodo")
                     .titleBarCaption(function test(d) {return d.parent ? test(d.parent) + "+" + d.name : d.name;})
-                    .toolTip(function(d) {return "Here's the value of " + d.name + ": " + d.value});
+                    .toolTip(function(d) {return "Here's the value of " + d.name + ": " + d.value;});
 
 var stateLiveGroup = stateLiveDimension.group().reduceSum(function(d) {return d.value;});
  barChartState = dc.rowChart("#barchart-state");

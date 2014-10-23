@@ -404,9 +404,9 @@ dc.treeMap = function (parent, chartGroup) {
 		var y = d3.scale.linear()
 			.domain([0, _height])
 			.range([0, _height]);
-        var myRenderThis = this;
-        myRenderThis.x = x;
-        myRenderThis.y = y;
+        var scale = this;
+        scale.x = x;
+        scale.y = y;
 
 		_treeMapd3 = d3.layout.treemap()
 			.children(function(d, depth) { return depth ? null : d._children; })
@@ -578,14 +578,12 @@ dc.treeMap = function (parent, chartGroup) {
 				.text(_toolTipFunc);
 
             // var parentWidth = depthContainerChildren.select("rect parent").attr("width");
-         /*   _labelFuncsArray.forEach(function(func) {
-                depthContainerChildren.append("text")
-                .attr("dy", ".75em")
-                .text(func)
-                .call(text);
-            });*/
-            _labelFuncsArray.forEach(function(func){
-                func.call(myRenderThis, depthContainerChildren);
+
+            _labelFuncsArray.forEach(function(func, index){
+                depthContainerChildren[0].forEach(function(textElement) {
+                    func(d3.select(textElement).append("text").classed("label_" + index, true), scale);
+                })
+                
             });
 			
 
@@ -613,15 +611,25 @@ dc.treeMap = function (parent, chartGroup) {
 					return a.depth - b.depth; 
 				});
 				
-				// Fade-in entering text.
+				// Start opacity at 0, then fade in.
 				depthContainerChildren.selectAll("text").style("fill-opacity", 0);
 
 				// Transition to the new view.
-				parentTransition.selectAll("text").call(text).style("fill-opacity", 0);
-				childTransition.selectAll("text").call(text).style("fill-opacity", 1);
-				// _labelFuncsArray.forEach(function(func){
-    //                 func.call(myRenderThis, parentTransition);
-    //             });
+				// parentTransition.selectAll("text").call(text).style("fill-opacity", 0);
+				// childTransition.selectAll("text").call(text).style("fill-opacity", 1);
+                _labelFuncsArray.forEach(function(func, index) {
+                    func(parentTransition.selectAll("text.label_" + index), scale, 0);
+                    func(childTransition.selectAll("text.label_" + index), scale, 1);
+                    // parentTransition.selectAll("text")[0].forEach(function(textElement) {
+                    //     func.call(myRenderThis, d3.select(textElement), 0);
+                    // });
+                    // childTransition.selectAll("text")[0].forEach(function(textElement) {
+                    //     func.call(myRenderThis, d3.select(textElement), 1);
+                    // });
+                });
+                
+                
+
                 parentTransition.selectAll("rect").call(rect);
 				childTransition.selectAll("rect").call(rect);
 
