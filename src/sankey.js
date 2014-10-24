@@ -38,8 +38,8 @@ chart.filter('columnNamefromCSV', 'singlefiltervalue');
 
 **/
 dc.sankey = function(parent, chartGroup) {
-    var _chart = dc.capMixin(dc.baseMixin({}));
-    var _sankey, _sankeyDataObject, _dimColPairs = [{}], _measureColumn;
+    var _chart = dc.hierarchyMixin(dc.baseMixin({}));
+    var _sankey, _sankeyDataObject;
     var _margin = {top: 1, right: 1, bottom: 6, left: 1}, //margins needed so sankey edges aren't cut off
         _width = 960 - _margin.left - _margin.right,
         _height = 500 - _margin.top - _margin.bottom;
@@ -69,135 +69,6 @@ dc.sankey = function(parent, chartGroup) {
         return _chart;
     };
 
-    //****change _filters to let this chart have multiple filters, one for each dimension
-    //requires re-implementing a bunch of filter related functions
-    var _filters = {};
-    var _filterHandler = function (dimension, filters) {
-        dimension.filter(null);
-
-        if (filters.length === 0)
-            dimension.filter(null);
-        else
-            dimension.filterFunction(function (d) {
-                for(var i = 0; i < filters.length; i++) {
-                    var filter = filters[i];
-                    if (filter.isFiltered && filter.isFiltered(d)) {
-                        return true;
-                    } else if (filter <= d && filter >= d) {
-                        return true;
-                    }
-                }
-                return false;
-            });
-
-        return filters;
-    };
-
-    //Specify the dimension that goes along with the filter by providing column_name as the key.
-    //_filters = {regionDimension : ['West', 'East'], otherDimension : }
-    _chart.hasFilter = function (column_name, filterVal) {
-        if(!arguments.length) {
-            if(Object.keys(_filters).length === 0) {
-                return false;
-            }
-            else //check that the filterArr has any filter values added for any dimensions
-            {
-                return Object.keys(_filters).some(function(column_name) {
-                    var filterArray = _filters[column_name].filterArr;
-                    return filterArray.length > 0;
-                });
-            }
-        }
-
-        return (_filters[column_name]) ? 
-                    _filters[column_name].filterArr.some(function(f) {return f === filterVal;}) : false;
-    };
-
-    function removeFilter(column_name, filter) {
-        var dimension = lookupDimension(column_name);
-        _filters[column_name].filterArr.forEach(function(f, index) {
-            if(f === filter) {
-                var removedFilter = _filters[column_name].filterArr.splice(index, 1);
-            }
-        });
-        applyFilters();
-        _chart._invokeFilteredListener(dimension);
-    }
-
-    function addFilter(column_name, filter) {
-        var stringify = JSON.stringify(_filters);
-        var dimension = lookupDimension(column_name);
-        if(!_filters[column_name]){
-            
-            _filters[column_name] = {'dimension' : dimension, 'filterArr': []};
-            _filters[column_name].filterArr = [];
-        }
-        
-        _filters[column_name].filterArr.push(filter);
-
-        var stringify2 = JSON.stringify(_filters);
-        applyFilters();
-        _chart._invokeFilteredListener(dimension);
-    }
-
-    function resetFilters() {
-        _filters = {};
-        applyFilters();
-        _chart._invokeFilteredListener(null);
-    }
-
-    //Important function changes for looping through dimensions
-    //and applying the filter handler
-    function applyFilters() {
-        Object.keys(_filters).forEach(function(column_name) {
-            var filterArray = _filters[column_name].filterArr;
-            var keyDimension = _filters[column_name].dimension;
-            var fs = _filterHandler(keyDimension, filterArray);
-            _filters[column_name].filterArr = fs ? fs : filterArray;
-        });
-    }
-
-    _chart.replaceFilter = function(column_name, filter) {
-        _filters[column_name].filterArr = [];
-        _charts.filter(column_name, filter);
-    };
-
-    /**
-    #### .filter(columnName, filterValue)
-    Filter the chart by specifying the column name and filter value.
-    This differs from the normal chart.filter("value") api that comes with Base mixin.
-    Returns the _filters object containing all of the specified dimensions and filters.
-    ```js
-    //filter on a dimension with a string
-    chart.filter("csvColumnforRegion", "West");
-    **/
-    _chart.filter = function(column_name, filter) {
-        if(!arguments.length) return _filters;
-        if(_chart.hasFilter(column_name, filter)) {
-            removeFilter(column_name, filter);
-        }
-        else {
-            addFilter(column_name, filter);
-        }
-    };
-
-    _chart.filterAll = function() {
-        Object.keys(_filters).forEach(function(column_name) {
-            _filters[column_name].filterArr = [];
-            var keyDimension = _filters[column_name].dimension;
-            applyFilters();
-            _chart._invokeFilteredListener(keyDimension);
-        });
-        
-    };
-
-    _chart.filters = function() {
-        return _filters;
-
-    };
-
-    _chart._mandatoryAttributes([]);
-
     _chart.transitionDuration(450); // good default
 
     /**
@@ -220,32 +91,9 @@ dc.sankey = function(parent, chartGroup) {
         return _chart;
     };
     
-
-    /**
-    #### .dimColPairs([{dimension: someDimension, columnName: "column"}]) 
-    Pass in an array of objects containing a dimension and corresponding column name
-    Make sure the array order matches the order in which the dimensions should appear
-    in the Sankey diagram from left to right. 
-    **/
-    _chart.dimColPairs = function(_) {
-        if(!arguments.length) return _dimColPairs;
-        _dimColPairs = _;
-        return _chart;
-    };
-
-    /**
-    #### .measureColumn([String]) 
-    Set the column name that contains the measure value for the chart. 
-    **/
-    _chart.measureColumn = function(_) {
-        if(!arguments.length) return _measureColumn;
-        _measureColumn = _;
-        return _chart;
-    };
-
     _chart.initData = function () {
-        if(_dimColPairs && _measureColumn) {
-            _sankeyDataObject = crossfilterToSankeyData(_dimColPairs, _measureColumn);
+        if(_chart.levels() && _chart.measureColumn()) {
+            _sankeyDataObject = crossfilterToSankeyData(_chart.levels(), _chart.measureColumn());
         }
         else throw "Must provide dimension column array and measure_column";
         return _chart;
@@ -352,23 +200,11 @@ dc.sankey = function(parent, chartGroup) {
 
     _chart.onClick = function (d) {
         var filter = d.name;
-        var dimensionTofilter = lookupDimension(d.column_name);
         dc.events.trigger(function () {
             _chart.filter(d.column_name, filter);
             _chart.redrawGroup();
         });
     };
-
-    function lookupDimension(d) {
-        var dimension ='';
-        _dimColPairs.forEach(function(dimColPair) {
-            if(dimColPair.columnName === d) {
-                dimension = dimColPair.dimension;
-            }
-        });
-        return dimension;
-    }
-
 
     _chart._doRedraw = function() {
         return _chart._doRender();

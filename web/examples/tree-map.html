@@ -92,7 +92,6 @@ treeMapTest = dc.treeMap("#chart")
                     .crumbTrailX(10)
                     .crumbTrailY(10)
                     .crumbTrailHeight(".75em")
-                    .dimColPairs(dimColPairs)
                     .labelFunctions([
                       function(textElement, scale, o) {
                         var opacity = (o !== undefined) ? o : 1;
@@ -125,6 +124,7 @@ treeMapTest = dc.treeMap("#chart")
 
                           
                       }])
+                    .levels(dimColPairs)
                     .measureColumn('value')
                     .rootName("frodo")
                     .titleBarCaption(function test(d) {return d.parent ? test(d.parent) + "+" + d.name : d.name;})

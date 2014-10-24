@@ -70,7 +70,7 @@ var dimColPairs = [{'dimension' : stateFromDimension, 'columnName' : 'state_from
 var sankey = dc.sankey("#sankey")
                 .width(600)
                 .height(400)
-                .dimColPairs(dimColPairs)
+                .levels(dimColPairs)
                 .measureColumn('value');
 
 var stateFromGroup = stateFromDimension.group().reduceSum(function(d) {return d.value;});
