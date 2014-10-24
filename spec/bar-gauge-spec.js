@@ -59,13 +59,19 @@ describe('dc.barGauge', function () {
                 //expect the chart value to mirror the value of the cross filter data
                 expect(chart.value()).toEqual(data.groupAll().reduceSum(function(d){return d.value;}).value());
                 var expectedPercentageFill = chart.value() / maxValue * 100;
-                var attrForFillCheck;
-                if(chart.orientation() === 'vertical') attrForFillCheck = 'height';
-                else if(chart.orientation() === 'horizontal') attrForFillCheck = 'width';
-
+                var attrForFillCheck, containerAttr;
+                if(chart.orientation() === 'vertical') {
+                    attrForFillCheck = 'height';
+                    containerAttr = "offsetHeight";
+                }
+                else if(chart.orientation() === 'horizontal') {
+                    attrForFillCheck = 'width';
+                    containerAttr = "offsetWidth";
+                }
                 chart.render(); //need render to be here for some reason even though it is in beforeEach???
                 var innerFilledValue = d3.select(chart.root().selectAll('rect')[0][1]).attr(attrForFillCheck);
-                var actualPercentageFill = innerFilledValue.replace('%', '') - 0;
+                var containerValue = d3.select(chart.root().selectAll('rect')[0][0]).attr(attrForFillCheck);
+                var actualPercentageFill = innerFilledValue/containerValue * 100;
 
                 //expect the rendered fill amount percentage is the same as the calculated amount
                 expect(expectedPercentageFill).toEqual(actualPercentageFill);

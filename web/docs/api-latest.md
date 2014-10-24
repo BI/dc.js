@@ -1927,12 +1927,34 @@ totalFundingBar = dc.barGauge("#total-funding-gauge")
 #### .orientation(string)
 Set the orientation of the bar 'horizontal' or 'vertical'.
 
+#### .gap([gap])
+Get or set the vertical gap space between rows on a particular row chart instance. Default gap is 5px;
+
+#### .markerPadding(Object)
+
+#### .markerWidth(Number)
+Explicitly set marker width. The marker dimensions are set based on the marker text offset dimensions.
+Setting this explicitly is useful for when a resize/redraw occurs and the text is momentarily 0x0.
+
+#### .markerHeight(Number)
+Explicitly set marker height. The marker dimensions are set based on the marker text offset dimensions.
+Setting this explicitly is useful for when a resize/redraw occurs and the text is momentarily 0x0.
+
 #### .totalCapacity(number)
 Explicitly set total capacity.
 
 #### .filledValue(number)
 Explicitly set filled value. 
 The filled value will be used to get the percentage the bar is filled.
+
+#### .drawScale(boolean)
+Explicitly set whether or not to draw the scale.
+
+#### .markerFormat(Function)
+Pass a formatter function like d3.format() to format marker values.
+
+#### .tickFormat(Function)
+Pass a formatter function like d3.format() to format tick values.
 
 #### .initializeRectangles(ParentSelector, number, number, string)
 Add the background and foreground rectangles. Set the foreground
