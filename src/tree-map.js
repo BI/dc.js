@@ -45,9 +45,9 @@ dc.treeMap = function (parent, chartGroup) {
 		_width = 960, _height = 500 - _margin.top - _margin.bottom,
         _crumbTrailX = 6, _crumbTrailY = 6, _crumbTrailHeight = ".75em",
 		_transitioning;
-    var _labelFunc = function(d) {return d.name;};
-    var _titleBarFunc = function(d) {return d.parent ? _titleBarFunc(d.parent) + "." + d.name
-				: d.name;};
+    var _labelFuncsArray = [function(d) {return d.name;}];
+    var _titleBarFunc = function(d) {return d.parent ? _titleBarFunc(d.parent) + "." + d.name : d.name;};
+
 	var _toolTipFunc = function(d) {return d.name;};
 
     _chart.transitionDuration(700); // good default
@@ -141,9 +141,9 @@ dc.treeMap = function (parent, chartGroup) {
     #### .label(callback)
     Pass in a custom label function. These labels are what appear in the top left of each rectangle.
     **/
-    _chart.label = function(_) {
-		if(!arguments.length) return _labelFunc;
-		_labelFunc = _;
+    _chart.labelFunctions = function(_) {
+		if(!arguments.length) return _labelFuncsArray;
+		_labelFuncsArray = _;
         return _chart;
     };
 
@@ -152,7 +152,7 @@ dc.treeMap = function (parent, chartGroup) {
 	Pass in a custom tool tip function. These tool tips show text for the rectangles on hover.
     **/
     _chart.toolTip = function(_) {
-    	if(!arguments.length) return _toolTipFunc;
+        if(!arguments.length) return _toolTipFunc;
 		_toolTipFunc = _;
         return _chart;
     };
@@ -162,7 +162,7 @@ dc.treeMap = function (parent, chartGroup) {
 	Pass in custom title bar caption function. The title bar text is show in the bar at the top.
     **/
     _chart.titleBarCaption = function(_) {
-    	if(!arguments.length) return _titleBarFunc;
+        if(!arguments.length) return _titleBarFunc;
 		_titleBarFunc = _;
         return _chart;
     };
@@ -241,6 +241,9 @@ dc.treeMap = function (parent, chartGroup) {
 		var y = d3.scale.linear()
 			.domain([0, _height])
 			.range([0, _height]);
+        var scale = this;
+        scale.x = x;
+        scale.y = y;
 
 		_treeMapd3 = d3.layout.treemap()
 			.children(function(d, depth) { return depth ? null : d._children; })
@@ -345,7 +348,7 @@ dc.treeMap = function (parent, chartGroup) {
 			var depthContainerChildren = depthContainer.selectAll("g")
 				.data(currentRoot._children)
               .enter().append("g")
-              	.attr("clip-path", function(d) {return "url(#" + dc.utils.nameToId(d.name) + "-clip-path)";});
+                .attr("clip-path", function(d) {return "url(#" + dc.utils.nameToId(d.name) + "-clip-path)";});
 
 			depthContainerChildren.filter(function(d) { return d._children || d; })
 				.classed("children", true)
@@ -412,10 +415,15 @@ dc.treeMap = function (parent, chartGroup) {
               .append("title")
 				.text(_toolTipFunc);
 
-			depthContainerChildren.append("text")
-				.attr("dy", ".75em")
-				.text(_labelFunc)
-				.call(text);
+            // var parentWidth = depthContainerChildren.select("rect parent").attr("width");
+
+            _labelFuncsArray.forEach(function(func, index){
+                depthContainerChildren[0].forEach(function(textElement) {
+                    func(d3.select(textElement).append("text").classed("label_" + index, true), scale);
+                });
+                
+            });
+			
 
 			transition(currentRoot);
 
@@ -441,13 +449,26 @@ dc.treeMap = function (parent, chartGroup) {
 					return a.depth - b.depth; 
 				});
 				
-				// Fade-in entering text.
+				// Start opacity at 0, then fade in.
 				depthContainerChildren.selectAll("text").style("fill-opacity", 0);
 
 				// Transition to the new view.
-				parentTransition.selectAll("text").call(text).style("fill-opacity", 0);
-				childTransition.selectAll("text").call(text).style("fill-opacity", 1);
-				parentTransition.selectAll("rect").call(rect);
+				// parentTransition.selectAll("text").call(text).style("fill-opacity", 0);
+				// childTransition.selectAll("text").call(text).style("fill-opacity", 1);
+                _labelFuncsArray.forEach(function(func, index) {
+                    func(parentTransition.selectAll("text.label_" + index), scale, 0);
+                    func(childTransition.selectAll("text.label_" + index), scale, 1);
+                    // parentTransition.selectAll("text")[0].forEach(function(textElement) {
+                    //     func.call(myRenderThis, d3.select(textElement), 0);
+                    // });
+                    // childTransition.selectAll("text")[0].forEach(function(textElement) {
+                    //     func.call(myRenderThis, d3.select(textElement), 1);
+                    // });
+                });
+                
+                
+
+                parentTransition.selectAll("rect").call(rect);
 				childTransition.selectAll("rect").call(rect);
 
 				// Remove the old node when the transition is finished.
