@@ -45,19 +45,39 @@ rect.parent,
   cursor: pointer;
 }
 
-.children rect.parent {
-  fill: #bbb;
+.children rect.parent.color_1{
+  fill: #a9c8f4;
   fill-opacity: .5;
 }
 
+.children rect.parent.color_2{
+  fill: #7fa1d2;
+  fill-opacity: .5;
+}
+
+.children rect.parent.color_3{
+  fill: #5479b0;
+  fill-opacity: .5;
+}
+
+.children rect.parent.color_4{
+  fill: #2a518e;
+  fill-opacity: .5;
+}
+
+.children rect.parent.color_5{
+  fill: #002A6C;
+  fill-opacity: .5;
+}
 .children.selected rect.parent {
-  fill: red;
+  fill: blue;
 }
 rect.child.selected {
-  /*fill: red;*/
+  fill: blue;
 }
 .children:hover rect.child {
   fill: #bbb;
+  /*fill-opacity: .1;*/
 }
 
 </style>
@@ -113,9 +133,9 @@ treeMapTest = dc.treeMap("#chart")
                         function text(t) {
                           t.text(function(d){return d.value;})
                           .attr("text-anchor", "middle")
-                          .attr("x", function(d) {return scale.x((d.dx + d.x))/2;})
+                          .attr("x", function(d) {return scale.x(d.dx/2 + d.x);})
                           .attr("y", function(d) {return scale.y(d.dy+ d.y) - 3;})
-                          .attr("font-size", function(d) {return (Math.pow(d.dy*16, 0.5));})
+                          .attr("font-size", function(d) {return (scale.y(d.y + d.dy) - scale.y(d.y)) / 2;})
                           .attr("font-family", "Abel")
                           .style("fill-opacity", opacity);
                         }
@@ -128,7 +148,8 @@ treeMapTest = dc.treeMap("#chart")
                     .measureColumn('value')
                     .rootName("frodo")
                     .titleBarCaption(function test(d) {return d.parent ? test(d.parent) + "+" + d.name : d.name;})
-                    .toolTip(function(d) {return "Here's the value of " + d.name + ": " + d.value;});
+                    .toolTip(function(d) {return "Here's the value of " + d.name + ": " + d.value;})
+                    .colors(d3.scale.ordinal().range(["1", "2", "3", "4", "5"]));
 
 var stateLiveGroup = stateLiveDimension.group().reduceSum(function(d) {return d.value;});
  barChartState = dc.rowChart("#barchart-state");
