@@ -1,0 +1,94 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <title>dc.js - Bar Gauge Example</title>
+    <meta charset="UTF-8">
+    <link rel="stylesheet" type="text/css" href="../css/dc.css"/>
+</head>
+<body>
+
+<div id="barGaugeHorizontal" ></div>
+<div id="barGaugeVertical" ></div>
+<div id="rowChart"></div>
+<div id="rowChartCountry"></div>
+
+<script type="text/javascript" src="../js/d3.js"></script>
+<script type="text/javascript" src="../js/crossfilter.js"></script>
+<script type="text/javascript" src="../js/dc.js"></script>
+<script type="text/javascript" src="../../spec/helpers/fixtures.js"></script>
+<script type="text/javascript" src="../../spec/helpers/geoFixtures.js"></script>
+<script type="text/javascript">
+
+var chart, data, id;
+var stateDimension, stateValueSumGroup;
+
+data = crossfilter(loadDateFixture());
+stateDimension = data.dimension(function(d){return d.state;});
+stateGroup = stateDimension.group().reduceSum(function(d){return d.value;});
+stateValueSumGroup = data.groupAll().reduceSum(function(d){return d.value;});
+
+
+
+countryDimension = data.dimension(function(d){return d.countrycode;});
+countrySumGroup = countryDimension.group().reduceSum(function(d){return d.value;});
+
+var totalCap = data.groupAll().reduceSum(function(d) {return d.value;}).value();
+var maxState = d3.max(stateGroup.all(), function(d) {return d.value;});
+var minState = d3.min(stateGroup.all(), function(d) {return d.value;});
+var avgValue = d3.round(d3.mean(stateGroup.all(), function(d) {return d.value;}));
+var medianValue = d3.median(stateGroup.all(), function(d) {return d.value;});
+
+var barGaugeH = dc.barGauge('#barGaugeHorizontal')
+  .height(150)
+  .width(960)
+  .margins({top: 20, right: 50, bottom: 45, left: 30})
+	.orientation("horizontal")
+	.dimension(stateDimension)
+	.group(stateValueSumGroup)
+	.valueAccessor(function(d){return d;})
+	.totalCapacity(maxState)
+  .drawScale(true)
+  .gap(5);
+
+
+
+
+  // barGaugeH.addMarker(
+  //     {value: maxState.value, member: maxState.key, statName: "Max"});
+  // barGaugeH.addMarker(
+  //     {value: minState.value, member: minState.key, statName: "Min"});
+  barGaugeH.setMarkers([
+      {value: avgValue, member: avgValue, statName: "Mean"},
+      {value: medianValue, member: medianValue, statName: "Median"}]);
+
+
+var barGaugeV = dc.barGauge('#barGaugeVertical')
+  .height(100)
+  .width(50)
+  .margins({top: 0, right: 0, bottom: 0, left: 0})
+  .orientation("vertical")
+  .dimension(stateDimension)
+  .group(stateValueSumGroup)
+  .valueAccessor(function(d){return d;})
+  .totalCapacity(maxState)
+  .drawScale(false);
+
+rowChartState = dc.rowChart("#rowChart");
+rowChartState
+  .width(300)
+  .height(200)
+  .dimension(stateDimension)
+  .group(stateGroup);
+
+rowChartCountry = dc.rowChart("#rowChartCountry");
+rowChartCountry
+  .width(300)
+  .height(200)
+  .dimension(countryDimension)
+  .group(countrySumGroup);
+
+dc.renderAll();
+</script>
+
+</body>
+</html>

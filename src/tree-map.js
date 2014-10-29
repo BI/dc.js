@@ -37,20 +37,20 @@ chart.filter('columnNamefromCSV', 'singlefiltervalue');
 
 **/
 dc.treeMap = function (parent, chartGroup) {
-	var _chart = dc.hierarchyMixin(dc.baseMixin({}));
-	var _treeMapd3, _treeMapDataObject, _currentRoot,
+	var _chart = dc.colorMixin(dc.hierarchyMixin(dc.baseMixin({})));
+	var _treeMapd3, _treeMapDataObject, _currentRoot, _currentXscale, _currentYscale,
 		_rootName = "root",
-		_zoomLevel = 0;
+		_zoomLevel = 0, _colors = d3.scale.category20c();
 	var _margin = {top: 0, right: 0, bottom: 0, left: 0},
 		_width = 960, _height = 500 - _margin.top - _margin.bottom,
         _crumbTrailX = 6, _crumbTrailY = 6, _crumbTrailHeight = ".75em",
 		_transitioning;
-    var _labelFunc = function(d) {return d.name;};
-    var _titleBarFunc = function(d) {return d.parent ? _titleBarFunc(d.parent) + "." + d.name
-				: d.name;};
+    var _labelFuncsArray = [function(d) {return d.name;}];
+    var _titleBarFunc = function(d) {return d.parent ? _titleBarFunc(d.parent) + "." + d.name : d.name;};
+
 	var _toolTipFunc = function(d) {return d.name;};
 
-    _chart.transitionDuration(700); // good default
+    _chart.transitionDuration(200); // good default
 
     dc.override(_chart, "filterAll", function() {
     	_chart._filterAll();
@@ -127,6 +127,26 @@ dc.treeMap = function (parent, chartGroup) {
         
     };
 
+    _chart.currentXscale = function(_) {
+        if(!arguments.length) return _currentXscale;
+        _currentXscale = _;
+        return _chart;
+        
+    };
+
+    _chart.currentYscale = function(_) {
+        if(!arguments.length) return _currentYscale;
+        _currentYscale = _;
+        return _chart;
+        
+    };
+
+    _chart.colors = function(_) {
+    	if(!arguments.length) return _colors;
+        _colors = _;
+        return _chart;
+    };
+
     /**
 	#### .rootName(String)
 	The root name is the displayed as the root parent text in the bar at the top of the treemap.
@@ -141,9 +161,9 @@ dc.treeMap = function (parent, chartGroup) {
     #### .label(callback)
     Pass in a custom label function. These labels are what appear in the top left of each rectangle.
     **/
-    _chart.label = function(_) {
-		if(!arguments.length) return _labelFunc;
-		_labelFunc = _;
+    _chart.labelFunctions = function(_) {
+		if(!arguments.length) return _labelFuncsArray;
+		_labelFuncsArray = _;
         return _chart;
     };
 
@@ -152,7 +172,7 @@ dc.treeMap = function (parent, chartGroup) {
 	Pass in a custom tool tip function. These tool tips show text for the rectangles on hover.
     **/
     _chart.toolTip = function(_) {
-    	if(!arguments.length) return _toolTipFunc;
+        if(!arguments.length) return _toolTipFunc;
 		_toolTipFunc = _;
         return _chart;
     };
@@ -162,7 +182,7 @@ dc.treeMap = function (parent, chartGroup) {
 	Pass in custom title bar caption function. The title bar text is show in the bar at the top.
     **/
     _chart.titleBarCaption = function(_) {
-    	if(!arguments.length) return _titleBarFunc;
+        if(!arguments.length) return _titleBarFunc;
 		_titleBarFunc = _;
         return _chart;
     };
@@ -185,12 +205,11 @@ dc.treeMap = function (parent, chartGroup) {
     }
 
     _chart.onClick = function (d, drillDown) {
-    
-        var filter = d.name;
-        var dimensionTofilter = _chart.lookupDimension(d.columnName);
 
-        dc.events.trigger(function () {
-            //this will add filter for drill down, and remove filter for going up
+		    var filter = d.name;
+	        var dimensionTofilter = _chart.lookupDimension(d.columnName);
+
+        	//this will add filter for drill down, and remove filter for going up
             _chart.filter(d.columnName, filter);
 
             //if going up a level remove filters from lower level
@@ -208,10 +227,6 @@ dc.treeMap = function (parent, chartGroup) {
 			}
 			if(dc._renderlet !== null)
 				dc._renderlet(group);
-
-        });
-
-        
     };
 
     function isSelectedNode(d) {
@@ -241,6 +256,8 @@ dc.treeMap = function (parent, chartGroup) {
 		var y = d3.scale.linear()
 			.domain([0, _height])
 			.range([0, _height]);
+
+		_currentXscale = x, _currentYscale = y;
 
 		_treeMapd3 = d3.layout.treemap()
 			.children(function(d, depth) { return depth ? null : d._children; })
@@ -320,17 +337,23 @@ dc.treeMap = function (parent, chartGroup) {
 			crumbTrail
 				.datum(currentRoot.parent)
               .on("click", function(d) {
-					_zoomLevel --;
-					
-					if (d) {
-                        // "un-filter" as we drill-up
-						onClick(currentRoot, false); 
-					}
-                    transition(d); 
+              	dc.events.trigger(function () {
+	              	if (!_transitioning){
+		              	
+	              		_zoomLevel --;
+						
+						if (d) {
+	                        // "un-filter" as we drill-up
+							onClick(currentRoot, false); 
+						}
+	                    //transition(d); 
 
-                    //second redraw to incase any redraw happens before the filter messes up the 
-                    //treemapobject data
-                    _chart.redraw();
+	                    //second redraw incase any redraw happens before the filter messes up the 
+	                    //treemapobject data
+	                    _chart.redraw();
+		                
+	              	}
+				}, _chart.transitionDuration() + 10);	
 				})
 				.select("text")
 				.text(_titleBarFunc(currentRoot));
@@ -345,7 +368,7 @@ dc.treeMap = function (parent, chartGroup) {
 			var depthContainerChildren = depthContainer.selectAll("g")
 				.data(currentRoot._children)
               .enter().append("g")
-              	.attr("clip-path", function(d) {return "url(#" + dc.utils.nameToId(d.name) + "-clip-path)";});
+                .attr("clip-path", function(d) {return "url(#" + dc.utils.nameToId(d.name) + "-clip-path)";});
 
 			depthContainerChildren.filter(function(d) { return d._children || d; })
 				.classed("children", true)
@@ -360,24 +383,29 @@ dc.treeMap = function (parent, chartGroup) {
 					}
 				})
 				.on("click",function(d) {
-					if(d._children) {
-						_zoomLevel ++;
-						transition(d); 
-						onClick(d, true);
-					}
-					else {
-						
-						onClick(d, true);
-						if(_chart.hasFilter() && isSelectedNode(d)) {
-							//note: could not seem to get 'this' value in test spec
-							d3.select(this).classed("selected", true);
-							d3.select(this).classed("deselected", false);
+					var that = this;
+					dc.events.trigger(function () {
+						if (!_transitioning){
+							if(d._children) {
+								_zoomLevel ++;
+								transition(d); 
+								onClick(d, true);
+							}
+							else {
+								
+								onClick(d, true);
+								if(_chart.hasFilter() && isSelectedNode(d)) {
+									//note: could not seem to get 'this' value in test spec
+									d3.select(that).classed("selected", true);
+									d3.select(that).classed("deselected", false);
+								}
+								else if(!_chart.hasFilter() || !isSelectedNode(d)) {
+									d3.select(that).classed("deselected", true);
+									d3.select(that).classed("selected", false);
+								}
+							}
 						}
-						else if(!_chart.hasFilter() || !isSelectedNode(d)) {
-							d3.select(this).classed("deselected", true);
-							d3.select(this).classed("selected", false);
-						}
-					}
+					}, _chart.transitionDuration()+10);	
 				});
 
 			depthContainerChildren.selectAll(".child")
@@ -405,19 +433,20 @@ dc.treeMap = function (parent, chartGroup) {
 				.append("rect")
 				.attr("class", "clip-path-parent")
 				.call(rect);
-
+				
 			depthContainerChildren.append("rect")
-				.attr("class", "parent")
+				.attr("class", function(d) {return "parent color_" + _colors(d.name.replace(/ .*/, ""))})
 				.call(rect)
               .append("title")
 				.text(_toolTipFunc);
 
-			depthContainerChildren.append("text")
-				.attr("dy", ".75em")
-				.text(_labelFunc)
-				.call(text);
-
-			transition(currentRoot);
+            _labelFuncsArray.forEach(function(func, index){
+                depthContainerChildren[0].forEach(function(textElement) {
+                    func(d3.select(textElement).append("text").classed("label_" + index, true), {x: _currentXscale, y: _currentYscale});
+                });
+            });
+			
+            transition(currentRoot);
 
 			//Do the zoom animation, and set each parent block 
 			//to take up as much space as it can proportionately
@@ -425,6 +454,7 @@ dc.treeMap = function (parent, chartGroup) {
 				if (_transitioning || !currentRoot) return;
 				_transitioning = true;
 
+				//call display again to transition to the next level
 				var depthContainerChildren = display(currentRoot),
 					parentTransition = depthContainer.transition().duration(_chart.transitionDuration()),
 					childTransition = depthContainerChildren.transition().duration(_chart.transitionDuration());
@@ -432,6 +462,7 @@ dc.treeMap = function (parent, chartGroup) {
 				// Update the domain only after entering new elements.
 				x.domain([currentRoot.x, currentRoot.x + currentRoot.dx]);
 				y.domain([currentRoot.y, currentRoot.y + currentRoot.dy]);
+				_currentXscale = x, _currentYscale = y;
 
 				// Enable anti-aliasing during the transition.
 				svg.style("shape-rendering", null);
@@ -441,13 +472,18 @@ dc.treeMap = function (parent, chartGroup) {
 					return a.depth - b.depth; 
 				});
 				
-				// Fade-in entering text.
+				// Start children opacity at 0, then fade in.
 				depthContainerChildren.selectAll("text").style("fill-opacity", 0);
 
 				// Transition to the new view.
-				parentTransition.selectAll("text").call(text).style("fill-opacity", 0);
-				childTransition.selectAll("text").call(text).style("fill-opacity", 1);
-				parentTransition.selectAll("rect").call(rect);
+				// parentTransition.selectAll("text").call(text).style("fill-opacity", 0);
+				// childTransition.selectAll("text").call(text).style("fill-opacity", 1);
+                _labelFuncsArray.forEach(function(func, index) {
+                    func(parentTransition.selectAll("text.label_" + index), {x: _currentXscale, y: _currentYscale}, 0);
+                    func(childTransition.selectAll("text.label_" + index), {x: _currentXscale, y: _currentYscale}, 1);
+                });
+
+                parentTransition.selectAll("rect").call(rect);
 				childTransition.selectAll("rect").call(rect);
 
 				// Remove the old node when the transition is finished.
@@ -466,10 +502,23 @@ dc.treeMap = function (parent, chartGroup) {
 		}
 
 		function rect(nodeRect) {
-			nodeRect.attr("x", function(d) { return x(d.x); })
+			var clipPathMargin = 10;
+
+			nodeRect
+				.attr("x", function(d) { return x(d.x); })
 				.attr("y", function(d) { return y(d.y); })
 				.attr("width", function(d) { return x(d.x + d.dx) - x(d.x); })
 				.attr("height", function(d) { return y(d.y + d.dy) - y(d.y); });
+
+			//Need to add clip path margin
+			// nodeRect.selectAll("clip-path-parent")
+			// 	.attr("x", function(d) { return x(d.x + clipPathMargin); })
+			// 	.attr("y", function(d) { return y(d.y + clipPathMargin); })
+			// 	.attr("width", function(d) { return x(d.x + d.dx) - x(d.x) - x(clipPathMargin*2); })
+			// 	.attr("height", function(d) { return y(d.y + d.dy) - y(d.y) - y(clipPathMargin*2); });
+
+
+
 		}
 	};
 
