@@ -1587,6 +1587,11 @@ A newly created choropleth chart instance</p>
                                <span class="string">.</span><span class="comment">thickness(6);</code></pre>
 <h4 id="-orientation-string-">.orientation(string)</h4>
 <p>Set the orientation of the bar ‘horizontal’ or ‘vertical’.</p>
+<h4 id="-usepercentagelength-boolean-">.usePercentageLength(Boolean)</h4>
+<p>Set the calculation for the length, and filled length to use percentages, not exact values. The
+svg will be set so its long side is 100% of the parent container. 
+This can be useful for when we want the length of the bar to fill up its parent element, 
+but do not know the size of the parent element.</p>
 <h4 id="-gap-gap-">.gap([gap])</h4>
 <p>Get or set the vertical gap space between rows on a particular row chart instance. Default gap is 5px;</p>
 <h4 id="-markerpadding-object-">.markerPadding(Object)</h4>
@@ -1603,6 +1608,14 @@ Setting this explicitly is useful for when a resize/redraw occurs and the text i
 The filled value will be used to get the percentage the bar is filled.</p>
 <h4 id="-drawscale-boolean-">.drawScale(boolean)</h4>
 <p>Explicitly set whether or not to draw the scale.</p>
+<h4 id="-drawscale-markerobjarray-">.drawScale(markerObjArray)</h4>
+<p>Set markers with an array of marker objects. The structure should look similar the following:
+markerObjArray = [{value: someValue, statName: “Median”}, 
+    {value: otherValue, statName: “”Mean”},
+    {value: maxValue, member: maxName, statName: “Max”}];
+If the member is specified, the tooltip will show “member: value”</p>
+<h4 id="-markertitle-function-">.markerTitle(function)</h4>
+<p>Set the function to display what goes in the SVG title/tooltip.</p>
 <h4 id="-markerformat-function-">.markerFormat(Function)</h4>
 <p>Pass a formatter function like d3.format() to format marker values.</p>
 <h4 id="-tickformat-function-">.tickFormat(Function)</h4>

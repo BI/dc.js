@@ -35,7 +35,7 @@ dc.barGauge = function (parent, chartGroup) {
     var _filledValue,
         _oldValue,
         _totalCapacity,
-        _orientation = 'horizontal',
+        _orientation = 'horizontal', _usePercentageForLengthCalc = false,
         _gap = 0,
         _height = null, _width = null,
         _xAxis = d3.svg.axis().orient("bottom"), _x, _g,
@@ -56,6 +56,7 @@ dc.barGauge = function (parent, chartGroup) {
 
     _chart.transitionDuration(700); // good default
 
+    //Calculate the scale for the axis. Only for x axis as of now.
     function calculateAxisScale() {
         var extent = [0, _chart.totalCapacity()];
         //_x lets us use d3 to scale the real input value to the output value
@@ -65,6 +66,7 @@ dc.barGauge = function (parent, chartGroup) {
         _xAxis.tickFormat(_tickFormat);
     }
 
+    //draw the axis based on the scale
     function drawAxis() {
         var axisG = _g.select("g.axis");
 
@@ -76,6 +78,7 @@ dc.barGauge = function (parent, chartGroup) {
             .call(_xAxis);
     }
 
+    //draw the tick markers on the scale.
     function drawGridLines() {
         _g.selectAll("g.tick")
             .select("line.grid-line")
@@ -91,18 +94,6 @@ dc.barGauge = function (parent, chartGroup) {
                 return -_chart.effectiveHeight();
             });
     }
-
-    _chart.height = function(_) {
-        if(!arguments.length) return _height;
-        _height = _;
-        return _chart;
-    };
-
-    _chart.width = function(_) {
-        if(!arguments.length) return _width;
-        _width = _;
-        return _chart;
-    };
 
     _chart.value = function() {
         return _chart.data();
@@ -124,10 +115,22 @@ dc.barGauge = function (parent, chartGroup) {
         return _chart;
     };
 
-    /**
-    #### .gap([gap])
-    Get or set the vertical gap space between rows on a particular row chart instance. Default gap is 5px;
 
+    /**
+        #### .usePercentageLength(Boolean)
+        Set the calculation for the length, and filled length to use percentages, not exact values. The
+        svg will be set so its long side is 100% of the parent container. 
+        This can be useful for when we want the length of the bar to fill up its parent element, 
+        but do not know the size of the parent element. 
+    **/
+    _chart.usePercentageLength = function(_) {
+        if(!arguments.length) return _usePercentageForLengthCalc;
+        _usePercentageForLengthCalc = _;
+        return _chart;
+    };
+    /**
+        #### .gap([gap])
+        Get or set the vertical gap space between rows on a particular row chart instance. Default gap is 5px;
     **/
     _chart.gap = function (_) {
         if (!arguments.length) return _gap;
@@ -136,7 +139,7 @@ dc.barGauge = function (parent, chartGroup) {
     };
 
     /**
-    #### .markerPadding(Object)
+        #### .markerPadding(Object)
     **/
     _chart.markerPadding = function (_) {
         if (!arguments.length) return _markerPadding;
@@ -145,9 +148,9 @@ dc.barGauge = function (parent, chartGroup) {
     };
 
     /**
-    #### .markerWidth(Number)
-    Explicitly set marker width. The marker dimensions are set based on the marker text offset dimensions.
-    Setting this explicitly is useful for when a resize/redraw occurs and the text is momentarily 0x0.
+        #### .markerWidth(Number)
+        Explicitly set marker width. The marker dimensions are set based on the marker text offset dimensions.
+        Setting this explicitly is useful for when a resize/redraw occurs and the text is momentarily 0x0.
     **/
     _chart.defaultMarkerWidth = function (_) {
         if (!arguments.length) return _defaultMarkerWidth;
@@ -156,9 +159,9 @@ dc.barGauge = function (parent, chartGroup) {
     };
 
     /**
-    #### .markerHeight(Number)
-    Explicitly set marker height. The marker dimensions are set based on the marker text offset dimensions.
-    Setting this explicitly is useful for when a resize/redraw occurs and the text is momentarily 0x0.
+        #### .markerHeight(Number)
+        Explicitly set marker height. The marker dimensions are set based on the marker text offset dimensions.
+        Setting this explicitly is useful for when a resize/redraw occurs and the text is momentarily 0x0.
     **/
     _chart.defaultMarkerHeight = function (_) {
         if (!arguments.length) return _defaultMarkerHeight;
@@ -198,14 +201,14 @@ dc.barGauge = function (parent, chartGroup) {
         return _chart;
     };
 
-    // _chart.addMarker = function(_) {
-    //     _markers.push(_);
-    // };
-
-    // _chart.clearMarkers = function() {
-    //     _markers = [];
-    // };
-
+    /**
+        #### .drawScale(markerObjArray)
+        Set markers with an array of marker objects. The structure should look similar the following:
+        markerObjArray = [{value: someValue, statName: "Median"}, 
+            {value: otherValue, statName: ""Mean"},
+            {value: maxValue, member: maxName, statName: "Max"}];
+        If the member is specified, the tooltip will show "member: value"
+    **/
     _chart.setMarkers = function(_) {
         if (!arguments.length) return _markers.call(_chart);
         _markers = d3.functor(_);
@@ -213,6 +216,10 @@ dc.barGauge = function (parent, chartGroup) {
         return _chart;
     };
 
+    /**
+        #### .markerTitle(function)
+        Set the function to display what goes in the SVG title/tooltip.
+    **/
     _chart.markerTitle = function(_) {
         if (!arguments.length) return _markerTitle; 
         _markerTitle = _;
@@ -367,17 +374,17 @@ dc.barGauge = function (parent, chartGroup) {
         }
         else { //horizontal
             actualThickness = _chart.height() - _chart.margins().top - _chart.margins().bottom - 2*_gap;
-            filledX = _chart.effectiveWidth() * (_oldpercentFilled/100);
+            filledX = (_usePercentageForLengthCalc) ? _oldpercentFilled + "%" : _chart.effectiveWidth() * (_oldpercentFilled/100);
             filledY = actualThickness;
-            newFilledX = _chart.effectiveWidth() * (_percentFilled/100) ;
+            newFilledX = (_usePercentageForLengthCalc) ? _percentFilled + "%" : _chart.effectiveWidth() * (_percentFilled/100) ;
             newFilledY = filledY;
-            containingX = _chart.effectiveWidth();
+            containingX = (_usePercentageForLengthCalc) ? "100%" : _chart.effectiveWidth();
             containingY = actualThickness;
             offsetX = 0;
             offsetY = _gap;
             _chart.root().select('svg')
                 .attr("height", _chart.height())
-                .attr("width", _chart.width());
+                .attr("width", (_usePercentageForLengthCalc) ? "100%" : _chart.width());
 
             _g.append('rect')
                 .classed("dc-bar-gauge-background", true)
