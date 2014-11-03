@@ -1927,6 +1927,12 @@ totalFundingBar = dc.barGauge("#total-funding-gauge")
 #### .orientation(string)
 Set the orientation of the bar 'horizontal' or 'vertical'.
 
+#### .usePercentageLength(Boolean)
+Set the calculation for the length, and filled length to use percentages, not exact values. The
+svg will be set so its long side is 100% of the parent container. 
+This can be useful for when we want the length of the bar to fill up its parent element, 
+but do not know the size of the parent element.
+
 #### .gap([gap])
 Get or set the vertical gap space between rows on a particular row chart instance. Default gap is 5px;
 
@@ -1949,6 +1955,16 @@ The filled value will be used to get the percentage the bar is filled.
 
 #### .drawScale(boolean)
 Explicitly set whether or not to draw the scale.
+
+#### .drawScale(markerObjArray)
+Set markers with an array of marker objects. The structure should look similar the following:
+markerObjArray = [{value: someValue, statName: "Median"}, 
+    {value: otherValue, statName: ""Mean"},
+    {value: maxValue, member: maxName, statName: "Max"}];
+If the member is specified, the tooltip will show "member: value"
+
+#### .markerTitle(function)
+Set the function to display what goes in the SVG title/tooltip.
 
 #### .markerFormat(Function)
 Pass a formatter function like d3.format() to format marker values.

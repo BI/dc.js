@@ -8071,7 +8071,7 @@ dc.barGauge = function (parent, chartGroup) {
     var _filledValue,
         _oldValue,
         _totalCapacity,
-        _orientation = 'horizontal',
+        _orientation = 'horizontal', _usePercentageForLengthCalc = false,
         _gap = 0,
         _height = null, _width = null,
         _xAxis = d3.svg.axis().orient("bottom"), _x, _g,
@@ -8092,6 +8092,7 @@ dc.barGauge = function (parent, chartGroup) {
 
     _chart.transitionDuration(700); // good default
 
+    //Calculate the scale for the axis. Only for x axis as of now.
     function calculateAxisScale() {
         var extent = [0, _chart.totalCapacity()];
         //_x lets us use d3 to scale the real input value to the output value
@@ -8101,6 +8102,7 @@ dc.barGauge = function (parent, chartGroup) {
         _xAxis.tickFormat(_tickFormat);
     }
 
+    //draw the axis based on the scale
     function drawAxis() {
         var axisG = _g.select("g.axis");
 
@@ -8112,6 +8114,7 @@ dc.barGauge = function (parent, chartGroup) {
             .call(_xAxis);
     }
 
+    //draw the tick markers on the scale.
     function drawGridLines() {
         _g.selectAll("g.tick")
             .select("line.grid-line")
@@ -8127,18 +8130,6 @@ dc.barGauge = function (parent, chartGroup) {
                 return -_chart.effectiveHeight();
             });
     }
-
-    _chart.height = function(_) {
-        if(!arguments.length) return _height;
-        _height = _;
-        return _chart;
-    };
-
-    _chart.width = function(_) {
-        if(!arguments.length) return _width;
-        _width = _;
-        return _chart;
-    };
 
     _chart.value = function() {
         return _chart.data();
@@ -8160,10 +8151,22 @@ dc.barGauge = function (parent, chartGroup) {
         return _chart;
     };
 
-    /**
-    #### .gap([gap])
-    Get or set the vertical gap space between rows on a particular row chart instance. Default gap is 5px;
 
+    /**
+        #### .usePercentageLength(Boolean)
+        Set the calculation for the length, and filled length to use percentages, not exact values. The
+        svg will be set so its long side is 100% of the parent container. 
+        This can be useful for when we want the length of the bar to fill up its parent element, 
+        but do not know the size of the parent element. 
+    **/
+    _chart.usePercentageLength = function(_) {
+        if(!arguments.length) return _usePercentageForLengthCalc;
+        _usePercentageForLengthCalc = _;
+        return _chart;
+    };
+    /**
+        #### .gap([gap])
+        Get or set the vertical gap space between rows on a particular row chart instance. Default gap is 5px;
     **/
     _chart.gap = function (_) {
         if (!arguments.length) return _gap;
@@ -8172,7 +8175,7 @@ dc.barGauge = function (parent, chartGroup) {
     };
 
     /**
-    #### .markerPadding(Object)
+        #### .markerPadding(Object)
     **/
     _chart.markerPadding = function (_) {
         if (!arguments.length) return _markerPadding;
@@ -8181,9 +8184,9 @@ dc.barGauge = function (parent, chartGroup) {
     };
 
     /**
-    #### .markerWidth(Number)
-    Explicitly set marker width. The marker dimensions are set based on the marker text offset dimensions.
-    Setting this explicitly is useful for when a resize/redraw occurs and the text is momentarily 0x0.
+        #### .markerWidth(Number)
+        Explicitly set marker width. The marker dimensions are set based on the marker text offset dimensions.
+        Setting this explicitly is useful for when a resize/redraw occurs and the text is momentarily 0x0.
     **/
     _chart.defaultMarkerWidth = function (_) {
         if (!arguments.length) return _defaultMarkerWidth;
@@ -8192,9 +8195,9 @@ dc.barGauge = function (parent, chartGroup) {
     };
 
     /**
-    #### .markerHeight(Number)
-    Explicitly set marker height. The marker dimensions are set based on the marker text offset dimensions.
-    Setting this explicitly is useful for when a resize/redraw occurs and the text is momentarily 0x0.
+        #### .markerHeight(Number)
+        Explicitly set marker height. The marker dimensions are set based on the marker text offset dimensions.
+        Setting this explicitly is useful for when a resize/redraw occurs and the text is momentarily 0x0.
     **/
     _chart.defaultMarkerHeight = function (_) {
         if (!arguments.length) return _defaultMarkerHeight;
@@ -8234,14 +8237,14 @@ dc.barGauge = function (parent, chartGroup) {
         return _chart;
     };
 
-    // _chart.addMarker = function(_) {
-    //     _markers.push(_);
-    // };
-
-    // _chart.clearMarkers = function() {
-    //     _markers = [];
-    // };
-
+    /**
+        #### .drawScale(markerObjArray)
+        Set markers with an array of marker objects. The structure should look similar the following:
+        markerObjArray = [{value: someValue, statName: "Median"}, 
+            {value: otherValue, statName: ""Mean"},
+            {value: maxValue, member: maxName, statName: "Max"}];
+        If the member is specified, the tooltip will show "member: value"
+    **/
     _chart.setMarkers = function(_) {
         if (!arguments.length) return _markers.call(_chart);
         _markers = d3.functor(_);
@@ -8249,6 +8252,10 @@ dc.barGauge = function (parent, chartGroup) {
         return _chart;
     };
 
+    /**
+        #### .markerTitle(function)
+        Set the function to display what goes in the SVG title/tooltip.
+    **/
     _chart.markerTitle = function(_) {
         if (!arguments.length) return _markerTitle; 
         _markerTitle = _;
@@ -8403,17 +8410,17 @@ dc.barGauge = function (parent, chartGroup) {
         }
         else { //horizontal
             actualThickness = _chart.height() - _chart.margins().top - _chart.margins().bottom - 2*_gap;
-            filledX = _chart.effectiveWidth() * (_oldpercentFilled/100);
+            filledX = (_usePercentageForLengthCalc) ? _oldpercentFilled + "%" : _chart.effectiveWidth() * (_oldpercentFilled/100);
             filledY = actualThickness;
-            newFilledX = _chart.effectiveWidth() * (_percentFilled/100) ;
+            newFilledX = (_usePercentageForLengthCalc) ? _percentFilled + "%" : _chart.effectiveWidth() * (_percentFilled/100) ;
             newFilledY = filledY;
-            containingX = _chart.effectiveWidth();
+            containingX = (_usePercentageForLengthCalc) ? "100%" : _chart.effectiveWidth();
             containingY = actualThickness;
             offsetX = 0;
             offsetY = _gap;
             _chart.root().select('svg')
                 .attr("height", _chart.height())
-                .attr("width", _chart.width());
+                .attr("width", (_usePercentageForLengthCalc) ? "100%" : _chart.width());
 
             _g.append('rect')
                 .classed("dc-bar-gauge-background", true)
@@ -8554,7 +8561,7 @@ dc.geoBubbleOverlayChart = function (parent, chartGroup) {
         if (!arguments.length) return _bubbleLabel;
         _bubbleLabel = _;
         return _chart;    
-    }
+    };
 
     function bubbleLabelFunction(d) {
         if(_chart.bubbleLabel() === undefined){
@@ -9081,13 +9088,13 @@ dc.treeMap = function (parent, chartGroup) {
 	var _margin = {top: 0, right: 0, bottom: 0, left: 0},
 		_width = 960, _height = 500 - _margin.top - _margin.bottom,
         _crumbTrailX = 6, _crumbTrailY = 6, _crumbTrailHeight = ".75em",
-		_transitioning;
+		_transitioning=false;
     var _labelFuncsArray = [function(d) {return d.name;}];
     var _titleBarFunc = function(d) {return d.parent ? _titleBarFunc(d.parent) + "." + d.name : d.name;};
 
 	var _toolTipFunc = function(d) {return d.name;};
 
-    _chart.transitionDuration(200); // good default
+    _chart.transitionDuration(500); // good default
 
     dc.override(_chart, "filterAll", function() {
     	_chart._filterAll();
@@ -9161,21 +9168,18 @@ dc.treeMap = function (parent, chartGroup) {
         if(!arguments.length) return _currentRoot;
         _currentRoot = _;
         return _chart;
-        
     };
 
     _chart.currentXscale = function(_) {
         if(!arguments.length) return _currentXscale;
         _currentXscale = _;
         return _chart;
-        
     };
 
     _chart.currentYscale = function(_) {
         if(!arguments.length) return _currentYscale;
         _currentYscale = _;
-        return _chart;
-        
+        return _chart;  
     };
 
     _chart.colors = function(_) {
@@ -9374,7 +9378,6 @@ dc.treeMap = function (parent, chartGroup) {
 			crumbTrail
 				.datum(currentRoot.parent)
               .on("click", function(d) {
-              	dc.events.trigger(function () {
 	              	if (!_transitioning){
 		              	
 	              		_zoomLevel --;
@@ -9385,12 +9388,14 @@ dc.treeMap = function (parent, chartGroup) {
 						}
 	                    //transition(d); 
 
-	                    //second redraw incase any redraw happens before the filter messes up the 
-	                    //treemapobject data
+	                    //second redraw to protect against the following case:
+	                    //1.) user does a redraw while there are filters on the chart
+              			//2.) the redraw cause creation of treemap data with the filtered data
+              			//3.) adding this second redraw lets us create the treemap data again 
+              			//4.) but at the point where the data is all there(unfiltered)  again. 
 	                    _chart.redraw();
 		                
 	              	}
-				}, _chart.transitionDuration() + 10);	
 				})
 				.select("text")
 				.text(_titleBarFunc(currentRoot));
@@ -9421,7 +9426,6 @@ dc.treeMap = function (parent, chartGroup) {
 				})
 				.on("click",function(d) {
 					var that = this;
-					dc.events.trigger(function () {
 						if (!_transitioning){
 							if(d._children) {
 								_zoomLevel ++;
@@ -9442,7 +9446,6 @@ dc.treeMap = function (parent, chartGroup) {
 								}
 							}
 						}
-					}, _chart.transitionDuration()+10);	
 				});
 
 			depthContainerChildren.selectAll(".child")
@@ -9479,7 +9482,7 @@ dc.treeMap = function (parent, chartGroup) {
 
             _labelFuncsArray.forEach(function(func, index){
                 depthContainerChildren[0].forEach(function(textElement) {
-                    func(d3.select(textElement).append("text").classed("label_" + index, true), {x: _currentXscale, y: _currentYscale});
+                    func(d3.select(textElement).append("text").classed("label_" + index + " parent-label", true), {x: _currentXscale, y: _currentYscale});
                 });
             });
 			
@@ -9490,6 +9493,7 @@ dc.treeMap = function (parent, chartGroup) {
 			function transition(currentRoot) {
 				if (_transitioning || !currentRoot) return;
 				_transitioning = true;
+
 
 				//call display again to transition to the next level
 				var depthContainerChildren = display(currentRoot),
@@ -9513,8 +9517,7 @@ dc.treeMap = function (parent, chartGroup) {
 				depthContainerChildren.selectAll("text").style("fill-opacity", 0);
 
 				// Transition to the new view.
-				// parentTransition.selectAll("text").call(text).style("fill-opacity", 0);
-				// childTransition.selectAll("text").call(text).style("fill-opacity", 1);
+				//parent elements are dissappearing(0 opacity), while child elements are appearing(1 opacity)
                 _labelFuncsArray.forEach(function(func, index) {
                     func(parentTransition.selectAll("text.label_" + index), {x: _currentXscale, y: _currentYscale}, 0);
                     func(childTransition.selectAll("text.label_" + index), {x: _currentXscale, y: _currentYscale}, 1);
@@ -9547,7 +9550,7 @@ dc.treeMap = function (parent, chartGroup) {
 				.attr("width", function(d) { return x(d.x + d.dx) - x(d.x); })
 				.attr("height", function(d) { return y(d.y + d.dy) - y(d.y); });
 
-			//Need to add clip path margin
+			//Need to add clip path margin so text doesnt go all the way to the edge. 
 			// nodeRect.selectAll("clip-path-parent")
 			// 	.attr("x", function(d) { return x(d.x + clipPathMargin); })
 			// 	.attr("y", function(d) { return y(d.y + clipPathMargin); })

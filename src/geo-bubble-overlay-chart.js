@@ -81,7 +81,7 @@ dc.geoBubbleOverlayChart = function (parent, chartGroup) {
         if (!arguments.length) return _bubbleLabel;
         _bubbleLabel = _;
         return _chart;    
-    }
+    };
 
     function bubbleLabelFunction(d) {
         if(_chart.bubbleLabel() === undefined){
