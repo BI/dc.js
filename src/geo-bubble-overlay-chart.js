@@ -47,6 +47,8 @@ dc.geoBubbleOverlayChart = function (parent, chartGroup) {
     _chart.GEO_LAYER_CLASS = 'geoLayer';
     var _geoFill = '#ccc';
 
+    var _bubbleLabel;
+
     var _geoJson;
 
     var _bubbleG;
@@ -73,6 +75,51 @@ dc.geoBubbleOverlayChart = function (parent, chartGroup) {
             }
         }
         return "translate(" + (centroid[0]) + "," + (centroid[1]) + ")";
+    };
+
+    _chart.bubbleLabel = function(_) {
+        if (!arguments.length) return _bubbleLabel;
+        _bubbleLabel = _;
+        return _chart;    
+    };
+
+    function bubbleLabelFunction(d) {
+        if(_chart.bubbleLabel() === undefined){
+            return _chart.label()(d);
+        }
+        return _chart.bubbleLabel()(d);
+    }
+
+    var labelOpacity = function (d) {
+        return (_chart.bubbleR(d) > _chart.minRadiusWithLabel()) ? 1 : 0;
+    };
+
+    _chart._doRenderLabel = function (bubbleGEnter) {
+        if (_chart.renderLabel()) {
+            var label = bubbleGEnter.select("text");
+
+            if (label.empty()) {
+                label = bubbleGEnter.append("text")
+                    .attr("text-anchor", "middle")
+                    .attr("dy", ".3em")
+                    .on("click", _chart.onClick);
+            }
+
+            label
+                .attr("opacity", 0)
+                .text(bubbleLabelFunction);
+            dc.transition(label, _chart.transitionDuration())
+                .attr("opacity", labelOpacity);
+        }
+    };
+
+    _chart.doUpdateLabels = function (bubbleGEnter) {
+        if (_chart.renderLabel()) {
+            var labels = bubbleGEnter.selectAll("text")
+                .text(bubbleLabelFunction);
+            dc.transition(labels, _chart.transitionDuration())
+                .attr("opacity", labelOpacity);
+        }
     };
 
     _chart.bubbleLocator = function(_) {
