@@ -26,3 +26,7 @@ spec/index.html
 
 # coverage reports
 coverage
+
+# bower_components
+#right now just d3 sankey
+bower_components
