@@ -10212,7 +10212,8 @@ dc.sankey = function(parent, chartGroup) {
         function insertNodes(row, columnName) {
             var column = columnName;
             if (!nodesContains(row, column)){
-                t.nodes.push({name: row[column], column_name: column});
+                if(row[measure_column] > 0)
+                    t.nodes.push({name: row[column], column_name: column});
             }   
         }
         
@@ -10226,12 +10227,18 @@ dc.sankey = function(parent, chartGroup) {
         
         function insertOrUpdateLink(source, target, value){
             var foundLink = findLink(source,target);
-            if(foundLink) {
-                foundLink.value = foundLink.value + Number(value);
+            var linkValue = (Number(value) < 0 ) ? 0 : Number(value);
+            if(linkValue > 0) {
+                
+                if(foundLink) {
+                    foundLink.value = foundLink.value + linkValue;
+                }
+                else {
+
+                    t.links.push(newLink(source, target, linkValue));
+                }
             }
-            else {
-                t.links.push(newLink(source, target, value));
-            }
+
         }
         
         function findLink(source, target){
@@ -10248,7 +10255,7 @@ dc.sankey = function(parent, chartGroup) {
         }
         
         function newLink(source, target, value){
-            return {source: indexForNode(source), target: indexForNode(target), value: Number(value)};
+            return {source: indexForNode(source), target: indexForNode(target), value: value};
         }
        
         function indexForNode(node){
