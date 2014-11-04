@@ -10193,7 +10193,8 @@ dc.sankey = function(parent, chartGroup) {
             var columnName = dimColPair.columnName;
             var s = dimColPair.dimension.top(Infinity);
             s.forEach(function(row){
-                insertNodes(row, columnName);
+                if(row[measure_column] > 0)
+                    insertNodes(row, columnName);
                 
             });
         });
@@ -10204,7 +10205,8 @@ dc.sankey = function(parent, chartGroup) {
             var s = dimColPair.dimension.top(Infinity);
 
             s.forEach(function(row){
-                insertOrUpdateLinks(row, columnName, index);
+                if(row[measure_column] > 0)
+                    insertOrUpdateLinks(row, columnName, index);
             });
         });
 
@@ -10212,8 +10214,7 @@ dc.sankey = function(parent, chartGroup) {
         function insertNodes(row, columnName) {
             var column = columnName;
             if (!nodesContains(row, column)){
-                if(row[measure_column] > 0)
-                    t.nodes.push({name: row[column], column_name: column});
+                t.nodes.push({name: row[column], column_name: column});
             }   
         }
         
@@ -10227,18 +10228,15 @@ dc.sankey = function(parent, chartGroup) {
         
         function insertOrUpdateLink(source, target, value){
             var foundLink = findLink(source,target);
-            var linkValue = (Number(value) < 0 ) ? 0 : Number(value);
-            if(linkValue > 0) {
-                
-                if(foundLink) {
-                    foundLink.value = foundLink.value + linkValue;
-                }
-                else {
+            var linkValue = Number(value);
 
-                    t.links.push(newLink(source, target, linkValue));
-                }
+            if(foundLink) {
+                foundLink.value = foundLink.value + linkValue;
             }
+            else {
 
+                t.links.push(newLink(source, target, linkValue));
+            }
         }
         
         function findLink(source, target){
