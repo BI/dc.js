@@ -79,12 +79,13 @@ describe('dc.sankey', function () {
 
             it('should highlight selected nodes', function() {
 				chart.root().selectAll("g.node").each(function(d) {
-					if(d.value === 132) {
+					//use Central as our example value. It's value is 99.
+					if(d.value === 99) {
 						expect(d3.select(this).attr("class").indexOf("selected") > 0).toBeTruthy();
 					}
-					else {
-						expect(d3.select(this).attr("class").indexOf("deselected") > 0).toBeTruthy();
-					}
+					//May add deselected classes in the future. As of now the chart filters itself
+					//so the deselected nodes just disappear completely from the DOM.
+
 				});
             });
 

@@ -9069,11 +9069,11 @@ A newly created tree map instance
 var dimensionColumnnamePairs = [{'dimension' : someRootDimension, 'columnName' : 'columnNamefromCSV'},
                                 {'dimension' : aChildDimension, 'columnName' : 'anotherColumnName'}];
 //which column name from the CSV contains the value for measuring the data
-var measure_column = 'value';
+var measureColumn = 'value';
 // create a row chart under #sankey element using the default global chart group
 var chart = dc.rowChart("#treeMap")
-                .dimColPairs(dimensionColumnnamePairs)
-                .measure_column(measure_column);
+                .levels(dimensionColumnnamePairs)
+                .measureColumn(measureColumn);
 
 //filter manually by passing in the column name, and filter value like this
 chart.filter('columnNamefromCSV', 'singlefiltervalue');
@@ -9232,7 +9232,7 @@ dc.treeMap = function (parent, chartGroup) {
         if(_chart.levels() && _chart.measureColumn()) {
             _treeMapDataObject = crossfilterToTreeMapData(_chart.levels(), _chart.measureColumn());
         }
-        else throw "Must provide dimension column array and measure_column";
+        else throw "Must provide dimension column array and measureColumn";
         return _chart;
     };
 
@@ -9298,7 +9298,8 @@ dc.treeMap = function (parent, chartGroup) {
 			.domain([0, _height])
 			.range([0, _height]);
 
-		_currentXscale = x, _currentYscale = y;
+		_currentXscale = x;
+		_currentYscale = y;
 
 		_treeMapd3 = d3.layout.treemap()
 			.children(function(d, depth) { return depth ? null : d._children; })
@@ -9545,10 +9546,15 @@ dc.treeMap = function (parent, chartGroup) {
 			var clipPathMargin = 10;
 
 			nodeRect
-				.attr("x", function(d) { return x(d.x); })
+				.attr("x", function(d) { 
+					return x(d.x); 
+				})
 				.attr("y", function(d) { return y(d.y); })
-				.attr("width", function(d) { return x(d.x + d.dx) - x(d.x); })
+				.attr("width", function(d) { 
+					return x(d.x + d.dx) - x(d.x);
+				})
 				.attr("height", function(d) { return y(d.y + d.dy) - y(d.y); });
+
 
 			//Need to add clip path margin so text doesnt go all the way to the edge. 
 			// nodeRect.selectAll("clip-path-parent")
@@ -9556,8 +9562,6 @@ dc.treeMap = function (parent, chartGroup) {
 			// 	.attr("y", function(d) { return y(d.y + clipPathMargin); })
 			// 	.attr("width", function(d) { return x(d.x + d.dx) - x(d.x) - x(clipPathMargin*2); })
 			// 	.attr("height", function(d) { return y(d.y + d.dy) - y(d.y) - y(clipPathMargin*2); });
-
-
 
 		}
 	};
@@ -9571,17 +9575,18 @@ dc.treeMap = function (parent, chartGroup) {
 	//#### .crossfilterToTreeMapData([{dimension : someDim, columnName : "colName"}...], String)
 	// Return the tree data object
 	//Translate crossfilter multi dimensional tabular data into hierarchical tree data
-	function crossfilterToTreeMapData(dimColPairs, measure_column) {
+	function crossfilterToTreeMapData(levelsData, measureColumn) {
 		var _tree = {name : _rootName, columnName : "root",
 					children : []};
 
 		//loop over the rows, and then by column to populate the tree data
-		var rows = dimColPairs[0].dimension.top(Infinity);
+		var rows = levelsData[0].dimension.top(Infinity);
 
 		rows.forEach(function(row) {
-			dimColPairs.forEach(function(dimColObj, columnIndex) {
+			levelsData.forEach(function(dimColObj, columnIndex) {
 				var columnName = dimColObj.columnName;
-				insertNode(row, columnName, columnIndex);
+				if(row[measureColumn] > 0)
+					insertNode(row, columnName, columnIndex);
 			});
 		});
 
@@ -9589,7 +9594,7 @@ dc.treeMap = function (parent, chartGroup) {
 			if(!nodesContains(row, columnName, columnIndex)) {
 				pushChild(row, columnName, columnIndex);
 			}
-			else if(columnIndex === (dimColPairs.length - 1)) {
+			else if(columnIndex === (levelsData.length - 1)) {
 				//node already existed and this is a leaf so it has a value
 				addLeafValue(row, columnName, columnIndex);
 			}
@@ -9604,13 +9609,15 @@ dc.treeMap = function (parent, chartGroup) {
 			});
 		}
 
+		//Note: negative values get set to zero.
 		function pushChild(row, columnName, columnIndex) {
 			var nodeChildren = findNodeChildrenDrill(row, columnName, columnIndex).children;
 			var newNode = {};
 			newNode.name = row[columnName];
 			newNode.columnName = columnName;
-			if(columnIndex === (dimColPairs.length - 1)) {
-				newNode.value = Number(row[measure_column]);
+			if(columnIndex === (levelsData.length - 1)) {
+				var startValue = Number(row[measureColumn]);
+				newNode.value = startValue;
 			}
 			else newNode.children = [];
 			nodeChildren.push(newNode);
@@ -9624,16 +9631,18 @@ dc.treeMap = function (parent, chartGroup) {
 					existingNode = childObj;
 				}
 			});
-			existingNode.value = Number(existingNode.value) + Number(row[measure_column]);
+			existingNode.value = Number(existingNode.value) + Number(row[measureColumn]);
 		}
 
+		/**
 		//#### .findNodeChildrenDrill(Object, String, Number)
 		//Drill down until at the correct child object, this function is used internally
+		**/
 		function findNodeChildrenDrill(row, columnName, columnIndex) {
 			var childNode = _tree; //array of child objects
 			for (var i = 0; i < columnIndex; i++) {
 				childNode.children.some(function(childObj) {
-					var fieldValue = row[dimColPairs[i].columnName];
+					var fieldValue = row[levelsData[i].columnName];
 					if(childObj.name === fieldValue) {
 						childNode = childObj;
 					}
@@ -9643,8 +9652,10 @@ dc.treeMap = function (parent, chartGroup) {
 			return childNode;
 		}
 
+		/**
 		//#### .zoomLevelDrill(Number)
 		//Drill down to the child node by zoom level, this function is used externally
+		**/
 		_tree.zoomLevelDrill = function(zoomLevel) {
 			var childNode = _tree;
 
@@ -9663,8 +9674,8 @@ dc.treeMap = function (parent, chartGroup) {
 		};
 
 		function getFilterValue(zoomLevel) {
-			var dimension = dimColPairs[zoomLevel].dimension;
-			var columnName = dimColPairs[zoomLevel].columnName;
+			var dimension = levelsData[zoomLevel].dimension;
+			var columnName = levelsData[zoomLevel].columnName;
 			return dimension.top(Infinity)[0][columnName]; //assuming that each level of the tree map only has one value in the filter
 		}
 
@@ -10193,7 +10204,8 @@ dc.sankey = function(parent, chartGroup) {
             var columnName = dimColPair.columnName;
             var s = dimColPair.dimension.top(Infinity);
             s.forEach(function(row){
-                insertNodes(row, columnName);
+                if(row[measure_column] > 0)
+                    insertNodes(row, columnName);
                 
             });
         });
@@ -10204,7 +10216,8 @@ dc.sankey = function(parent, chartGroup) {
             var s = dimColPair.dimension.top(Infinity);
 
             s.forEach(function(row){
-                insertOrUpdateLinks(row, columnName, index);
+                if(row[measure_column] > 0)
+                    insertOrUpdateLinks(row, columnName, index);
             });
         });
 
@@ -10226,11 +10239,14 @@ dc.sankey = function(parent, chartGroup) {
         
         function insertOrUpdateLink(source, target, value){
             var foundLink = findLink(source,target);
+            var linkValue = Number(value);
+
             if(foundLink) {
-                foundLink.value = foundLink.value + Number(value);
+                foundLink.value = foundLink.value + linkValue;
             }
             else {
-                t.links.push(newLink(source, target, value));
+
+                t.links.push(newLink(source, target, linkValue));
             }
         }
         
@@ -10248,7 +10264,7 @@ dc.sankey = function(parent, chartGroup) {
         }
         
         function newLink(source, target, value){
-            return {source: indexForNode(source), target: indexForNode(target), value: Number(value)};
+            return {source: indexForNode(source), target: indexForNode(target), value: value};
         }
        
         function indexForNode(node){

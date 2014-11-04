@@ -224,7 +224,8 @@ dc.sankey = function(parent, chartGroup) {
             var columnName = dimColPair.columnName;
             var s = dimColPair.dimension.top(Infinity);
             s.forEach(function(row){
-                insertNodes(row, columnName);
+                if(row[measure_column] > 0)
+                    insertNodes(row, columnName);
                 
             });
         });
@@ -235,7 +236,8 @@ dc.sankey = function(parent, chartGroup) {
             var s = dimColPair.dimension.top(Infinity);
 
             s.forEach(function(row){
-                insertOrUpdateLinks(row, columnName, index);
+                if(row[measure_column] > 0)
+                    insertOrUpdateLinks(row, columnName, index);
             });
         });
 
@@ -257,11 +259,14 @@ dc.sankey = function(parent, chartGroup) {
         
         function insertOrUpdateLink(source, target, value){
             var foundLink = findLink(source,target);
+            var linkValue = Number(value);
+
             if(foundLink) {
-                foundLink.value = foundLink.value + Number(value);
+                foundLink.value = foundLink.value + linkValue;
             }
             else {
-                t.links.push(newLink(source, target, value));
+
+                t.links.push(newLink(source, target, linkValue));
             }
         }
         
@@ -279,7 +284,7 @@ dc.sankey = function(parent, chartGroup) {
         }
         
         function newLink(source, target, value){
-            return {source: indexForNode(source), target: indexForNode(target), value: Number(value)};
+            return {source: indexForNode(source), target: indexForNode(target), value: value};
         }
        
         function indexForNode(node){
