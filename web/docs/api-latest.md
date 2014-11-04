@@ -2113,11 +2113,11 @@ A newly created tree map instance
 var dimensionColumnnamePairs = [{'dimension' : someRootDimension, 'columnName' : 'columnNamefromCSV'},
                                {'dimension' : aChildDimension, 'columnName' : 'anotherColumnName'}];
 //which column name from the CSV contains the value for measuring the data
-var measure_column = 'value';
+var measureColumn = 'value';
 // create a row chart under #sankey element using the default global chart group
 var chart = dc.rowChart("#treeMap")
-               .dimColPairs(dimensionColumnnamePairs)
-               .measure_column(measure_column);
+               .levels(dimensionColumnnamePairs)
+               .measureColumn(measureColumn);
 
 //filter manually by passing in the column name, and filter value like this
 chart.filter('columnNamefromCSV', 'singlefiltervalue');
@@ -2153,6 +2153,12 @@ Pass in a custom tool tip function. These tool tips show text for the rectangles
 
 #### .titleBarCaption(callback)
 Pass in custom title bar caption function. The title bar text is show in the bar at the top.
+
+//#### .findNodeChildrenDrill(Object, String, Number)
+//Drill down until at the correct child object, this function is used internally
+
+//#### .zoomLevelDrill(Number)
+//Drill down to the child node by zoom level, this function is used externally
 
 ## Sankey
 

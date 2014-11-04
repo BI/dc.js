@@ -28,6 +28,7 @@ function loadDateFixture2() {
 }
 
 function loadDateFixtureSankey() {
+    //the negative value is added for testing how the Treemap and Sankey deal with negative values
     var fixture = JSON.parse("[" +
         "{\"value\":\"44\",\"nvalue\":\"-4\",\"countrycode\":\"US\",\"state_from\":\"California\",\"state_live\":\"California\",\"status\":\"T\",\"id\":1,\"region\":\"South\",\"date\":\"2012-05-25T16:10:09Z\"}, " +
         "{\"value\":\"22\",\"nvalue\":\"-2\",\"countrycode\":\"US\",\"state_from\":\"Colorado's Test\",\"state_live\":\"Omaha\",\"status\":\"F\",\"id\":2,\"region\":\"West\",\"date\":\"2012-06-10T16:10:19Z\"}, " +
@@ -39,6 +40,7 @@ function loadDateFixtureSankey() {
         "{\"value\":\"-20\",\"nvalue\":\"1\",\"countrycode\":\"US\",\"state_from\":\"Mississippi\",\"state_live\":\"Arizona\",\"status\":\"F\",\"id\":8,\"region\":\"Central\",\"date\":\"2012-07-10T16:10:19Z\"}, " +
         "{\"value\":\"44\",\"nvalue\":\"2\",\"countrycode\":\"US\",\"state_from\":\"Mississippi\",\"state_live\":\"Mississippi\",\"status\":\"T\",\"id\":9,\"region\":\"Central\",\"date\":\"2012-08-10T16:30:29Z\"}, " +
         "{\"value\":\"55\",\"nvalue\":\"-3\",\"countrycode\":\"US\",\"state_from\":\"Oklahoma\",\"state_live\":\"Oklahoma\",\"status\":\"F\",\"id\":10,\"region\":\"\",\"date\":\"2012-06-10T16:10:39Z\"}" +
+        
         "]");
 
     fixture.forEach(dateCleaner);

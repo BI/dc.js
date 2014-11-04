@@ -1732,11 +1732,11 @@ A newly created tree map instance</p>
 var dimensionColumnnamePairs = [{'dimension' : someRootDimension, 'columnName' : 'columnNamefromCSV'},
                                {'dimension' : aChildDimension, 'columnName' : 'anotherColumnName'}];
 //which column <span class="property">name</span> <span class="keyword">from</span> <span class="keyword">the</span> CSV <span class="keyword">contains</span> <span class="keyword">the</span> value <span class="keyword">for</span> measuring <span class="keyword">the</span> data
-var measure_column = 'value';
+var measureColumn = 'value';
 // create a row chart under <span class="comment">#sankey element using the default global chart group</span>
 var chart = dc.rowChart(<span class="string">"#treeMap"</span>)
-               .dimColPairs(dimensionColumnnamePairs)
-               .measure_column(measure_column);
+               .levels(dimensionColumnnamePairs)
+               .measureColumn(measureColumn);
 
 //filter manually <span class="keyword">by</span> passing <span class="keyword">in</span> <span class="keyword">the</span> column <span class="property">name</span>, <span class="keyword">and</span> filter value like this
 chart.filter('columnNamefromCSV', 'singlefiltervalue');</code></pre>
@@ -1761,6 +1761,10 @@ Example: .crumbTrailHeight(“.75em”)</p>
 <p>Pass in a custom tool tip function. These tool tips show text for the rectangles on hover.</p>
 <h4 id="-titlebarcaption-callback-">.titleBarCaption(callback)</h4>
 <p>Pass in custom title bar caption function. The title bar text is show in the bar at the top.</p>
+<p>//#### .findNodeChildrenDrill(Object, String, Number)
+//Drill down until at the correct child object, this function is used internally</p>
+<p>//#### .zoomLevelDrill(Number)
+//Drill down to the child node by zoom level, this function is used externally</p>
 <h2 id="sankey">Sankey</h2>
 <p>Includes: <a href="#base-mixin">Base Mixin</a></p>
 <h4 id="dc-sankey-parent-chartgroup-">dc.sankey(parent[, chartGroup])</h4>
