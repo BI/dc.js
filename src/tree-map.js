@@ -337,21 +337,23 @@ dc.treeMap = function (parent, chartGroup) {
               .on("click", function(d) {
 	              	if (!_transitioning){
 		              	
-	              		_zoomLevel --;
-						
-						if (d) {
-	                        // "un-filter" as we drill-up
-							onClick(currentRoot, false); 
-						}
-	                    //transition(d); 
+	              		if(_zoomLevel > 0){
 
-	                    //second redraw to protect against the following case:
-	                    //1.) user does a redraw while there are filters on the chart
-              			//2.) the redraw cause creation of treemap data with the filtered data
-              			//3.) adding this second redraw lets us create the treemap data again 
-              			//4.) but at the point where the data is all there(unfiltered)  again. 
-	                    _chart.redraw();
-		                
+		              		 _zoomLevel --;
+							
+							if (d) {
+		                        // "un-filter" as we drill-up
+								onClick(currentRoot, false); 
+							}
+		                    //transition(d); 
+
+		                    //second redraw to protect against the following case:
+		                    //1.) user does a redraw while there are filters on the chart
+	              			//2.) the redraw cause creation of treemap data with the filtered data
+	              			//3.) adding this second redraw lets us create the treemap data again 
+	              			//4.) but at the point where the data is all there(unfiltered)  again. 
+		                    _chart.redraw();
+		                }
 	              	}
 				})
 				.select("text")
