@@ -1,0 +1,57 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <title>dc.js - Geo Bubble Overlay Chart Example</title>
+    <meta charset="UTF-8">
+    <link rel="stylesheet" type="text/css" href="../css/dc.css"/>
+    <style>
+    	.zoomControl {
+    		border: 1px solid black;
+    		background: white;
+    		margin: 20px;
+    	}
+    </style>
+</head>
+<body>
+<div id="zoomButton" class="zoomControl"></div>
+<div id="resetZoomButton" class="zoomControl"></div>
+<div id="map"></div>
+
+
+
+<script type="text/javascript" src="../js/d3.js"></script>
+<script type="text/javascript" src="../js/crossfilter.js"></script>
+<script type="text/javascript" src="../js/dc.js"></script>
+<script type="text/javascript" src="../../spec/helpers/fixtures.js"></script>
+<script type="text/javascript" src="../../spec/helpers/geoFixtures.js"></script>
+<script type="text/javascript">
+
+var chart, data, id;
+var stateDimension, stateValueSumGroup;
+var geoJson;
+var width, height;
+
+
+data = crossfilter(loadDateFixture());
+stateDimension = data.dimension(function(d){return d.state;});
+stateValueSumGroup = stateDimension.group().reduceSum(function(d){return d.value;});
+
+geoJson = loadGeoFixture();
+width = 1000;
+height = 600;
+
+map = dc.geoChoroplethChart('#map')
+  .width(width)
+  .height(height)
+  .dimension(stateDimension)
+  .group(stateValueSumGroup)
+  .overlayGeoJson(geoJson.features, 'state', function (d) {
+      return d.properties.name;
+  });
+
+
+dc.renderAll();
+</script>
+
+</body>
+</html>
