@@ -45,6 +45,10 @@ dc.hierarchyMixin = function(_chart) {
             }
         }
 
+        if(!filterValue) {
+            return _filters[columnName] && _filters[columnName].filterValues && !!_filters[columnName].filterValues.length;
+        }
+
         return (_filters[columnName]) ? 
                     _filters[columnName].filterValues.some(function(f) {return f === filterValue;}) : false;
     };
@@ -61,6 +65,7 @@ dc.hierarchyMixin = function(_chart) {
     }
 
     function addFilter(columnName, filterValue) {
+        //important that this dimension is a function so it gets returned dynamically
         var dimension = function() {return _chart.lookupDimension(columnName);};
         if(!_filters[columnName]){
             _filters[columnName] = {'dimension' : dimension, 'filterValues': []};
@@ -113,13 +118,19 @@ dc.hierarchyMixin = function(_chart) {
         }
     };
 
-    _chart.filterAll = function() {
-        Object.keys(_filters).forEach(function(columnName) {
-            _filters[columnName].filterValues = [];
-            var keyDimension = _filters[columnName].dimension();
-            applyFilters();
-            _chart._invokeFilteredListener(keyDimension);
-        });
+    _chart.filterAll = function(columnName) {
+        if (!arguments.length){
+            Object.keys(_filters).forEach(function(columnName) {
+                _filters[columnName].filterValues = [];
+                var keyDimension = _filters[columnName].dimension();
+                applyFilters();
+                _chart._invokeFilteredListener(keyDimension);
+            }); 
+        }
+        else {
+            _chart.filterAllForLevel(columnName);
+        }
+        
         
     };
 
@@ -133,9 +144,9 @@ dc.hierarchyMixin = function(_chart) {
         
     };
 
-    _chart.filters = function() {
-        return _filters;
-
+    _chart.filters = function(columnName) {
+        if (!arguments.length) return _filters;
+        return _filters[columnName].filterValues;
     };
 
     _chart.lookupDimension = function(d) {

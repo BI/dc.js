@@ -41,7 +41,9 @@ svg {
 </head>
 <body>
 
-<div id="sankey" ></div>
+<div id="sankey" >
+  <div class="filter column_state_from"></div><div class="filter column_state_live"></div><div class="filter column_region"></div><div class="filter column_countrycode"></div>
+</div>
 <br/><hr/>
 <div id="barchart-state-from"></div>
 <div id="barchart-state-live"></div>
@@ -62,7 +64,7 @@ stateLiveDimension = crossfilterdata.dimension(function(d){return d.state_live;}
 regionDimension = crossfilterdata.dimension(function(d){return d.region;});
 countryDimension = crossfilterdata.dimension(function(d){return d.countrycode;});
 
-var dimColPairs = [{'dimension' : stateFromDimension, 'columnName' : 'state_from'},
+var levels = [{'dimension' : stateFromDimension, 'columnName' : 'state_from'},
                     {'dimension' : stateLiveDimension, 'columnName' : 'state_live'},
                     {'dimension' : regionDimension, 'columnName' : 'region'},
                     {'dimension' : countryDimension, 'columnName' : 'countrycode'}];
@@ -70,7 +72,7 @@ var dimColPairs = [{'dimension' : stateFromDimension, 'columnName' : 'state_from
 var sankey = dc.sankey("#sankey")
                 .width(600)
                 .height(400)
-                .levels(dimColPairs)
+                .levels(levels)
                 .measureColumn('value');
 
 var stateFromGroup = stateFromDimension.group().reduceSum(function(d) {return d.value;});
