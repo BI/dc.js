@@ -21,16 +21,16 @@ Returns:
 A newly created sankey instance
 
 ```js
-//setup the dimension/column name array needed to translate crossfilter data into the sankey 
+//setup the dimension/column name array(levels) needed to translate crossfilter data into the sankey 
 //data structure
-var dimensionColumnnamePairs = [{'dimension' : someDimension, 'columnName' : 'columnNamefromCSV'},
+var levels = [{'dimension' : someDimension, 'columnName' : 'columnNamefromCSV'},
                                 {'dimension' : anotherDimension, 'columnName' : 'anotherColumnName'}];
 //which column name from the CSV contains the value for measuring the data
-var measure_column = 'value';
+var measureColumn = 'value';
 // create a sankey chart under #sankey element using the default global chart group
 var chart = dc.sankey("#sankey")
-                .dimColPairs(dimensionColumnnamePairs)
-                .measure_column(measure_column);
+                .levels(levels)
+                .measureColumn(measureColumn);
 
 //filter manually by passing in the column name, and filter value like this
 chart.filter('columnNamefromCSV', 'singlefiltervalue');
@@ -57,19 +57,27 @@ dc.sankey = function(parent, chartGroup) {
         return _chart;
     };
 
+    /**
+    #### .nodeToolTip(function)
+    Specify the callback to display text in the tooltip when hovering over nodes. 
+    **/
     _chart.nodeToolTip = function(_) {
         if(!arguments.length) return _nodeToolTipFunc;
         _nodeToolTipFunc = _;
         return _chart;
     };
 
+    /**
+    #### .linkToolTip(function)
+    Specify the callback to display text in the tooltip when hovering over links between nodes. 
+    **/
     _chart.linkToolTip = function(_) {
         if(!arguments.length) return _linkToolTipFunc;
         _linkToolTipFunc = _;
         return _chart;
     };
 
-    _chart.transitionDuration(450); // good default
+    _chart.transitionDuration(450); //not doing anything at this point
 
     /**
     #### .width(Number)
@@ -95,17 +103,21 @@ dc.sankey = function(parent, chartGroup) {
         if(_chart.levels() && _chart.measureColumn()) {
             _sankeyDataObject = crossfilterToSankeyData(_chart.levels(), _chart.measureColumn());
         }
-        else throw "Must provide dimension column array and measure_column";
+        else throw "Must provide dimension column array levels and the measureColumn";
         return _chart;
     };
+
+    function getColumnName(index) {
+        return levels[index].columnName;
+    }
 
     _chart._doRender = function() {
         _chart.initData();
         _chart.root().classed('dc-sankey', true);
         _chart.root().classed('dc-chart', false);
-        _chart.root().html('');
+        _chart.resetSvg();
 
-        var svg = d3.select(parent).append("svg")
+        var svg = _chart.svg()
             .attr("width", _width + _margin.left + _margin.right)
             .attr("height", _height + _margin.top + _margin.bottom)
           .append("g")
@@ -137,7 +149,9 @@ dc.sankey = function(parent, chartGroup) {
             .data(_sankeyDataObject.nodes)
         .enter().append("g")
             .attr("class", function(d) {return "node " + dc.utils.nameToId(d.name);})
-            .attr("transform", function(d) { return "translate(" + d.x + "," + d.y + ")"; })
+            .attr("transform", function(d) { 
+                return "translate(" + d.x + "," + d.y + ")"; 
+            })
             .on("click", onClick)
         .call(d3.behavior.drag()
             .origin(function(d) { return d; })
@@ -169,6 +183,22 @@ dc.sankey = function(parent, chartGroup) {
             .attr("x", 6 + _sankey.nodeWidth())
             .attr("text-anchor", "start");
 
+        //add span for filter control
+        _chart.levels().forEach(function(l){
+            _chart.select(".filter.column_" + l.columnName).html("");
+            if(_chart.hasFilter(l.columnName)) {
+                _chart.select(".filter.column_" + l.columnName)
+                    .append("span")
+                    .classed("reset", true)
+                    .text(_chart.filters(l.columnName)[0])
+                    .on("click", function(e) {
+                        _chart.filterAll(l.columnName);
+                        _chart.redraw();
+                    });
+            }  
+        });
+        
+
         function dragstarted(d) {
             //this makes elements come to top, but interferes with listeners 
             //this.parentNode.appendChild(this); 
@@ -186,11 +216,12 @@ dc.sankey = function(parent, chartGroup) {
     };
 
     function isSelectedNode (d) {
-        return _chart.hasFilter(d.column_name, d.name);
+        return _chart.hasFilter(d.columnName, d.name);
     }
 
     function onClick(d) {
-        //if click event is blocked, then the element is being dragged so don't filter
+        //if click event is blocked(if a drag event is occuring the defaultPrevented will be true),
+        //then the element is being dragged so don't filter
         if(d3.event.defaultPrevented) 
             return;
         else 
@@ -199,10 +230,10 @@ dc.sankey = function(parent, chartGroup) {
     }
 
     _chart.onClick = function (d) {
-        var filter = d.name;
+        var filterValue = d.name;
         dc.events.trigger(function () {
-            _chart.filter(d.column_name, filter);
-            _chart.redrawGroup();
+            _chart.filter(d.columnName, filterValue);
+            _chart.redrawGroup();            
         });
     };
 
@@ -213,30 +244,30 @@ dc.sankey = function(parent, chartGroup) {
     return _chart.anchor(parent, chartGroup);
 
     //**Translate the crossfilter dimensions to a sankey data structure
-    function crossfilterToSankeyData(dimColPairs, measure_column) {
+    function crossfilterToSankeyData(levels, measureColumn) {
 
         //Dimensions provided are the source for creating the Sankey Node/Link 
         //data structure
         var t = {nodes: [], links: []};
 
         //Create nodes for each row field value 
-        dimColPairs.forEach(function(dimColPair) {
-            var columnName = dimColPair.columnName;
-            var s = dimColPair.dimension.top(Infinity);
+        levels.forEach(function(level) {
+            var columnName = level.columnName;
+            var s = level.dimension.top(Infinity);
             s.forEach(function(row){
-                if(row[measure_column] > 0)
+                if(row[measureColumn] > 0)
                     insertNodes(row, columnName);
                 
             });
         });
 
         //Important to do the linking only after all of the nodes have been created
-        dimColPairs.forEach(function(dimColPair, index) {
-            var columnName = dimColPair.columnName;
-            var s = dimColPair.dimension.top(Infinity);
+        levels.forEach(function(level, index) {
+            var columnName = level.columnName;
+            var s = level.dimension.top(Infinity);
 
             s.forEach(function(row){
-                if(row[measure_column] > 0)
+                if(row[measureColumn] > 0)
                     insertOrUpdateLinks(row, columnName, index);
             });
         });
@@ -245,15 +276,15 @@ dc.sankey = function(parent, chartGroup) {
         function insertNodes(row, columnName) {
             var column = columnName;
             if (!nodesContains(row, column)){
-                t.nodes.push({name: row[column], column_name: column});
+                t.nodes.push({name: row[column], columnName: column});
             }   
         }
         
         function insertOrUpdateLinks(row, columnName, index) {
             var column = columnName;
-            if (index < (dimColPairs.length-1)) {
-                var nextNodeColumn = dimColPairs[index+1].columnName;
-                insertOrUpdateLink({name: row[column], column: column}, {name: row[nextNodeColumn], column: nextNodeColumn}, row[measure_column]);
+            if (index < (levels.length-1)) {
+                var nextNodeColumn = levels[index+1].columnName;
+                insertOrUpdateLink({name: row[column], column: column}, {name: row[nextNodeColumn], column: nextNodeColumn}, row[measureColumn]);
             }
         }
         
@@ -291,14 +322,14 @@ dc.sankey = function(parent, chartGroup) {
             var len = t.nodes.length;
             for(var i=0;i<len;i++){
                 var currentNode = t.nodes[i];
-                if (currentNode.name === node.name && currentNode.column_name === node.column) return i;
+                if (currentNode.name === node.name && currentNode.columnName === node.column) return i;
             }
 
             return -1; //hopefully never happens
         }
        
         function nodesContains(row, column){
-            return t.nodes.some(function(node){ return node.name === row[column] && node.column_name === column;});
+            return t.nodes.some(function(node){ return node.name === row[column] && node.columnName === column;});
         }
        
         function linksContains(source, target){

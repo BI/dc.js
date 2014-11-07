@@ -109,11 +109,11 @@ describe('dc.sankey', function () {
 			var sankObjNodeCal = {};
 			sankObjNodeCal.name = "California";
 			sankObjNodeCal.value = 154;
-			sankObjNodeCal.column_name = "state_from";
+			sankObjNodeCal.columnName = "state_from";
 			var sankObjNodeSouth = {};
 			sankObjNodeSouth.name = "South";
 			sankObjNodeSouth.value = 88;
-			sankObjNodeSouth.column_name = "region";
+			sankObjNodeSouth.columnName = "region";
 
             it('onClick should trigger filtering of according to node from data list', function() {
                 chart.onClick(sankObjNodeCal);
