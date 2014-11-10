@@ -268,7 +268,9 @@ dc.sankey = function(parent, chartGroup) {
         //data structure
         var t = {nodes: [], links: []};
 
+        //flag for no data
         var noData = false; 
+
         //Create nodes for each row field value 
         levels.forEach(function(level) {
             var columnName = level.columnName;

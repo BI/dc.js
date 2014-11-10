@@ -9095,7 +9095,8 @@ dc.treeMap = function (parent, chartGroup) {
 	var _chart = dc.colorMixin(dc.hierarchyMixin(dc.baseMixin({})));
 	var _treeMapd3, _treeMapDataObject, _currentRoot, _currentXscale, _currentYscale,
 		_rootName = "root",
-		_zoomLevel = 0, _colors = d3.scale.category20c();
+		_zoomLevel = 0, _colors = d3.scale.category20c(),
+		_noDataMessage = "No Data for the selected filters";
 	var _margin = {top: 0, right: 0, bottom: 0, left: 0},
 		_width = 960, _height = 500 - _margin.top - _margin.bottom,
         _crumbTrailX = 6, _crumbTrailY = 6, _crumbTrailHeight = ".75em",
@@ -9209,6 +9210,12 @@ dc.treeMap = function (parent, chartGroup) {
         return _chart;
     };
 
+    _chart.noDataMessage = function(_) {
+    	if(!arguments.length) return _noDataMessage;
+    	_noDataMessage = _;
+    	return _chart;
+    }
+
     /**
     #### .label(callback)
     Pass in a custom label function. These labels are what appear in the top left of each rectangle.
@@ -9242,6 +9249,9 @@ dc.treeMap = function (parent, chartGroup) {
     _chart.initData = function () {
         if(_chart.levels() && _chart.measureColumn()) {
             _treeMapDataObject = crossfilterToTreeMapData(_chart.levels(), _chart.measureColumn());
+            if(!_treeMapDataObject.children.length) {
+            	return null;
+            }
         }
         else throw "Must provide dimension column array and measureColumn";
         return _chart;
@@ -9292,7 +9302,7 @@ dc.treeMap = function (parent, chartGroup) {
     };
 
     _chart._doRender = function() {
-		_chart.initData();
+		var checkForData = _chart.initData();
 		_chart.root().classed('dc-tree-map', true);
 		_chart.root().classed('dc-chart', false);
 		_chart.root().html('');
@@ -9339,6 +9349,7 @@ dc.treeMap = function (parent, chartGroup) {
 			.attr("x", _crumbTrailX)
 			.attr("y", _crumbTrailY - _margin.top)
 			.attr("dy", _crumbTrailHeight);
+
         _currentRoot = _treeMapDataObject.zoomLevelDrill(_zoomLevel);
 		initialize(_treeMapDataObject);
 		accumulate(_treeMapDataObject);
@@ -9387,6 +9398,9 @@ dc.treeMap = function (parent, chartGroup) {
 		function display(currentRoot) {
 			_currentRoot = currentRoot;
 
+			if(checkForData === null) {
+				_titleBarFunc = function(d) {return d.name;};
+			}
 			crumbTrail
 				.datum(currentRoot.parent)
               .on("click", function(d) {
@@ -9517,7 +9531,8 @@ dc.treeMap = function (parent, chartGroup) {
 				// Update the domain only after entering new elements.
 				x.domain([currentRoot.x, currentRoot.x + currentRoot.dx]);
 				y.domain([currentRoot.y, currentRoot.y + currentRoot.dy]);
-				_currentXscale = x, _currentYscale = y;
+				_currentXscale = x;
+				_currentYscale = y;
 
 				// Enable anti-aliasing during the transition.
 				svg.style("shape-rendering", null);
@@ -9592,16 +9607,28 @@ dc.treeMap = function (parent, chartGroup) {
 		var _tree = {name : _rootName, columnName : "root",
 					children : []};
 
+		//flag for no data
+        var noData = false; 
+
 		//loop over the rows, and then by column to populate the tree data
 		var rows = levelsData[0].dimension.top(Infinity);
 
-		rows.forEach(function(row) {
-			levelsData.forEach(function(dimColObj, columnIndex) {
-				var columnName = dimColObj.columnName;
-				if(row[measureColumn] > 0)
-					insertNode(row, columnName, columnIndex);
+
+		if(!rows.length) {
+		    noData = true;
+		    _tree = {name : "No Data", columnName : "root", value: _noDataMessage,
+			children : []};
+		}
+		else {
+			rows.forEach(function(row) {
+				levelsData.forEach(function(level, columnIndex) {
+					var columnName = level.columnName;
+					if(row[measureColumn] > 0)
+						insertNode(row, columnName, columnIndex);
+				});
 			});
-		});
+		}
+		
 
 		function insertNode(row, columnName, columnIndex) {
 			if(!nodesContains(row, columnName, columnIndex)) {
@@ -10261,7 +10288,9 @@ dc.sankey = function(parent, chartGroup) {
         //data structure
         var t = {nodes: [], links: []};
 
+        //flag for no data
         var noData = false; 
+
         //Create nodes for each row field value 
         levels.forEach(function(level) {
             var columnName = level.columnName;
