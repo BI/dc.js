@@ -1249,10 +1249,9 @@ from GeoJson data. This chart implementation was inspired by <a href="http://bl.
 example</a>.</p>
 <p>Examples:</p>
 <ul>
-<li><a href="http://dc-js.github.com/dc.js/vc/index.html">US Venture Capital Landscape 2011</a></li>
+<li><a href="http://dc-js.github.com/dc.js/vc/index.html">US Venture Capital Landscape 2011</a><h4 id="dc-geochoroplethchart-parent-chartgroup-">dc.geoChoroplethChart(parent[, chartGroup])</h4>
+Create a choropleth chart instance and attach it to the given parent element.</li>
 </ul>
-<h4 id="dc-geochoroplethchart-parent-chartgroup-">dc.geoChoroplethChart(parent[, chartGroup])</h4>
-<p>Create a choropleth chart instance and attach it to the given parent element.</p>
 <p>Parameters:</p>
 <ul>
 <li><p>parent : string | node | selection - any valid
@@ -1265,10 +1264,21 @@ Interaction with a chart will only trigger events and redraws within the chart�
 </ul>
 <p>Returns:
 A newly created choropleth chart instance</p>
-<pre><code class="lang-js">// <span class="operator"><span class="keyword">create</span> a choropleth chart under <span class="string">"#us-chart"</span> element <span class="keyword">using</span> the <span class="keyword">default</span> <span class="keyword">global</span> chart <span class="keyword">group</span>
-var chart1 = dc.geoChoroplethChart(<span class="string">"#us-chart"</span>);</span>
-// <span class="operator"><span class="keyword">create</span> a choropleth chart under <span class="string">"#us-chart2"</span> element <span class="keyword">using</span> chart <span class="keyword">group</span> A
-var chart2 = dc.compositeChart(<span class="string">"#us-chart2"</span>, <span class="string">"chartGroupA"</span>);</span></code></pre>
+<pre><code class="lang-js">// <span class="operator"><span class="keyword">create</span> a choropleth chart under <span class="string">'#us-chart'</span> element <span class="keyword">using</span> the <span class="keyword">default</span> <span class="keyword">global</span> chart <span class="keyword">group</span>
+var chart1 = dc.geoChoroplethChart(<span class="string">'#us-chart'</span>);</span>
+// <span class="operator"><span class="keyword">create</span> a choropleth chart under <span class="string">'#us-chart2'</span> element <span class="keyword">using</span> chart <span class="keyword">group</span> A
+var chart2 = dc.compositeChart(<span class="string">'#us-chart2'</span>, <span class="string">'chartGroupA'</span>);</span></code></pre>
+<h4 id="-enablezoom-boolean-">.enableZoom(boolean)</h4>
+<p>Set or get zoom enable value. Default value is false. Set enableZoom(true) to enable built in zoom features. 
+Includes basic d3.zoom scroll zoom, and click-drag panning, as well as button controls for 
+“+” (zoom in), “-“ (zoom out) and “Reset Zoom”. </p>
+<p>By default, the “+/-“ controls will render in to “#zoomButton”, while the reset button will render in to
+“#resetZoomButton”. These value can be over-ridden in the methods below.</p>
+<h4 id="-afterzoom-function-">.afterZoom(function)</h4>
+<p>Set or get the function that will execute after zoom. Your afterZoom function should take two parameters (mapGroupD3Node, scaleNumber)
+These values can be used inside your function to dynamically alter styles of map features as zooming occurs. </p>
+<p>For example: 
+Fading labels in/out as zoom occurs, scaling line weight with zoom level, etc.</p>
 <h4 id="-overlaygeojson-json-name-keyaccessor-mandatory-">.overlayGeoJson(json, name, keyAccessor) - <strong>mandatory</strong></h4>
 <p>Use this function to insert a new GeoJson map layer. This function can be invoked multiple times
 if you have multiple GeoJson data layers to render on top of each other. If you overlay multiple
@@ -1277,12 +1287,12 @@ layers with the same name the new overlay will override the existing one.</p>
 <ul>
 <li>json - GeoJson feed</li>
 <li>name - name of the layer</li>
-<li>keyAccessor - accessor function used to extract “key” from the GeoJson data. The key extracted by
+<li>keyAccessor - accessor function used to extract ‘key’ from the GeoJson data. The key extracted by
 this function should match the keys returned by the crossfilter groups.</li>
 </ul>
-<pre><code class="lang-js"><span class="comment">// insert a layer for rendering US states</span>
-chart<span class="variable">.overlayGeoJson</span>(statesJson<span class="variable">.features</span>, <span class="string">"state"</span>, function(d) {
-    <span class="keyword">return</span> d<span class="variable">.properties</span><span class="variable">.name</span>;
+<pre><code class="lang-js"><span class="regexp">//</span> insert a layer <span class="keyword">for</span> rendering US states
+chart.overlayGeoJson(statesJson.features, <span class="string">'state'</span>, <span class="reserved">function</span>(d) {
+    <span class="keyword">return</span> d.properties.name;
 });</code></pre>
 <h4 id="-projection-projection-">.projection(projection)</h4>
 <p>Set custom geo projection function. See the available <a href="https://github.com/mbostock/d3/wiki/Geo-Projections">d3 geo projection

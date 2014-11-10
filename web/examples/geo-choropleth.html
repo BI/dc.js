@@ -1,0 +1,66 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <title>dc.js - Geo Choropleth Chart Example</title>
+    <meta charset="UTF-8">
+    <link rel="stylesheet" type="text/css" href="../css/dc.css"/>
+    <style>
+    	.zoomControl {
+    		margin: 20px;
+        float:right;
+    	}
+      .zoomControlsContainer {
+        position: absolute;
+        z-index: 999;
+        text-align:right;
+      }
+    </style>
+</head>
+<body>
+
+<div id="map">
+<div class="zoomControlsContainer">
+  <div class="zoomButton" class="zoomControl"></div>
+  <div class="resetZoomButton" class="zoomControl"></div>
+</div>
+</div>
+
+
+
+<script type="text/javascript" src="../js/d3.js"></script>
+<script type="text/javascript" src="../js/crossfilter.js"></script>
+<script type="text/javascript" src="../js/dc.js"></script>
+<script type="text/javascript" src="../../spec/helpers/fixtures.js"></script>
+<script type="text/javascript" src="../../spec/helpers/geoFixtures.js"></script>
+<script type="text/javascript">
+
+var chart, data, id;
+var stateDimension, stateValueSumGroup;
+var geoJson;
+var width, height;
+
+
+data = crossfilter(loadDateFixture());
+stateDimension = data.dimension(function(d){return d.state;});
+stateValueSumGroup = stateDimension.group().reduceSum(function(d){return d.value;});
+
+geoJson = loadGeoFixture();
+width = 1000;
+height = 600;
+
+map = dc.geoChoroplethChart('#map')
+  .width(width)
+  .height(height)
+  .dimension(stateDimension)
+  .group(stateValueSumGroup)
+  .enableZoom(true)
+  .overlayGeoJson(geoJson.features, 'state', function (d) {
+      return d.properties.name;
+  });
+
+
+dc.renderAll();
+</script>
+
+</body>
+</html>

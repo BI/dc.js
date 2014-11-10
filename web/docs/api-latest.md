@@ -1474,7 +1474,6 @@ for example, will ensure a lineChart series connects its points in increasing ke
 rather than haphazardly.
 
 ## Geo Choropleth Chart
-
 Includes: [Color Mixin](#color-mixin), [Base Mixin](#base-mixin)
 
 The geo choropleth chart is designed as an easy way to create a crossfilter driven choropleth map
@@ -1483,7 +1482,6 @@ example](http://bl.ocks.org/4060606).
 
 Examples:
 * [US Venture Capital Landscape 2011](http://dc-js.github.com/dc.js/vc/index.html)
-
 #### dc.geoChoroplethChart(parent[, chartGroup])
 Create a choropleth chart instance and attach it to the given parent element.
 
@@ -1499,11 +1497,26 @@ Returns:
 A newly created choropleth chart instance
 
 ```js
-// create a choropleth chart under "#us-chart" element using the default global chart group
-var chart1 = dc.geoChoroplethChart("#us-chart");
-// create a choropleth chart under "#us-chart2" element using chart group A
-var chart2 = dc.compositeChart("#us-chart2", "chartGroupA");
+// create a choropleth chart under '#us-chart' element using the default global chart group
+var chart1 = dc.geoChoroplethChart('#us-chart');
+// create a choropleth chart under '#us-chart2' element using chart group A
+var chart2 = dc.compositeChart('#us-chart2', 'chartGroupA');
 ```
+
+#### .enableZoom(boolean)
+Set or get zoom enable value. Default value is false. Set enableZoom(true) to enable built in zoom features. 
+Includes basic d3.zoom scroll zoom, and click-drag panning, as well as button controls for 
+"+" (zoom in), "-" (zoom out) and "Reset Zoom". 
+
+By default, the "+/-" controls will render in to "#zoomButton", while the reset button will render in to
+"#resetZoomButton". These value can be over-ridden in the methods below.
+
+#### .afterZoom(function)
+Set or get the function that will execute after zoom. Your afterZoom function should take two parameters (mapGroupD3Node, scaleNumber)
+These values can be used inside your function to dynamically alter styles of map features as zooming occurs. 
+
+For example: 
+Fading labels in/out as zoom occurs, scaling line weight with zoom level, etc.
 
 #### .overlayGeoJson(json, name, keyAccessor) - **mandatory**
 Use this function to insert a new GeoJson map layer. This function can be invoked multiple times
@@ -1513,12 +1526,12 @@ layers with the same name the new overlay will override the existing one.
 Parameters:
 * json - GeoJson feed
 * name - name of the layer
-* keyAccessor - accessor function used to extract "key" from the GeoJson data. The key extracted by
+* keyAccessor - accessor function used to extract 'key' from the GeoJson data. The key extracted by
 this function should match the keys returned by the crossfilter groups.
 
 ```js
 // insert a layer for rendering US states
-chart.overlayGeoJson(statesJson.features, "state", function(d) {
+chart.overlayGeoJson(statesJson.features, 'state', function(d) {
     return d.properties.name;
 });
 ```
