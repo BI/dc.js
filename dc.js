@@ -6203,6 +6203,8 @@ dc.geoChoroplethChart = function (parent, chartGroup) {
 
     function setupZoomControls() {
 
+        _chart.select('.'+_zoomButtonClass).html('');
+        
         var container = _chart.select('.'+_zoomButtonClass)
             .append('div')
             .classed("dc-zoom-button", true);
@@ -6213,6 +6215,8 @@ dc.geoChoroplethChart = function (parent, chartGroup) {
         var outButton = container.append('div')
             .classed("out", true)
             .text('-');
+
+        var resetButton = _chart.select('.'+_resetZoomButtonClass).html('');
 
         var resetButton = _chart.select('.'+_resetZoomButtonClass)
             .append('div')
