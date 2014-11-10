@@ -1,21 +1,29 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <title>dc.js - Geo Bubble Overlay Chart Example</title>
+    <title>dc.js - Geo Choropleth Chart Example</title>
     <meta charset="UTF-8">
     <link rel="stylesheet" type="text/css" href="../css/dc.css"/>
     <style>
     	.zoomControl {
-    		border: 1px solid black;
-    		background: white;
     		margin: 20px;
+        float:right;
     	}
+      .zoomControlsContainer {
+        position: absolute;
+        z-index: 999;
+        text-align:right;
+      }
     </style>
 </head>
 <body>
-<div id="zoomButton" class="zoomControl"></div>
-<div id="resetZoomButton" class="zoomControl"></div>
-<div id="map"></div>
+
+<div id="map">
+<div class="zoomControlsContainer">
+  <div class="zoomButton" class="zoomControl"></div>
+  <div class="resetZoomButton" class="zoomControl"></div>
+</div>
+</div>
 
 
 
@@ -45,6 +53,7 @@ map = dc.geoChoroplethChart('#map')
   .height(height)
   .dimension(stateDimension)
   .group(stateValueSumGroup)
+  .enableZoom(true)
   .overlayGeoJson(geoJson.features, 'state', function (d) {
       return d.properties.name;
   });

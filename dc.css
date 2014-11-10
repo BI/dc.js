@@ -367,3 +367,32 @@ div.dc-chart {
 .dc-bar-gauge .marker-rect {
     fill: green;
 }
+
+.dc-zoom-button {
+    background-color: #FFF;
+    color: #555;
+    cursor: pointer;
+    width: 20px;
+    font-size: 10px;
+    text-align: center;
+    border: 1px solid #CCC;
+    border-radius: 4px;
+}
+.dc-zoom-button div {
+    font-size: 14px;
+    text-align: center;
+    font-weight: bold;
+}
+.dc-zoom-button .in {
+    border-bottom: 1px solid #CCC;
+}
+
+.dc-zoom-reset {
+    background-color: #FFF;
+    font-size: 10px;
+    cursor: pointer;
+    width: 60px;
+    text-align: center;
+    border: 1px solid #ccc;
+    border-radius: 4px;
+}

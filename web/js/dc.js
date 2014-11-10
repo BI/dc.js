@@ -5894,17 +5894,13 @@ dc.geoChoroplethChart = function (parent, chartGroup) {
     var _zoom;
     var _scaleExtent = [1,50];
     var _zoomed = zoomed;
-    var _zoomButtonParent = "#zoomButton";
-    var _resetZoomButtonParent = "#resetZoomButton"
-    var _enableZoom = true;
+    var _zoomButtonClass = "zoomButton";
+    var _resetZoomButtonClass = "resetZoomButton"
+    var _enableZoom = false;
+    var _afterZoom;
     var _g;
 
-    _chart._doRender = function () {
-
-        _zoom = d3.behavior.zoom()
-            .scaleExtent(_scaleExtent)
-            .on("zoom", _zoomed);
-
+    _chart._doRender = function () { 
         _chart.resetSvg();
         _g = _chart.svg().append('g');
         for (var layerIndex = 0; layerIndex < _geoJsons.length; ++layerIndex) {
@@ -5927,9 +5923,68 @@ dc.geoChoroplethChart = function (parent, chartGroup) {
             plotData(layerIndex);
         }
         _projectionFlag = false;
-        _chart.svg().call(_zoom);
-        setupZoomControls();
+
+        if (_enableZoom){
+            _zoom = d3.behavior.zoom()
+                .scaleExtent(_scaleExtent)
+                .on("zoom", _zoomed);   
+            _chart.svg().call(_zoom);
+            setupZoomControls(); 
+        }
     };
+
+    /**
+     #### .enableZoom(boolean)
+     Set or get zoom enable value. Default value is false. Set enableZoom(true) to enable built in zoom features. 
+     Includes basic d3.zoom scroll zoom, and click-drag panning, as well as button controls for 
+     "+" (zoom in), "-" (zoom out) and "Reset Zoom". 
+
+     By default, the "+/-" controls will render in to "#zoomButton", while the reset button will render in to
+     "#resetZoomButton". These value can be over-ridden in the methods below.
+
+    **/
+    _chart.enableZoom = function(_){
+        if (!arguments.length) return _enableZoom;
+        _enableZoom = _;
+        return _chart;
+    }
+
+    // /**
+    //  #### .zoomButtonParentId(cssId)
+    //  Set or get the parent element ID for the zoom button controls ("+/-").
+
+    // **/
+    // _chart.zoomButtonParentId = function(_){
+    //     if (!arguments.length) return _zoomButtonParentId;
+    //     _zoomButtonParentId = _;
+    //     return _chart;
+    // }
+
+    // *
+    //  #### .resetZoomButtonParentId(cssId)
+    //  Set or get the parent element ID for the reset zoom button.
+
+    // *
+    // _chart.resetZoomButtonParentId = function(_){
+    //     if (!arguments.length) return _resetZoomButtonParentId;
+    //     _resetZoomButtonParentId = _;
+    //     return _chart;
+    // }
+
+    /**
+     #### .afterZoom(function)
+     Set or get the function that will execute after zoom. Your afterZoom function should take two parameters (mapGroupD3Node, scaleNumber)
+     These values can be used inside your function to dynamically alter styles of map features as zooming occurs. 
+
+     For example: 
+     Fading labels in/out as zoom occurs, scaling line weight with zoom level, etc.
+
+    **/
+    _chart.afterZoom = function(_){
+        if (!arguments.length) return _afterZoom;
+        _afterZoom = _;
+        return _chart;
+    }
 
     function plotData(layerIndex) {
         var data = generateLayeredData();
@@ -6135,15 +6190,11 @@ dc.geoChoroplethChart = function (parent, chartGroup) {
         return _chart;
     };
 
-//
-// Zoom functionality adapted from https://github.com/NIFA/visualizations/blob/master/maps/nifa-funding-by-congressional-district/index.html
-// 
-
     function setupZoomControls() {
 
-        var container = d3.select(_zoomButtonParent)
+        var container = _chart.select('.'+_zoomButtonClass)
             .append('div')
-            .classed("zoomButtonsContainer", true);
+            .classed("dc-zoom-button", true);
 
         var inButton = container.append('div')
             .classed("in", true)
@@ -6152,9 +6203,9 @@ dc.geoChoroplethChart = function (parent, chartGroup) {
             .classed("out", true)
             .text('-');
 
-        var resetButton = d3.select(_resetZoomButtonParent)
+        var resetButton = _chart.select('.'+_resetZoomButtonClass)
             .append('div')
-            .classed("resetZoomButton", true)
+            .classed("dc-zoom-reset", true)
             .text("Reset Zoom")
             .on("click", resetZoom);
 
@@ -6162,7 +6213,6 @@ dc.geoChoroplethChart = function (parent, chartGroup) {
           if(_zoom.scale()*2 > _zoom.scaleExtent()[1]){
           }else{
             parametricZoom(_zoom.scale()*2);
-            //zoom.event(svg);
           }
         });
         outButton.on("click", function() {
@@ -6170,7 +6220,6 @@ dc.geoChoroplethChart = function (parent, chartGroup) {
             resetZoom();
           }else{
             parametricZoom(_zoom.scale()/2);
-            //zoom.event(svg);
           }
         });
     }
@@ -6179,8 +6228,8 @@ dc.geoChoroplethChart = function (parent, chartGroup) {
     function zoomed() {
         var s;
         var t;
-        var ox = width / 2 - 50,
-            oy = width / 2;
+        var ox = _chart.width() / 2 - 50,
+            oy = _chart.width() / 2;
 
         if(d3.event){
            s = d3.event.scale;
@@ -6190,14 +6239,17 @@ dc.geoChoroplethChart = function (parent, chartGroup) {
            t= _zoom.translate();
         }
         
-        t[0] = Math.min((width / 2 - ox - 100) * (s - 1), Math.max((width / 2 + ox) * (1 - s), t[0]));
-        t[1] = Math.min((height / 2 - oy + 200) * (s - 1), Math.max((height / 2 + oy - 175)  * (1 - s), t[1]));
+        t[0] = Math.min((_chart.width() / 2 - ox - 100) * (s - 1), Math.max((_chart.width() / 2 + ox) * (1 - s), t[0]));
+        t[1] = Math.min((_chart.height() / 2 - oy + 200) * (s - 1), Math.max((_chart.height() / 2 + oy - 175)  * (1 - s), t[1]));
         _zoom.translate(t);
         _g.attr("transform",
             "translate(" + t + ")" +
             "scale(" + s + ")"
         );
 
+        if (_afterZoom){
+            _afterZoom(g, s);
+        }
         /*
         // Zoom dependent fading of labels and lines
         g.select(".state-boundaries").style("stroke-width", 1.75 / s + "px");
@@ -6220,17 +6272,16 @@ dc.geoChoroplethChart = function (parent, chartGroup) {
         });
     }
     function parametricZoom(pScale) {
-        /*mouse_tip.style("display","none");*/
         var translate = _zoom.translate(),
             translate0 = [],
             l = [],
             view = {x: translate[0], y: translate[1], k: _zoom.scale()},
             extent = _zoom.scaleExtent(),
-            center = [width / 2, height / 2],
+            center = [_chart.width() / 2, _chart.height() / 2],
             target_zoom = pScale,
             s = pScale,
-            ox = width / 2 - 50,
-            oy = width / 2;
+            ox = _chart.width() / 2 - 50,
+            oy = _chart.width() / 2;
         d3.event.preventDefault();
         if (target_zoom < extent[0] || target_zoom > extent[1]) { return false; }
         translate0 = [(center[0] - view.x) / view.k, (center[1] - view.y) / view.k];
