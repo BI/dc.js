@@ -46,7 +46,7 @@ dc.geoChoroplethChart = function (parent, chartGroup) {
     var _scaleExtent = [1,50];
     var _zoomed = zoomed;
     var _zoomButtonClass = "zoomButton";
-    var _resetZoomButtonClass = "resetZoomButton"
+    var _resetZoomButtonClass = "resetZoomButton";
     var _enableZoom = false;
     var _afterZoom;
     var _g;
@@ -98,7 +98,7 @@ dc.geoChoroplethChart = function (parent, chartGroup) {
         if (!arguments.length) return _enableZoom;
         _enableZoom = _;
         return _chart;
-    }
+    };
 
     // /**
     //  #### .zoomButtonParentId(cssId)
@@ -135,7 +135,7 @@ dc.geoChoroplethChart = function (parent, chartGroup) {
         if (!arguments.length) return _afterZoom;
         _afterZoom = _;
         return _chart;
-    }
+    };
 
     function plotData(layerIndex) {
         var data = generateLayeredData();
@@ -358,24 +358,24 @@ dc.geoChoroplethChart = function (parent, chartGroup) {
 
         var resetButton = _chart.select('.'+_resetZoomButtonClass).html('');
 
-        var resetButton = _chart.select('.'+_resetZoomButtonClass)
+        resetButton = _chart.select('.'+_resetZoomButtonClass)
             .append('div')
             .classed("dc-zoom-reset", true)
             .text("Reset Zoom")
             .on("click", resetZoom);
 
         inButton.on("click", function() {
-          if(_zoom.scale()*2 > _zoom.scaleExtent()[1]){
-          }else{
-            parametricZoom(_zoom.scale()*2);
-          }
+            if(_zoom.scale()*2 > _zoom.scaleExtent()[1]){
+            }else{
+                parametricZoom(_zoom.scale()*2);
+            }
         });
         outButton.on("click", function() {
-          if(_zoom.scale()/2 < _zoom.scaleExtent()[0]){
-            resetZoom();
-          }else{
-            parametricZoom(_zoom.scale()/2);
-          }
+            if(_zoom.scale()/2 < _zoom.scaleExtent()[0]){
+                resetZoom();
+            }else{
+                parametricZoom(_zoom.scale()/2);
+            }
         });
     }
 
@@ -387,11 +387,11 @@ dc.geoChoroplethChart = function (parent, chartGroup) {
             oy = _chart.width() / 2;
 
         if(d3.event){
-           s = d3.event.scale;
-           t = d3.event.translate;
+            s = d3.event.scale;
+            t = d3.event.translate;
         }else{
-           s= _zoom.scale();
-           t= _zoom.translate();
+            s= _zoom.scale();
+            t= _zoom.translate();
         }
         
         t[0] = Math.min((_chart.width() / 2 - ox - 100) * (s - 1), Math.max((_chart.width() / 2 + ox) * (1 - s), t[0]));

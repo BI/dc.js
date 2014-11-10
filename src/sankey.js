@@ -42,7 +42,8 @@ dc.sankey = function(parent, chartGroup) {
     var _sankey, _sankeyDataObject;
     var _margin = {top: 1, right: 1, bottom: 6, left: 1}, //margins needed so sankey edges aren't cut off
         _width = 960 - _margin.left - _margin.right,
-        _height = 500 - _margin.top - _margin.bottom;
+        _height = 500 - _margin.top - _margin.bottom,
+        _noDataMessage = "No data for the selected filters";
 
     var _formatNumber = d3.format(",.0f"),
         _format = function(d) { return _formatNumber(d); },
@@ -54,6 +55,12 @@ dc.sankey = function(parent, chartGroup) {
     _chart.label = function(_) {
         if(!arguments.length) return _labelFunc;
         _labelFunc = _;
+        return _chart;
+    };
+
+    _chart.noDataMessage = function(_) {
+        if(!arguments.length) return _noDataMessage;
+        _noDataMessage = _;
         return _chart;
     };
 
@@ -102,6 +109,8 @@ dc.sankey = function(parent, chartGroup) {
     _chart.initData = function () {
         if(_chart.levels() && _chart.measureColumn()) {
             _sankeyDataObject = crossfilterToSankeyData(_chart.levels(), _chart.measureColumn());
+            if(_sankeyDataObject === null)
+                return null;
         }
         else throw "Must provide dimension column array levels and the measureColumn";
         return _chart;
@@ -112,7 +121,6 @@ dc.sankey = function(parent, chartGroup) {
     }
 
     _chart._doRender = function() {
-        _chart.initData();
         _chart.root().classed('dc-sankey', true);
         _chart.root().classed('dc-chart', false);
         _chart.resetSvg();
@@ -122,7 +130,17 @@ dc.sankey = function(parent, chartGroup) {
             .attr("height", _height + _margin.top + _margin.bottom)
           .append("g")
             .attr("transform", "translate(" + _margin.left + "," + _margin.top + ")");
+        var checkForData = _chart.initData();
+        if(checkForData === null) {
+            _chart.select("g").append("g").append("text")
+                .attr("x", _width/2 + _margin.left)
+                .attr("y", _height/2 + _margin.top)
+                .classed("no-data-sankey", true)
+                .text(_noDataMessage);
 
+            return null;
+        }
+        
         _sankey = d3.sankey()
             .nodeWidth(15)
             .nodePadding(10)
@@ -250,16 +268,28 @@ dc.sankey = function(parent, chartGroup) {
         //data structure
         var t = {nodes: [], links: []};
 
+        //flag for no data
+        var noData = false; 
+
         //Create nodes for each row field value 
         levels.forEach(function(level) {
             var columnName = level.columnName;
             var s = level.dimension.top(Infinity);
+            if(!s.length) {
+                noData = true;
+                return; 
+            }
             s.forEach(function(row){
                 if(row[measureColumn] > 0)
                     insertNodes(row, columnName);
                 
             });
         });
+
+        //if the chart receives no data return a null sankey data object
+        if(noData) {
+            return null;
+        }
 
         //Important to do the linking only after all of the nodes have been created
         levels.forEach(function(level, index) {

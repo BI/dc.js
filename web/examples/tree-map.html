@@ -96,7 +96,7 @@ rect.child.selected {
 <script src="http://d3js.org/d3.v3.min.js"></script>
 <script>
 var data = crossfilter(loadDateFixtureSankey());
-var stateFromDimension, stateLiveDimension, regionDimension, countryDimension;
+//stateFromDimension, stateLiveDimension, regionDimension, countryDimension;
 stateFromDimension = data.dimension(function(d){return d.state_from;});
 stateLiveDimension = data.dimension(function(d){return d.state_live;});
 regionDimension = data.dimension(function(d){return d.region;});

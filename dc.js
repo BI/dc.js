@@ -5906,7 +5906,7 @@ dc.geoChoroplethChart = function (parent, chartGroup) {
     var _scaleExtent = [1,50];
     var _zoomed = zoomed;
     var _zoomButtonClass = "zoomButton";
-    var _resetZoomButtonClass = "resetZoomButton"
+    var _resetZoomButtonClass = "resetZoomButton";
     var _enableZoom = false;
     var _afterZoom;
     var _g;
@@ -5958,7 +5958,7 @@ dc.geoChoroplethChart = function (parent, chartGroup) {
         if (!arguments.length) return _enableZoom;
         _enableZoom = _;
         return _chart;
-    }
+    };
 
     // /**
     //  #### .zoomButtonParentId(cssId)
@@ -5995,7 +5995,7 @@ dc.geoChoroplethChart = function (parent, chartGroup) {
         if (!arguments.length) return _afterZoom;
         _afterZoom = _;
         return _chart;
-    }
+    };
 
     function plotData(layerIndex) {
         var data = generateLayeredData();
@@ -6218,24 +6218,24 @@ dc.geoChoroplethChart = function (parent, chartGroup) {
 
         var resetButton = _chart.select('.'+_resetZoomButtonClass).html('');
 
-        var resetButton = _chart.select('.'+_resetZoomButtonClass)
+        resetButton = _chart.select('.'+_resetZoomButtonClass)
             .append('div')
             .classed("dc-zoom-reset", true)
             .text("Reset Zoom")
             .on("click", resetZoom);
 
         inButton.on("click", function() {
-          if(_zoom.scale()*2 > _zoom.scaleExtent()[1]){
-          }else{
-            parametricZoom(_zoom.scale()*2);
-          }
+            if(_zoom.scale()*2 > _zoom.scaleExtent()[1]){
+            }else{
+                parametricZoom(_zoom.scale()*2);
+            }
         });
         outButton.on("click", function() {
-          if(_zoom.scale()/2 < _zoom.scaleExtent()[0]){
-            resetZoom();
-          }else{
-            parametricZoom(_zoom.scale()/2);
-          }
+            if(_zoom.scale()/2 < _zoom.scaleExtent()[0]){
+                resetZoom();
+            }else{
+                parametricZoom(_zoom.scale()/2);
+            }
         });
     }
 
@@ -6247,11 +6247,11 @@ dc.geoChoroplethChart = function (parent, chartGroup) {
             oy = _chart.width() / 2;
 
         if(d3.event){
-           s = d3.event.scale;
-           t = d3.event.translate;
+            s = d3.event.scale;
+            t = d3.event.translate;
         }else{
-           s= _zoom.scale();
-           t= _zoom.translate();
+            s= _zoom.scale();
+            t= _zoom.translate();
         }
         
         t[0] = Math.min((_chart.width() / 2 - ox - 100) * (s - 1), Math.max((_chart.width() / 2 + ox) * (1 - s), t[0]));
@@ -9281,7 +9281,8 @@ dc.treeMap = function (parent, chartGroup) {
 	var _chart = dc.colorMixin(dc.hierarchyMixin(dc.baseMixin({})));
 	var _treeMapd3, _treeMapDataObject, _currentRoot, _currentXscale, _currentYscale,
 		_rootName = "root",
-		_zoomLevel = 0, _colors = d3.scale.category20c();
+		_zoomLevel = 0, _colors = d3.scale.category20c(),
+		_noDataMessage = "No Data for the selected filters";
 	var _margin = {top: 0, right: 0, bottom: 0, left: 0},
 		_width = 960, _height = 500 - _margin.top - _margin.bottom,
         _crumbTrailX = 6, _crumbTrailY = 6, _crumbTrailHeight = ".75em",
@@ -9395,6 +9396,12 @@ dc.treeMap = function (parent, chartGroup) {
         return _chart;
     };
 
+    _chart.noDataMessage = function(_) {
+    	if(!arguments.length) return _noDataMessage;
+    	_noDataMessage = _;
+    	return _chart;
+    }
+
     /**
     #### .label(callback)
     Pass in a custom label function. These labels are what appear in the top left of each rectangle.
@@ -9428,6 +9435,9 @@ dc.treeMap = function (parent, chartGroup) {
     _chart.initData = function () {
         if(_chart.levels() && _chart.measureColumn()) {
             _treeMapDataObject = crossfilterToTreeMapData(_chart.levels(), _chart.measureColumn());
+            if(!_treeMapDataObject.children.length) {
+            	return null;
+            }
         }
         else throw "Must provide dimension column array and measureColumn";
         return _chart;
@@ -9478,7 +9488,7 @@ dc.treeMap = function (parent, chartGroup) {
     };
 
     _chart._doRender = function() {
-		_chart.initData();
+		var checkForData = _chart.initData();
 		_chart.root().classed('dc-tree-map', true);
 		_chart.root().classed('dc-chart', false);
 		_chart.root().html('');
@@ -9525,6 +9535,7 @@ dc.treeMap = function (parent, chartGroup) {
 			.attr("x", _crumbTrailX)
 			.attr("y", _crumbTrailY - _margin.top)
 			.attr("dy", _crumbTrailHeight);
+
         _currentRoot = _treeMapDataObject.zoomLevelDrill(_zoomLevel);
 		initialize(_treeMapDataObject);
 		accumulate(_treeMapDataObject);
@@ -9573,6 +9584,9 @@ dc.treeMap = function (parent, chartGroup) {
 		function display(currentRoot) {
 			_currentRoot = currentRoot;
 
+			if(checkForData === null) {
+				_titleBarFunc = function(d) {return d.name;};
+			}
 			crumbTrail
 				.datum(currentRoot.parent)
               .on("click", function(d) {
@@ -9703,7 +9717,8 @@ dc.treeMap = function (parent, chartGroup) {
 				// Update the domain only after entering new elements.
 				x.domain([currentRoot.x, currentRoot.x + currentRoot.dx]);
 				y.domain([currentRoot.y, currentRoot.y + currentRoot.dy]);
-				_currentXscale = x, _currentYscale = y;
+				_currentXscale = x;
+				_currentYscale = y;
 
 				// Enable anti-aliasing during the transition.
 				svg.style("shape-rendering", null);
@@ -9778,16 +9793,28 @@ dc.treeMap = function (parent, chartGroup) {
 		var _tree = {name : _rootName, columnName : "root",
 					children : []};
 
+		//flag for no data
+        var noData = false; 
+
 		//loop over the rows, and then by column to populate the tree data
 		var rows = levelsData[0].dimension.top(Infinity);
 
-		rows.forEach(function(row) {
-			levelsData.forEach(function(dimColObj, columnIndex) {
-				var columnName = dimColObj.columnName;
-				if(row[measureColumn] > 0)
-					insertNode(row, columnName, columnIndex);
+
+		if(!rows.length) {
+		    noData = true;
+		    _tree = {name : "No Data", columnName : "root", value: _noDataMessage,
+			children : []};
+		}
+		else {
+			rows.forEach(function(row) {
+				levelsData.forEach(function(level, columnIndex) {
+					var columnName = level.columnName;
+					if(row[measureColumn] > 0)
+						insertNode(row, columnName, columnIndex);
+				});
 			});
-		});
+		}
+		
 
 		function insertNode(row, columnName, columnIndex) {
 			if(!nodesContains(row, columnName, columnIndex)) {
@@ -10221,7 +10248,8 @@ dc.sankey = function(parent, chartGroup) {
     var _sankey, _sankeyDataObject;
     var _margin = {top: 1, right: 1, bottom: 6, left: 1}, //margins needed so sankey edges aren't cut off
         _width = 960 - _margin.left - _margin.right,
-        _height = 500 - _margin.top - _margin.bottom;
+        _height = 500 - _margin.top - _margin.bottom,
+        _noDataMessage = "No data for the selected filters";
 
     var _formatNumber = d3.format(",.0f"),
         _format = function(d) { return _formatNumber(d); },
@@ -10233,6 +10261,12 @@ dc.sankey = function(parent, chartGroup) {
     _chart.label = function(_) {
         if(!arguments.length) return _labelFunc;
         _labelFunc = _;
+        return _chart;
+    };
+
+    _chart.noDataMessage = function(_) {
+        if(!arguments.length) return _noDataMessage;
+        _noDataMessage = _;
         return _chart;
     };
 
@@ -10281,6 +10315,8 @@ dc.sankey = function(parent, chartGroup) {
     _chart.initData = function () {
         if(_chart.levels() && _chart.measureColumn()) {
             _sankeyDataObject = crossfilterToSankeyData(_chart.levels(), _chart.measureColumn());
+            if(_sankeyDataObject === null)
+                return null;
         }
         else throw "Must provide dimension column array levels and the measureColumn";
         return _chart;
@@ -10291,7 +10327,6 @@ dc.sankey = function(parent, chartGroup) {
     }
 
     _chart._doRender = function() {
-        _chart.initData();
         _chart.root().classed('dc-sankey', true);
         _chart.root().classed('dc-chart', false);
         _chart.resetSvg();
@@ -10301,7 +10336,17 @@ dc.sankey = function(parent, chartGroup) {
             .attr("height", _height + _margin.top + _margin.bottom)
           .append("g")
             .attr("transform", "translate(" + _margin.left + "," + _margin.top + ")");
+        var checkForData = _chart.initData();
+        if(checkForData === null) {
+            _chart.select("g").append("g").append("text")
+                .attr("x", _width/2 + _margin.left)
+                .attr("y", _height/2 + _margin.top)
+                .classed("no-data-sankey", true)
+                .text(_noDataMessage);
 
+            return null;
+        }
+        
         _sankey = d3.sankey()
             .nodeWidth(15)
             .nodePadding(10)
@@ -10429,16 +10474,28 @@ dc.sankey = function(parent, chartGroup) {
         //data structure
         var t = {nodes: [], links: []};
 
+        //flag for no data
+        var noData = false; 
+
         //Create nodes for each row field value 
         levels.forEach(function(level) {
             var columnName = level.columnName;
             var s = level.dimension.top(Infinity);
+            if(!s.length) {
+                noData = true;
+                return; 
+            }
             s.forEach(function(row){
                 if(row[measureColumn] > 0)
                     insertNodes(row, columnName);
                 
             });
         });
+
+        //if the chart receives no data return a null sankey data object
+        if(noData) {
+            return null;
+        }
 
         //Important to do the linking only after all of the nodes have been created
         levels.forEach(function(level, index) {
