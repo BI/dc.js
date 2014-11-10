@@ -1511,12 +1511,6 @@ Includes basic d3.zoom scroll zoom, and click-drag panning, as well as button co
 By default, the "+/-" controls will render in to "#zoomButton", while the reset button will render in to
 "#resetZoomButton". These value can be over-ridden in the methods below.
 
-#### .zoomButtonParentId(cssId)
-Set or get the parent element ID for the zoom button controls ("+/-").
-
-#### .resetZoomButtonParentId(cssId)
-Set or get the parent element ID for the reset zoom button.
-
 #### .afterZoom(function)
 Set or get the function that will execute after zoom. Your afterZoom function should take two parameters (mapGroupD3Node, scaleNumber)
 These values can be used inside your function to dynamically alter styles of map features as zooming occurs. 
@@ -2201,20 +2195,26 @@ Returns:
 A newly created sankey instance
 
 ```js
-//setup the dimension/column name array needed to translate crossfilter data into the sankey 
+//setup the dimension/column name array(levels) needed to translate crossfilter data into the sankey 
 //data structure
-var dimensionColumnnamePairs = [{'dimension' : someDimension, 'columnName' : 'columnNamefromCSV'},
+var levels = [{'dimension' : someDimension, 'columnName' : 'columnNamefromCSV'},
                                {'dimension' : anotherDimension, 'columnName' : 'anotherColumnName'}];
 //which column name from the CSV contains the value for measuring the data
-var measure_column = 'value';
+var measureColumn = 'value';
 // create a sankey chart under #sankey element using the default global chart group
 var chart = dc.sankey("#sankey")
-               .dimColPairs(dimensionColumnnamePairs)
-               .measure_column(measure_column);
+               .levels(levels)
+               .measureColumn(measureColumn);
 
 //filter manually by passing in the column name, and filter value like this
 chart.filter('columnNamefromCSV', 'singlefiltervalue');
 ```
+
+#### .nodeToolTip(function)
+Specify the callback to display text in the tooltip when hovering over nodes.
+
+#### .linkToolTip(function)
+Specify the callback to display text in the tooltip when hovering over links between nodes.
 
 #### .width(Number)
 Specify the width of the SVG. Default is 960

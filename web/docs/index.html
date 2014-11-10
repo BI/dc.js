@@ -1274,10 +1274,6 @@ Includes basic d3.zoom scroll zoom, and click-drag panning, as well as button co
 “+” (zoom in), “-“ (zoom out) and “Reset Zoom”. </p>
 <p>By default, the “+/-“ controls will render in to “#zoomButton”, while the reset button will render in to
 “#resetZoomButton”. These value can be over-ridden in the methods below.</p>
-<h4 id="-zoombuttonparentid-cssid-">.zoomButtonParentId(cssId)</h4>
-<p>Set or get the parent element ID for the zoom button controls (“+/-“).</p>
-<h4 id="-resetzoombuttonparentid-cssid-">.resetZoomButtonParentId(cssId)</h4>
-<p>Set or get the parent element ID for the reset zoom button.</p>
 <h4 id="-afterzoom-function-">.afterZoom(function)</h4>
 <p>Set or get the function that will execute after zoom. Your afterZoom function should take two parameters (mapGroupD3Node, scaleNumber)
 These values can be used inside your function to dynamically alter styles of map features as zooming occurs. </p>
@@ -1796,19 +1792,23 @@ Interaction with a chart will only trigger events and redraws within the chart�
 </ul>
 <p>Returns:
 A newly created sankey instance</p>
-<pre><code class="lang-js">//setup <span class="keyword">the</span> dimension/column <span class="property">name</span> array needed <span class="keyword">to</span> translate crossfilter data <span class="keyword">into</span> <span class="keyword">the</span> sankey 
+<pre><code class="lang-js">//setup <span class="keyword">the</span> dimension/column <span class="property">name</span> array(levels) needed <span class="keyword">to</span> translate crossfilter data <span class="keyword">into</span> <span class="keyword">the</span> sankey 
 //data structure
-var dimensionColumnnamePairs = [{'dimension' : someDimension, 'columnName' : 'columnNamefromCSV'},
+var levels = [{'dimension' : someDimension, 'columnName' : 'columnNamefromCSV'},
                                {'dimension' : anotherDimension, 'columnName' : 'anotherColumnName'}];
 //which column <span class="property">name</span> <span class="keyword">from</span> <span class="keyword">the</span> CSV <span class="keyword">contains</span> <span class="keyword">the</span> value <span class="keyword">for</span> measuring <span class="keyword">the</span> data
-var measure_column = 'value';
+var measureColumn = 'value';
 // create a sankey chart under <span class="comment">#sankey element using the default global chart group</span>
 var chart = dc.sankey(<span class="string">"#sankey"</span>)
-               .dimColPairs(dimensionColumnnamePairs)
-               .measure_column(measure_column);
+               .levels(levels)
+               .measureColumn(measureColumn);
 
 //filter manually <span class="keyword">by</span> passing <span class="keyword">in</span> <span class="keyword">the</span> column <span class="property">name</span>, <span class="keyword">and</span> filter value like this
 chart.filter('columnNamefromCSV', 'singlefiltervalue');</code></pre>
+<h4 id="-nodetooltip-function-">.nodeToolTip(function)</h4>
+<p>Specify the callback to display text in the tooltip when hovering over nodes.</p>
+<h4 id="-linktooltip-function-">.linkToolTip(function)</h4>
+<p>Specify the callback to display text in the tooltip when hovering over links between nodes.</p>
 <h4 id="-width-number-">.width(Number)</h4>
 <p>Specify the width of the SVG. Default is 960</p>
 <h4 id="-height-number-">.height(Number)</h4>
