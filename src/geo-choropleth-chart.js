@@ -195,7 +195,10 @@ dc.geoChoroplethChart = function (parent, chartGroup) {
                 return 'none';
             })
             .on('click', function (d) {
-                return _chart.onClick(d, layerIndex);
+                if(d3.event.defaultPrevented) 
+                    return;
+                else 
+                    return _chart.onClick(d, layerIndex);
             });
 
         dc.transition(paths, _chart.transitionDuration()).attr('fill', function (d, i) {
