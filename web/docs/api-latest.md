@@ -1511,7 +1511,7 @@ Includes basic d3.zoom scroll zoom, and click-drag panning, as well as button co
 By default, the "+/-" controls will render in to "#zoomButton", while the reset button will render in to
 "#resetZoomButton". These value can be over-ridden in the methods below.
 
-#### .afterZoom(function)
+#### .afterZoom([function])
 Set or get the function that will execute after zoom. Your afterZoom function should take two parameters (mapGroupD3Node, scaleNumber)
 These values can be used inside your function to dynamically alter styles of map features as zooming occurs. 
 

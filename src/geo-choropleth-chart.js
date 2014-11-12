@@ -100,30 +100,8 @@ dc.geoChoroplethChart = function (parent, chartGroup) {
         return _chart;
     };
 
-    // /**
-    //  #### .zoomButtonParentId(cssId)
-    //  Set or get the parent element ID for the zoom button controls ("+/-").
-
-    // **/
-    // _chart.zoomButtonParentId = function(_){
-    //     if (!arguments.length) return _zoomButtonParentId;
-    //     _zoomButtonParentId = _;
-    //     return _chart;
-    // }
-
-    // *
-    //  #### .resetZoomButtonParentId(cssId)
-    //  Set or get the parent element ID for the reset zoom button.
-
-    // *
-    // _chart.resetZoomButtonParentId = function(_){
-    //     if (!arguments.length) return _resetZoomButtonParentId;
-    //     _resetZoomButtonParentId = _;
-    //     return _chart;
-    // }
-
     /**
-     #### .afterZoom(function)
+     #### .afterZoom([function])
      Set or get the function that will execute after zoom. Your afterZoom function should take two parameters (mapGroupD3Node, scaleNumber)
      These values can be used inside your function to dynamically alter styles of map features as zooming occurs. 
 
@@ -403,7 +381,7 @@ dc.geoChoroplethChart = function (parent, chartGroup) {
         );
 
         if (_afterZoom){
-            _afterZoom(g, s);
+            _afterZoom(_g, s);
         }
         /*
         // Zoom dependent fading of labels and lines
