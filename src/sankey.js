@@ -142,6 +142,24 @@ dc.sankey = function(parent, chartGroup) {
     }
 
     _chart._doRender = function() {
+        var checkForData = _chart.initData();
+        if(checkForData === null) {
+            _chart.root().html('');
+            _chart.root().append("div")
+                .classed("no-data-sankey", true)
+                .text(_noDataMessage);
+
+            return checkForData;
+        }
+        else if(checkForData == -1) {
+            _chart.root().html('');
+            _chart.root().append("div")
+                .classed("sankey-negative-data", true)
+                .text(_negativeDataMessage);
+
+            return checkForData;
+        }
+
         _chart.root().classed('dc-sankey', true);
         _chart.root().classed('dc-chart', false);
         _chart.resetSvg();
@@ -151,25 +169,8 @@ dc.sankey = function(parent, chartGroup) {
             .attr("height", _height + _margin.top + _margin.bottom)
           .append("g")
             .attr("transform", "translate(" + _margin.left + "," + _margin.top + ")");
-        var checkForData = _chart.initData();
-        if(checkForData === null) {
-            _chart.select("g").append("g").append("text")
-                .attr("x", _width/2 + _margin.left)
-                .attr("y", _height/2 + _margin.top)
-                .classed("no-data-sankey", true)
-                .text(_noDataMessage);
+        
 
-            return checkForData;
-        }
-        else if(checkForData == -1) {
-            _chart.select("g").append("g").append("text")
-                .attr("x", _width/2 + _margin.left)
-                .attr("y", _height/2 + _margin.top)
-                .classed("negative-data-sankey", true)
-                .text(_negativeDataMessage);
-
-            return checkForData;
-        }
         _sankey = d3.sankey()
             .nodeWidth(15)
             .nodePadding(10)

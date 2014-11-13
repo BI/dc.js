@@ -9494,7 +9494,13 @@ dc.treeMap = function (parent, chartGroup) {
 		_chart.root().classed('dc-chart', false);
 		_chart.root().html('');
 
-		
+		if(checkForData === null) {
+			_chart.root().html('');
+			_chart.root().append("div")
+				.classed("treemap-negative-data", true)
+				.text(_negativeDataMessage);
+			return null;
+		}
 
 		_chart.root()
 			.style("width", _width + "px")
@@ -9551,6 +9557,11 @@ dc.treeMap = function (parent, chartGroup) {
 			_treeMapDataObject = {name : _negativeDataMessage, columnName : "root", value: _noDataMessage,
 			children : [], _children: []};
 			_currentRoot = _treeMapDataObject;
+			_chart.root().html('');
+			_chart.root().append("div")
+				.classed("treemap-negative-data")
+				.text(_negativeDataMessage);
+			return -1;
 		}
 
 		display(_currentRoot);
@@ -9597,9 +9608,6 @@ dc.treeMap = function (parent, chartGroup) {
 		function display(currentRoot) {
 			_currentRoot = currentRoot;
 
-			if(checkForData === null || checkForZero) {
-				_titleBarFunc = function(d) {return d.name;};
-			}
 			crumbTrail
 				.datum(currentRoot.parent)
               .on("click", function(d) {
@@ -10357,6 +10365,24 @@ dc.sankey = function(parent, chartGroup) {
     }
 
     _chart._doRender = function() {
+        var checkForData = _chart.initData();
+        if(checkForData === null) {
+            _chart.root().html('');
+            _chart.root().append("div")
+                .classed("no-data-sankey", true)
+                .text(_noDataMessage);
+
+            return checkForData;
+        }
+        else if(checkForData == -1) {
+            _chart.root().html('');
+            _chart.root().append("div")
+                .classed("sankey-negative-data", true)
+                .text(_negativeDataMessage);
+
+            return checkForData;
+        }
+
         _chart.root().classed('dc-sankey', true);
         _chart.root().classed('dc-chart', false);
         _chart.resetSvg();
@@ -10366,25 +10392,8 @@ dc.sankey = function(parent, chartGroup) {
             .attr("height", _height + _margin.top + _margin.bottom)
           .append("g")
             .attr("transform", "translate(" + _margin.left + "," + _margin.top + ")");
-        var checkForData = _chart.initData();
-        if(checkForData === null) {
-            _chart.select("g").append("g").append("text")
-                .attr("x", _width/2 + _margin.left)
-                .attr("y", _height/2 + _margin.top)
-                .classed("no-data-sankey", true)
-                .text(_noDataMessage);
+        
 
-            return checkForData;
-        }
-        else if(checkForData == -1) {
-            _chart.select("g").append("g").append("text")
-                .attr("x", _width/2 + _margin.left)
-                .attr("y", _height/2 + _margin.top)
-                .classed("negative-data-sankey", true)
-                .text(_negativeDataMessage);
-
-            return checkForData;
-        }
         _sankey = d3.sankey()
             .nodeWidth(15)
             .nodePadding(10)
