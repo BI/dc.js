@@ -6203,7 +6203,10 @@ dc.geoChoroplethChart = function (parent, chartGroup) {
             .append('div')
             .classed("dc-zoom-reset", true)
             .text("Reset Zoom")
-            .on("click", resetZoom);
+            .on("click", function(){  
+                resetZoom();
+                _afterZoom(_g, 1);
+            });
 
         inButton.on("click", function() {
             if(_zoom.scale()*2 > _zoom.scaleExtent()[1]){
