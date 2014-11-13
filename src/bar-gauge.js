@@ -412,7 +412,7 @@ dc.barGauge = function (parent, chartGroup) {
 
     _chart._doRender = function () {
         _oldValue = (_filledValue === undefined) ? 0 : _filledValue;
-        _filledValue = _chart.value();
+        _filledValue = (_chart.value() >= 0) ? _chart.value() : 0;
         _chart.root().classed('dc-bar-gauge', true);
         _chart.root().classed('dc-chart', false);
         _chart.root().html('');

@@ -8629,7 +8629,7 @@ dc.barGauge = function (parent, chartGroup) {
 
     _chart._doRender = function () {
         _oldValue = (_filledValue === undefined) ? 0 : _filledValue;
-        _filledValue = _chart.value();
+        _filledValue = (_chart.value() >= 0) ? _chart.value() : 0;
         _chart.root().classed('dc-bar-gauge', true);
         _chart.root().classed('dc-chart', false);
         _chart.root().html('');
@@ -9266,7 +9266,9 @@ dc.treeMap = function (parent, chartGroup) {
 	var _treeMapd3, _treeMapDataObject, _currentRoot, _currentXscale, _currentYscale,
 		_rootName = "root",
 		_zoomLevel = 0, _colors = d3.scale.category20c(),
-		_noDataMessage = "No Data for the selected filters";
+		_noDataMessage = "No Data for the selected filters",
+		_negativeDataMessage = "Negative Data for the selected filters";
+
 	var _margin = {top: 0, right: 0, bottom: 0, left: 0},
 		_width = 960, _height = 500 - _margin.top - _margin.bottom,
         _crumbTrailX = 6, _crumbTrailY = 6, _crumbTrailHeight = ".75em",
@@ -9380,11 +9382,25 @@ dc.treeMap = function (parent, chartGroup) {
         return _chart;
     };
 
+    /**
+	#### .noDataMessage(String)
+	Message to display in crumbtrail if no data is found. 
+    **/
     _chart.noDataMessage = function(_) {
     	if(!arguments.length) return _noDataMessage;
     	_noDataMessage = _;
     	return _chart;
-    }
+    };
+
+    /**
+	#### .negativeDataMessage(String)
+	Message to display in crumbtrail if negative data is found.
+    **/
+    _chart.negativeDataMessage = function(_) {
+    	if(!arguments.length) return _negativeDataMessage;
+    	_negativeDataMessage = _;
+    	return _chart;
+    };
 
     /**
     #### .label(callback)
@@ -9473,9 +9489,12 @@ dc.treeMap = function (parent, chartGroup) {
 
     _chart._doRender = function() {
 		var checkForData = _chart.initData();
+		
 		_chart.root().classed('dc-tree-map', true);
 		_chart.root().classed('dc-chart', false);
 		_chart.root().html('');
+
+		
 
 		_chart.root()
 			.style("width", _width + "px")
@@ -9521,9 +9540,19 @@ dc.treeMap = function (parent, chartGroup) {
 			.attr("dy", _crumbTrailHeight);
 
         _currentRoot = _treeMapDataObject.zoomLevelDrill(_zoomLevel);
+
+        
 		initialize(_treeMapDataObject);
 		accumulate(_treeMapDataObject);
 		layout(_treeMapDataObject);
+
+		var checkForZero = (_chart.currentRoot().value <= 0);
+        if(checkForZero) {
+			_treeMapDataObject = {name : _negativeDataMessage, columnName : "root", value: _noDataMessage,
+			children : [], _children: []};
+			_currentRoot = _treeMapDataObject;
+		}
+
 		display(_currentRoot);
 
 		function initialize(root) {
@@ -9568,7 +9597,7 @@ dc.treeMap = function (parent, chartGroup) {
 		function display(currentRoot) {
 			_currentRoot = currentRoot;
 
-			if(checkForData === null) {
+			if(checkForData === null || checkForZero) {
 				_titleBarFunc = function(d) {return d.name;};
 			}
 			crumbTrail
@@ -9584,7 +9613,7 @@ dc.treeMap = function (parent, chartGroup) {
 		                        // "un-filter" as we drill-up
 								onClick(currentRoot, false); 
 							}
-		                    //transition(d); 
+		                    //transition(d);
 
 		                    //second redraw to protect against the following case:
 		                    //1.) user does a redraw while there are filters on the chart
@@ -9673,7 +9702,7 @@ dc.treeMap = function (parent, chartGroup) {
 				.call(rect);
 				
 			depthContainerChildren.append("rect")
-				.attr("class", function(d) {return "parent color_" + _colors(d.name.replace(/ .*/, ""))})
+				.attr("class", function(d) {return "parent color_" + _colors(d.name.replace(/ .*/, ""));})
 				.call(rect)
               .append("title")
 				.text(_toolTipFunc);
@@ -9775,17 +9804,13 @@ dc.treeMap = function (parent, chartGroup) {
 	//Translate crossfilter multi dimensional tabular data into hierarchical tree data
 	function crossfilterToTreeMapData(levelsData, measureColumn) {
 		var _tree = {name : _rootName, columnName : "root",
-					children : []};
-
-		//flag for no data
-        var noData = false; 
+					children : [], _children: []};
 
 		//loop over the rows, and then by column to populate the tree data
 		var rows = levelsData[0].dimension.top(Infinity);
 
 
 		if(!rows.length) {
-		    noData = true;
 		    _tree = {name : "No Data", columnName : "root", value: _noDataMessage,
 			children : []};
 		}
@@ -10233,7 +10258,8 @@ dc.sankey = function(parent, chartGroup) {
     var _margin = {top: 1, right: 1, bottom: 6, left: 1}, //margins needed so sankey edges aren't cut off
         _width = 960 - _margin.left - _margin.right,
         _height = 500 - _margin.top - _margin.bottom,
-        _noDataMessage = "No data for the selected filters";
+        _noDataMessage = "No data for the selected filters",
+        _negativeDataMessage = "All data found was negative values.";
 
     var _formatNumber = d3.format(",.0f"),
         _format = function(d) { return _formatNumber(d); },
@@ -10242,15 +10268,33 @@ dc.sankey = function(parent, chartGroup) {
     var _nodeToolTipFunc = function(d) { return d.name + "\n" + _format(d.value); };    
     var _labelFunc = function(d) { return d.name; };
 
+    /**
+    #### .label(function)
+    Specify the callback to display text that goes next to nodes. 
+    **/
     _chart.label = function(_) {
         if(!arguments.length) return _labelFunc;
         _labelFunc = _;
         return _chart;
     };
 
+    /**
+    #### .noDataMessage(String)
+    Specify the callback to display the message when no data is found.
+    **/
     _chart.noDataMessage = function(_) {
         if(!arguments.length) return _noDataMessage;
         _noDataMessage = _;
+        return _chart;
+    };
+
+    /**
+    #### .negativeDataMessage(String)
+    Specify the callback to display the message when all the data is negative values. 
+    **/
+    _chart.negativeDataMessage = function(_) {
+        if(!arguments.length) return _negativeDataMessage;
+        _negativeDataMessage = _;
         return _chart;
     };
 
@@ -10301,6 +10345,8 @@ dc.sankey = function(parent, chartGroup) {
             _sankeyDataObject = crossfilterToSankeyData(_chart.levels(), _chart.measureColumn());
             if(_sankeyDataObject === null)
                 return null;
+            else if(_sankeyDataObject === -1)
+                return -1;
         }
         else throw "Must provide dimension column array levels and the measureColumn";
         return _chart;
@@ -10328,9 +10374,17 @@ dc.sankey = function(parent, chartGroup) {
                 .classed("no-data-sankey", true)
                 .text(_noDataMessage);
 
-            return null;
+            return checkForData;
         }
-        
+        else if(checkForData == -1) {
+            _chart.select("g").append("g").append("text")
+                .attr("x", _width/2 + _margin.left)
+                .attr("y", _height/2 + _margin.top)
+                .classed("negative-data-sankey", true)
+                .text(_negativeDataMessage);
+
+            return checkForData;
+        }
         _sankey = d3.sankey()
             .nodeWidth(15)
             .nodePadding(10)
@@ -10481,17 +10535,25 @@ dc.sankey = function(parent, chartGroup) {
             return null;
         }
 
+        var allNegativeData = true;
         //Important to do the linking only after all of the nodes have been created
         levels.forEach(function(level, index) {
             var columnName = level.columnName;
             var s = level.dimension.top(Infinity);
 
             s.forEach(function(row){
-                if(row[measureColumn] > 0)
+                if(row[measureColumn] > 0) {
+                    allNegativeData = false;
                     insertOrUpdateLinks(row, columnName, index);
+                }
             });
         });
 
+        //if all the nodes are negative values then return -1 
+        //we will later display a message to the user instead of showing a blank chart
+        if(allNegativeData === true) {
+            return -1;
+        }
 
         function insertNodes(row, columnName) {
             var column = columnName;
@@ -10537,7 +10599,7 @@ dc.sankey = function(parent, chartGroup) {
         function newLink(source, target, value){
             return {source: indexForNode(source), target: indexForNode(target), value: value};
         }
-       
+
         function indexForNode(node){
             var len = t.nodes.length;
             for(var i=0;i<len;i++){
@@ -10547,11 +10609,11 @@ dc.sankey = function(parent, chartGroup) {
 
             return -1; //hopefully never happens
         }
-       
+
         function nodesContains(row, column){
             return t.nodes.some(function(node){ return node.name === row[column] && node.columnName === column;});
         }
-       
+
         function linksContains(source, target){
        
         }

@@ -1765,6 +1765,10 @@ Example: .crumbTrailHeight(“.75em”)</p>
 <p>Set the height explicitly as it will be used for calculating the node rectangle sizes.</p>
 <h4 id="-rootname-string-">.rootName(String)</h4>
 <p>The root name is the displayed as the root parent text in the bar at the top of the treemap.</p>
+<h4 id="-nodatamessage-string-">.noDataMessage(String)</h4>
+<p>Message to display in crumbtrail if no data is found.</p>
+<h4 id="-negativedatamessage-string-">.negativeDataMessage(String)</h4>
+<p>Message to display in crumbtrail if negative data is found.</p>
 <h4 id="-label-callback-">.label(callback)</h4>
 <p>Pass in a custom label function. These labels are what appear in the top left of each rectangle.</p>
 <h4 id="-tooltip-callback-">.toolTip(callback)</h4>
@@ -1805,6 +1809,12 @@ var chart = dc.sankey(<span class="string">"#sankey"</span>)
 
 //filter manually <span class="keyword">by</span> passing <span class="keyword">in</span> <span class="keyword">the</span> column <span class="property">name</span>, <span class="keyword">and</span> filter value like this
 chart.filter('columnNamefromCSV', 'singlefiltervalue');</code></pre>
+<h4 id="-label-function-">.label(function)</h4>
+<p>Specify the callback to display text that goes next to nodes.</p>
+<h4 id="-nodatamessage-string-">.noDataMessage(String)</h4>
+<p>Specify the callback to display the message when no data is found.</p>
+<h4 id="-negativedatamessage-string-">.negativeDataMessage(String)</h4>
+<p>Specify the callback to display the message when all the data is negative values.</p>
 <h4 id="-nodetooltip-function-">.nodeToolTip(function)</h4>
 <p>Specify the callback to display text in the tooltip when hovering over nodes.</p>
 <h4 id="-linktooltip-function-">.linkToolTip(function)</h4>
