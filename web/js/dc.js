@@ -9467,9 +9467,12 @@ dc.treeMap = function (parent, chartGroup) {
 
     _chart._doRender = function() {
 		var checkForData = _chart.initData();
+		
 		_chart.root().classed('dc-tree-map', true);
 		_chart.root().classed('dc-chart', false);
 		_chart.root().html('');
+
+		
 
 		_chart.root()
 			.style("width", _width + "px")
@@ -9515,9 +9518,19 @@ dc.treeMap = function (parent, chartGroup) {
 			.attr("dy", _crumbTrailHeight);
 
         _currentRoot = _treeMapDataObject.zoomLevelDrill(_zoomLevel);
+
+        
 		initialize(_treeMapDataObject);
 		accumulate(_treeMapDataObject);
 		layout(_treeMapDataObject);
+
+		var checkForZero = (_chart.currentRoot().value <= 0);
+        if(checkForZero) {
+			_treeMapDataObject = {name : "Negative Data Value", columnName : "root", value: _noDataMessage,
+			children : [], _children: []};
+			_currentRoot = _treeMapDataObject;
+		}
+
 		display(_currentRoot);
 
 		function initialize(root) {
@@ -9562,7 +9575,7 @@ dc.treeMap = function (parent, chartGroup) {
 		function display(currentRoot) {
 			_currentRoot = currentRoot;
 
-			if(checkForData === null) {
+			if(checkForData === null || checkForZero) {
 				_titleBarFunc = function(d) {return d.name;};
 			}
 			crumbTrail
@@ -9578,7 +9591,7 @@ dc.treeMap = function (parent, chartGroup) {
 		                        // "un-filter" as we drill-up
 								onClick(currentRoot, false); 
 							}
-		                    //transition(d); 
+		                    //transition(d);
 
 		                    //second redraw to protect against the following case:
 		                    //1.) user does a redraw while there are filters on the chart
@@ -9667,7 +9680,7 @@ dc.treeMap = function (parent, chartGroup) {
 				.call(rect);
 				
 			depthContainerChildren.append("rect")
-				.attr("class", function(d) {return "parent color_" + _colors(d.name.replace(/ .*/, ""))})
+				.attr("class", function(d) {return "parent color_" + _colors(d.name.replace(/ .*/, ""));})
 				.call(rect)
               .append("title")
 				.text(_toolTipFunc);
@@ -9769,17 +9782,13 @@ dc.treeMap = function (parent, chartGroup) {
 	//Translate crossfilter multi dimensional tabular data into hierarchical tree data
 	function crossfilterToTreeMapData(levelsData, measureColumn) {
 		var _tree = {name : _rootName, columnName : "root",
-					children : []};
-
-		//flag for no data
-        var noData = false; 
+					children : [], _children: []};
 
 		//loop over the rows, and then by column to populate the tree data
 		var rows = levelsData[0].dimension.top(Infinity);
 
 
 		if(!rows.length) {
-		    noData = true;
 		    _tree = {name : "No Data", columnName : "root", value: _noDataMessage,
 			children : []};
 		}

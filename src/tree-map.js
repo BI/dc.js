@@ -41,7 +41,9 @@ dc.treeMap = function (parent, chartGroup) {
 	var _treeMapd3, _treeMapDataObject, _currentRoot, _currentXscale, _currentYscale,
 		_rootName = "root",
 		_zoomLevel = 0, _colors = d3.scale.category20c(),
-		_noDataMessage = "No Data for the selected filters";
+		_noDataMessage = "No Data for the selected filters",
+		_negativeDataMessage = "Negative Data for the selected filters";
+
 	var _margin = {top: 0, right: 0, bottom: 0, left: 0},
 		_width = 960, _height = 500 - _margin.top - _margin.bottom,
         _crumbTrailX = 6, _crumbTrailY = 6, _crumbTrailHeight = ".75em",
@@ -155,11 +157,25 @@ dc.treeMap = function (parent, chartGroup) {
         return _chart;
     };
 
+    /**
+	#### .noDataMessage(String)
+	Message to display in crumbtrail if no data is found. 
+    **/
     _chart.noDataMessage = function(_) {
     	if(!arguments.length) return _noDataMessage;
     	_noDataMessage = _;
     	return _chart;
-    }
+    };
+
+    /**
+	#### .negativeDataMessage(String)
+	Message to display in crumbtrail if negative data is found.
+    **/
+    _chart.negativeDataMessage = function(_) {
+    	if(!arguments.length) return _negativeDataMessage;
+    	_negativeDataMessage = _;
+    	return _chart;
+    };
 
     /**
     #### .label(callback)
@@ -248,9 +264,12 @@ dc.treeMap = function (parent, chartGroup) {
 
     _chart._doRender = function() {
 		var checkForData = _chart.initData();
+		
 		_chart.root().classed('dc-tree-map', true);
 		_chart.root().classed('dc-chart', false);
 		_chart.root().html('');
+
+		
 
 		_chart.root()
 			.style("width", _width + "px")
@@ -296,9 +315,19 @@ dc.treeMap = function (parent, chartGroup) {
 			.attr("dy", _crumbTrailHeight);
 
         _currentRoot = _treeMapDataObject.zoomLevelDrill(_zoomLevel);
+
+        
 		initialize(_treeMapDataObject);
 		accumulate(_treeMapDataObject);
 		layout(_treeMapDataObject);
+
+		var checkForZero = (_chart.currentRoot().value <= 0);
+        if(checkForZero) {
+			_treeMapDataObject = {name : _negativeDataMessage, columnName : "root", value: _noDataMessage,
+			children : [], _children: []};
+			_currentRoot = _treeMapDataObject;
+		}
+
 		display(_currentRoot);
 
 		function initialize(root) {
@@ -343,7 +372,7 @@ dc.treeMap = function (parent, chartGroup) {
 		function display(currentRoot) {
 			_currentRoot = currentRoot;
 
-			if(checkForData === null) {
+			if(checkForData === null || checkForZero) {
 				_titleBarFunc = function(d) {return d.name;};
 			}
 			crumbTrail
@@ -359,7 +388,7 @@ dc.treeMap = function (parent, chartGroup) {
 		                        // "un-filter" as we drill-up
 								onClick(currentRoot, false); 
 							}
-		                    //transition(d); 
+		                    //transition(d);
 
 		                    //second redraw to protect against the following case:
 		                    //1.) user does a redraw while there are filters on the chart
@@ -448,7 +477,7 @@ dc.treeMap = function (parent, chartGroup) {
 				.call(rect);
 				
 			depthContainerChildren.append("rect")
-				.attr("class", function(d) {return "parent color_" + _colors(d.name.replace(/ .*/, ""))})
+				.attr("class", function(d) {return "parent color_" + _colors(d.name.replace(/ .*/, ""));})
 				.call(rect)
               .append("title")
 				.text(_toolTipFunc);
@@ -550,17 +579,13 @@ dc.treeMap = function (parent, chartGroup) {
 	//Translate crossfilter multi dimensional tabular data into hierarchical tree data
 	function crossfilterToTreeMapData(levelsData, measureColumn) {
 		var _tree = {name : _rootName, columnName : "root",
-					children : []};
-
-		//flag for no data
-        var noData = false; 
+					children : [], _children: []};
 
 		//loop over the rows, and then by column to populate the tree data
 		var rows = levelsData[0].dimension.top(Infinity);
 
 
 		if(!rows.length) {
-		    noData = true;
 		    _tree = {name : "No Data", columnName : "root", value: _noDataMessage,
 			children : []};
 		}
