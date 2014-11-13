@@ -270,7 +270,6 @@ dc.treeMap = function (parent, chartGroup) {
 		_chart.root().html('');
 
 		if(checkForData === null) {
-			_titleBarFunc = null; 
 			_chart.root().html('');
 			_chart.root().append("div")
 				.classed("treemap-negative-data", true)
