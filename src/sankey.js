@@ -77,9 +77,9 @@ dc.sankey = function(parent, chartGroup) {
     #### .negativeDataMessage(String)
     Specify the callback to display the message when all the data is negative values. 
     **/
-    _chart.noDataMessage = function(_) {
-        if(!arguments.length) return _noDataMessage;
-        _noDataMessage = _;
+    _chart.negativeDataMessage = function(_) {
+        if(!arguments.length) return _negativeDataMessage;
+        _negativeDataMessage = _;
         return _chart;
     };
 
