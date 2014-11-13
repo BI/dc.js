@@ -2216,6 +2216,15 @@ var chart = dc.sankey("#sankey")
 chart.filter('columnNamefromCSV', 'singlefiltervalue');
 ```
 
+#### .label(function)
+Specify the callback to display text that goes next to nodes.
+
+#### .noDataMessage(String)
+Specify the callback to display the message when no data is found.
+
+#### .negativeDataMessage(String)
+Specify the callback to display the message when all the data is negative values.
+
 #### .nodeToolTip(function)
 Specify the callback to display text in the tooltip when hovering over nodes.
 

@@ -43,7 +43,8 @@ dc.sankey = function(parent, chartGroup) {
     var _margin = {top: 1, right: 1, bottom: 6, left: 1}, //margins needed so sankey edges aren't cut off
         _width = 960 - _margin.left - _margin.right,
         _height = 500 - _margin.top - _margin.bottom,
-        _noDataMessage = "No data for the selected filters";
+        _noDataMessage = "No data for the selected filters",
+        _negativeDataMessage = "All data found was negative values.";
 
     var _formatNumber = d3.format(",.0f"),
         _format = function(d) { return _formatNumber(d); },
@@ -52,12 +53,30 @@ dc.sankey = function(parent, chartGroup) {
     var _nodeToolTipFunc = function(d) { return d.name + "\n" + _format(d.value); };    
     var _labelFunc = function(d) { return d.name; };
 
+    /**
+    #### .label(function)
+    Specify the callback to display text that goes next to nodes. 
+    **/
     _chart.label = function(_) {
         if(!arguments.length) return _labelFunc;
         _labelFunc = _;
         return _chart;
     };
 
+    /**
+    #### .noDataMessage(String)
+    Specify the callback to display the message when no data is found.
+    **/
+    _chart.noDataMessage = function(_) {
+        if(!arguments.length) return _noDataMessage;
+        _noDataMessage = _;
+        return _chart;
+    };
+
+    /**
+    #### .negativeDataMessage(String)
+    Specify the callback to display the message when all the data is negative values. 
+    **/
     _chart.noDataMessage = function(_) {
         if(!arguments.length) return _noDataMessage;
         _noDataMessage = _;
@@ -111,6 +130,8 @@ dc.sankey = function(parent, chartGroup) {
             _sankeyDataObject = crossfilterToSankeyData(_chart.levels(), _chart.measureColumn());
             if(_sankeyDataObject === null)
                 return null;
+            else if(_sankeyDataObject === -1)
+                return -1;
         }
         else throw "Must provide dimension column array levels and the measureColumn";
         return _chart;
@@ -138,9 +159,17 @@ dc.sankey = function(parent, chartGroup) {
                 .classed("no-data-sankey", true)
                 .text(_noDataMessage);
 
-            return null;
+            return checkForData;
         }
-        
+        else if(checkForData == -1) {
+            _chart.select("g").append("g").append("text")
+                .attr("x", _width/2 + _margin.left)
+                .attr("y", _height/2 + _margin.top)
+                .classed("negative-data-sankey", true)
+                .text(_negativeDataMessage);
+
+            return checkForData;
+        }
         _sankey = d3.sankey()
             .nodeWidth(15)
             .nodePadding(10)
@@ -291,17 +320,25 @@ dc.sankey = function(parent, chartGroup) {
             return null;
         }
 
+        var allNegativeData = true;
         //Important to do the linking only after all of the nodes have been created
         levels.forEach(function(level, index) {
             var columnName = level.columnName;
             var s = level.dimension.top(Infinity);
 
             s.forEach(function(row){
-                if(row[measureColumn] > 0)
+                if(row[measureColumn] > 0) {
+                    allNegativeData = false;
                     insertOrUpdateLinks(row, columnName, index);
+                }
             });
         });
 
+        //if all the nodes are negative values then return -1 
+        //we will later display a message to the user instead of showing a blank chart
+        if(allNegativeData === true) {
+            return -1;
+        }
 
         function insertNodes(row, columnName) {
             var column = columnName;
@@ -347,7 +384,7 @@ dc.sankey = function(parent, chartGroup) {
         function newLink(source, target, value){
             return {source: indexForNode(source), target: indexForNode(target), value: value};
         }
-       
+
         function indexForNode(node){
             var len = t.nodes.length;
             for(var i=0;i<len;i++){
@@ -357,11 +394,11 @@ dc.sankey = function(parent, chartGroup) {
 
             return -1; //hopefully never happens
         }
-       
+
         function nodesContains(row, column){
             return t.nodes.some(function(node){ return node.name === row[column] && node.columnName === column;});
         }
-       
+
         function linksContains(source, target){
        
         }

@@ -115,5 +115,3 @@ function loadColorFixture2() {
 function dateCleaner(e) {
     e.dd = d3.time.format.iso.parse(e.date);
 }
-
-
