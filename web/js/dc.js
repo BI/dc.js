@@ -6055,7 +6055,10 @@ dc.geoChoroplethChart = function (parent, chartGroup) {
                 return 'none';
             })
             .on('click', function (d) {
-                return _chart.onClick(d, layerIndex);
+                if(d3.event.defaultPrevented) 
+                    return;
+                else 
+                    return _chart.onClick(d, layerIndex);
             });
 
         dc.transition(paths, _chart.transitionDuration()).attr('fill', function (d, i) {
@@ -6200,7 +6203,10 @@ dc.geoChoroplethChart = function (parent, chartGroup) {
             .append('div')
             .classed("dc-zoom-reset", true)
             .text("Reset Zoom")
-            .on("click", resetZoom);
+            .on("click", function(){  
+                resetZoom();
+                _afterZoom(_g, 1);
+            });
 
         inButton.on("click", function() {
             if(_zoom.scale()*2 > _zoom.scaleExtent()[1]){
@@ -10286,9 +10292,9 @@ dc.sankey = function(parent, chartGroup) {
     #### .negativeDataMessage(String)
     Specify the callback to display the message when all the data is negative values. 
     **/
-    _chart.noDataMessage = function(_) {
-        if(!arguments.length) return _noDataMessage;
-        _noDataMessage = _;
+    _chart.negativeDataMessage = function(_) {
+        if(!arguments.length) return _negativeDataMessage;
+        _negativeDataMessage = _;
         return _chart;
     };
 
