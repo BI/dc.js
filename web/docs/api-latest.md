@@ -2158,6 +2158,12 @@ Set the height explicitly as it will be used for calculating the node rectangle 
 #### .rootName(String)
 The root name is the displayed as the root parent text in the bar at the top of the treemap.
 
+#### .noDataMessage(String)
+Message to display in crumbtrail if no data is found.
+
+#### .negativeDataMessage(String)
+Message to display in crumbtrail if negative data is found.
+
 #### .label(callback)
 Pass in a custom label function. These labels are what appear in the top left of each rectangle.
 

@@ -8623,7 +8623,7 @@ dc.barGauge = function (parent, chartGroup) {
 
     _chart._doRender = function () {
         _oldValue = (_filledValue === undefined) ? 0 : _filledValue;
-        _filledValue = _chart.value();
+        _filledValue = (_chart.value() >= 0) ? _chart.value() : 0;
         _chart.root().classed('dc-bar-gauge', true);
         _chart.root().classed('dc-chart', false);
         _chart.root().html('');
@@ -9260,7 +9260,9 @@ dc.treeMap = function (parent, chartGroup) {
 	var _treeMapd3, _treeMapDataObject, _currentRoot, _currentXscale, _currentYscale,
 		_rootName = "root",
 		_zoomLevel = 0, _colors = d3.scale.category20c(),
-		_noDataMessage = "No Data for the selected filters";
+		_noDataMessage = "No Data for the selected filters",
+		_negativeDataMessage = "Negative Data for the selected filters";
+
 	var _margin = {top: 0, right: 0, bottom: 0, left: 0},
 		_width = 960, _height = 500 - _margin.top - _margin.bottom,
         _crumbTrailX = 6, _crumbTrailY = 6, _crumbTrailHeight = ".75em",
@@ -9374,11 +9376,25 @@ dc.treeMap = function (parent, chartGroup) {
         return _chart;
     };
 
+    /**
+	#### .noDataMessage(String)
+	Message to display in crumbtrail if no data is found. 
+    **/
     _chart.noDataMessage = function(_) {
     	if(!arguments.length) return _noDataMessage;
     	_noDataMessage = _;
     	return _chart;
-    }
+    };
+
+    /**
+	#### .negativeDataMessage(String)
+	Message to display in crumbtrail if negative data is found.
+    **/
+    _chart.negativeDataMessage = function(_) {
+    	if(!arguments.length) return _negativeDataMessage;
+    	_negativeDataMessage = _;
+    	return _chart;
+    };
 
     /**
     #### .label(callback)
@@ -9526,7 +9542,7 @@ dc.treeMap = function (parent, chartGroup) {
 
 		var checkForZero = (_chart.currentRoot().value <= 0);
         if(checkForZero) {
-			_treeMapDataObject = {name : "Negative Data Value", columnName : "root", value: _noDataMessage,
+			_treeMapDataObject = {name : _negativeDataMessage, columnName : "root", value: _noDataMessage,
 			children : [], _children: []};
 			_currentRoot = _treeMapDataObject;
 		}
