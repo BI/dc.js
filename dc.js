@@ -9494,7 +9494,14 @@ dc.treeMap = function (parent, chartGroup) {
 		_chart.root().classed('dc-chart', false);
 		_chart.root().html('');
 
-		
+		if(checkForData === null) {
+			_titleBarFunc = null; 
+			_chart.root().html('');
+			_chart.root().append("div")
+				.classed("treemap-negative-data", true)
+				.text(_negativeDataMessage);
+			return null;
+		}
 
 		_chart.root()
 			.style("width", _width + "px")
@@ -9551,6 +9558,11 @@ dc.treeMap = function (parent, chartGroup) {
 			_treeMapDataObject = {name : _negativeDataMessage, columnName : "root", value: _noDataMessage,
 			children : [], _children: []};
 			_currentRoot = _treeMapDataObject;
+			_chart.root().html('');
+			_chart.root().append("div")
+				.classed("treemap-negative-data")
+				.text(_negativeDataMessage);
+			return -1;
 		}
 
 		display(_currentRoot);
@@ -9597,9 +9609,6 @@ dc.treeMap = function (parent, chartGroup) {
 		function display(currentRoot) {
 			_currentRoot = currentRoot;
 
-			if(checkForData === null || checkForZero) {
-				_titleBarFunc = function(d) {return d.name;};
-			}
 			crumbTrail
 				.datum(currentRoot.parent)
               .on("click", function(d) {
