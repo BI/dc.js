@@ -215,8 +215,11 @@ dc.sankey = function(parent, chartGroup) {
         node.append("rect")
             .attr("height", function(d) { return d.dy; })
             .attr("width", _sankey.nodeWidth())
-            .style("fill", function(d) { return _color(d.name.replace(/ .*/, "")); })
-            .style("stroke", function(d) { return d3.rgb(d.color).darker(2); })
+            .attr("class", function(d) {return "node-" + d.columnName;})
+            //.style("fill", function(d) {
+             /////
+             //return _color(d.name.replace(/ .*/, "")); })
+            //.style("stroke", function(d) { return d3.rgb(d.color).darker(2); })
           .append("title")
             .text(_nodeToolTipFunc);
 
