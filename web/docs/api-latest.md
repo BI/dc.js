@@ -2225,6 +2225,9 @@ Specify the callback to display the message when no data is found.
 #### .negativeDataMessage(String)
 Specify the callback to display the message when all the data is negative values.
 
+#### .setColorRange(["#color", "#morecolors"])
+Specify the range of colors that can be used in the ordinal color scale.
+
 #### .nodeToolTip(function)
 Specify the callback to display text in the tooltip when hovering over nodes.
 
