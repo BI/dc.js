@@ -10271,7 +10271,7 @@ dc.sankey = function(parent, chartGroup) {
 
     var _formatNumber = d3.format(",.0f"),
         _format = function(d) { return _formatNumber(d); },
-        _color = d3.scale.category20();
+        _colors = d3.scale.category20();
     var _linkToolTipFunc = function(d) { return d.source.name + " → " + d.target.name + "\n" + _format(d.value); };
     var _nodeToolTipFunc = function(d) { return d.name + "\n" + _format(d.value); };    
     var _labelFunc = function(d) { return d.name; };
@@ -10303,6 +10303,16 @@ dc.sankey = function(parent, chartGroup) {
     _chart.negativeDataMessage = function(_) {
         if(!arguments.length) return _negativeDataMessage;
         _negativeDataMessage = _;
+        return _chart;
+    };
+
+    /**
+    #### .setColorRange(["#color", "#morecolors"])
+    Specify the range of colors that can be used in the ordinal color scale.
+    **/
+    _chart.colorRange = function(_) {
+        if(!arguments.length) return _colors.range();
+        _colors.range(_);
         return _chart;
     };
 
@@ -10439,6 +10449,7 @@ dc.sankey = function(parent, chartGroup) {
             .attr("height", function(d) { return d.dy; })
             .attr("width", _sankey.nodeWidth())
             .attr("class", function(d) {return "node-" + d.columnName;})
+            .attr("fill", function(d) {return _colors(d.name);})
           .append("title")
             .text(_nodeToolTipFunc);
 
