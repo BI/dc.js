@@ -9266,8 +9266,16 @@ dc.treeMap = function (parent, chartGroup) {
 	var _treeMapd3, _treeMapDataObject, _currentRoot, _currentXscale, _currentYscale,
 		_rootName = "root",
 		_zoomLevel = 0, _colors = d3.scale.category20c(),
-		_noDataMessage = "No Data for the selected filters",
-		_negativeDataMessage = "Negative Data for the selected filters";
+        _noDataMessageFunc = function(tmpChart) {
+            tmpChart.root().html('');
+            tmpChart.root().append("div").classed("treemap-no-data", true)
+                .text("No data for the selected filters");
+            },
+        _negativeDataMessageFunc = function(tmpChart) {
+            tmpChart.root().html('');
+            tmpChart.root().append("div").classed("treemap-negative-data", true)
+                .text("All data found was negative values.");
+            };
 
 	var _margin = {top: 0, right: 0, bottom: 0, left: 0},
 		_width = 960, _height = 500 - _margin.top - _margin.bottom,
@@ -9383,22 +9391,22 @@ dc.treeMap = function (parent, chartGroup) {
     };
 
     /**
-	#### .noDataMessage(String)
-	Message to display in crumbtrail if no data is found. 
+	#### .noDataMessage(function)
+	Message to display if no data is found.  
     **/
     _chart.noDataMessage = function(_) {
-    	if(!arguments.length) return _noDataMessage;
-    	_noDataMessage = _;
+    	if(!arguments.length) return _noDataMessageFunc;
+    	_noDataMessageFunc = _;
     	return _chart;
     };
 
     /**
-	#### .negativeDataMessage(String)
-	Message to display in crumbtrail if negative data is found.
+	#### .negativeDataMessage(function)
+	Message to display if all data values were negative.
     **/
     _chart.negativeDataMessage = function(_) {
-    	if(!arguments.length) return _negativeDataMessage;
-    	_negativeDataMessage = _;
+    	if(!arguments.length) return _negativeDataMessageFunc;
+    	_negativeDataMessageFunc = _;
     	return _chart;
     };
 
@@ -9435,9 +9443,11 @@ dc.treeMap = function (parent, chartGroup) {
     _chart.initData = function () {
         if(_chart.levels() && _chart.measureColumn()) {
             _treeMapDataObject = crossfilterToTreeMapData(_chart.levels(), _chart.measureColumn());
-            if(!_treeMapDataObject.children.length) {
+            if(_treeMapDataObject === null) {
             	return null;
             }
+            if(_treeMapDataObject === -1)
+            	return -1;
         }
         else throw "Must provide dimension column array and measureColumn";
         return _chart;
@@ -9495,12 +9505,15 @@ dc.treeMap = function (parent, chartGroup) {
 		_chart.root().html('');
 
 		if(checkForData === null) {
-			_chart.root().html('');
-			_chart.root().append("div")
-				.classed("treemap-negative-data", true)
-				.text(_negativeDataMessage);
-			return null;
-		}
+            _noDataMessageFunc(_chart);
+
+            return checkForData;
+        }
+        else if(checkForData == -1) {
+            _negativeDataMessageFunc(_chart);
+
+            return checkForData;
+        }
 
 		_chart.root()
 			.style("width", _width + "px")
@@ -9552,17 +9565,15 @@ dc.treeMap = function (parent, chartGroup) {
 		accumulate(_treeMapDataObject);
 		layout(_treeMapDataObject);
 
-		var checkForZero = (_chart.currentRoot().value <= 0);
-        if(checkForZero) {
-			_treeMapDataObject = {name : _negativeDataMessage, columnName : "root", value: _noDataMessage,
-			children : [], _children: []};
-			_currentRoot = _treeMapDataObject;
-			_chart.root().html('');
-			_chart.root().append("div")
-				.classed("treemap-negative-data")
-				.text(_negativeDataMessage);
-			return -1;
-		}
+		// var checkForZero = (_chart.currentRoot().value <= 0);
+  //       if(checkForZero) {
+		// 	_treeMapDataObject = {name : _negativeDataMessage, columnName : "root", value: "Negative Data",
+		// 	children : [], _children: []};
+		// 	_currentRoot = _treeMapDataObject;
+
+		// 	_negativeDataMessageFunc(_chart);
+		// 	return checkForZero;
+		// }
 
 		display(_currentRoot);
 
@@ -9817,17 +9828,20 @@ dc.treeMap = function (parent, chartGroup) {
 		//loop over the rows, and then by column to populate the tree data
 		var rows = levelsData[0].dimension.top(Infinity);
 
-
+		var noData = false, allNegativeData = true;
 		if(!rows.length) {
-		    _tree = {name : "No Data", columnName : "root", value: _noDataMessage,
+		    _tree = {name : "No Data", columnName : "root", value: "No Data",
 			children : []};
+			noData = true;
 		}
 		else {
 			rows.forEach(function(row) {
 				levelsData.forEach(function(level, columnIndex) {
 					var columnName = level.columnName;
-					if(row[measureColumn] > 0)
+					if(row[measureColumn] > 0) {
+						allNegativeData = false;
 						insertNode(row, columnName, columnIndex);
+					}
 				});
 			});
 		}
@@ -9922,6 +9936,10 @@ dc.treeMap = function (parent, chartGroup) {
 			return dimension.top(Infinity)[0][columnName]; //assuming that each level of the tree map only has one value in the filter
 		}
 
+		if(noData === true)
+			return null;
+		if(allNegativeData === true)
+			return -1;
 		return _tree;
 	}
 
@@ -10266,8 +10284,16 @@ dc.sankey = function(parent, chartGroup) {
     var _margin = {top: 1, right: 1, bottom: 6, left: 1}, //margins needed so sankey edges aren't cut off
         _width = 960 - _margin.left - _margin.right,
         _height = 500 - _margin.top - _margin.bottom,
-        _noDataMessage = "No data for the selected filters",
-        _negativeDataMessage = "All data found was negative values.";
+        _noDataMessageFunc = function(tmpChart) {
+            tmpChart.root().html('');
+            tmpChart.root().append("div").classed("sankey-no-data", true)
+                .text("No data for the selected filters");
+            },
+        _negativeDataMessageFunc = function(tmpChart) {
+            tmpChart.root().html('');
+            tmpChart.root().append("div").classed("sankey-negative-data", true)
+                .text("All data found was negative values.");
+            };
 
     var _formatNumber = d3.format(",.0f"),
         _format = function(d) { return _formatNumber(d); },
@@ -10287,22 +10313,22 @@ dc.sankey = function(parent, chartGroup) {
     };
 
     /**
-    #### .noDataMessage(String)
+    #### .noDataMessage(function)
     Specify the callback to display the message when no data is found.
     **/
     _chart.noDataMessage = function(_) {
-        if(!arguments.length) return _noDataMessage;
-        _noDataMessage = _;
+        if(!arguments.length) return _noDataMessageFunc;
+        _noDataMessageFunc = _;
         return _chart;
     };
 
     /**
-    #### .negativeDataMessage(String)
+    #### .negativeDataMessage(function)
     Specify the callback to display the message when all the data is negative values. 
     **/
     _chart.negativeDataMessage = function(_) {
-        if(!arguments.length) return _negativeDataMessage;
-        _negativeDataMessage = _;
+        if(!arguments.length) return _negativeDataMessageFunc;
+        _negativeDataMessageFunc = _;
         return _chart;
     };
 
@@ -10377,18 +10403,12 @@ dc.sankey = function(parent, chartGroup) {
     _chart._doRender = function() {
         var checkForData = _chart.initData();
         if(checkForData === null) {
-            _chart.root().html('');
-            _chart.root().append("div")
-                .classed("no-data-sankey", true)
-                .text(_noDataMessage);
+            _noDataMessageFunc(_chart);
 
             return checkForData;
         }
         else if(checkForData == -1) {
-            _chart.root().html('');
-            _chart.root().append("div")
-                .classed("sankey-negative-data", true)
-                .text(_negativeDataMessage);
+            _negativeDataMessageFunc(_chart);
 
             return checkForData;
         }

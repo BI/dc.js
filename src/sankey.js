@@ -43,8 +43,16 @@ dc.sankey = function(parent, chartGroup) {
     var _margin = {top: 1, right: 1, bottom: 6, left: 1}, //margins needed so sankey edges aren't cut off
         _width = 960 - _margin.left - _margin.right,
         _height = 500 - _margin.top - _margin.bottom,
-        _noDataMessage = "No data for the selected filters",
-        _negativeDataMessage = "All data found was negative values.";
+        _noDataMessageFunc = function(tmpChart) {
+            tmpChart.root().html('');
+            tmpChart.root().append("div").classed("sankey-no-data", true)
+                .text("No data for the selected filters");
+        },
+        _negativeDataMessageFunc = function(tmpChart) {
+            tmpChart.root().html('');
+            tmpChart.root().append("div").classed("sankey-negative-data", true)
+                .text("All data found was negative values.");
+        };
 
     var _formatNumber = d3.format(",.0f"),
         _format = function(d) { return _formatNumber(d); },
@@ -64,22 +72,22 @@ dc.sankey = function(parent, chartGroup) {
     };
 
     /**
-    #### .noDataMessage(String)
+    #### .noDataMessage(function)
     Specify the callback to display the message when no data is found.
     **/
     _chart.noDataMessage = function(_) {
-        if(!arguments.length) return _noDataMessage;
-        _noDataMessage = _;
+        if(!arguments.length) return _noDataMessageFunc;
+        _noDataMessageFunc = _;
         return _chart;
     };
 
     /**
-    #### .negativeDataMessage(String)
+    #### .negativeDataMessage(function)
     Specify the callback to display the message when all the data is negative values. 
     **/
     _chart.negativeDataMessage = function(_) {
-        if(!arguments.length) return _negativeDataMessage;
-        _negativeDataMessage = _;
+        if(!arguments.length) return _negativeDataMessageFunc;
+        _negativeDataMessageFunc = _;
         return _chart;
     };
 
@@ -154,18 +162,12 @@ dc.sankey = function(parent, chartGroup) {
     _chart._doRender = function() {
         var checkForData = _chart.initData();
         if(checkForData === null) {
-            _chart.root().html('');
-            _chart.root().append("div")
-                .classed("no-data-sankey", true)
-                .text(_noDataMessage);
+            _noDataMessageFunc(_chart);
 
             return checkForData;
         }
         else if(checkForData == -1) {
-            _chart.root().html('');
-            _chart.root().append("div")
-                .classed("sankey-negative-data", true)
-                .text(_negativeDataMessage);
+            _negativeDataMessageFunc(_chart);
 
             return checkForData;
         }
