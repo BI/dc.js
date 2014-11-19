@@ -41,16 +41,8 @@ dc.treeMap = function (parent, chartGroup) {
 	var _treeMapd3, _treeMapDataObject, _currentRoot, _currentXscale, _currentYscale,
 		_rootName = "root",
 		_zoomLevel = 0, _colors = d3.scale.category20c(),
-        _noDataMessageFunc = function(tmpChart) {
-            tmpChart.root().html('');
-            tmpChart.root().append("div").classed("treemap-no-data", true)
-                .text("No data for the selected filters");
-            },
-        _negativeDataMessageFunc = function(tmpChart) {
-            tmpChart.root().html('');
-            tmpChart.root().append("div").classed("treemap-negative-data", true)
-                .text("All data found was negative values.");
-            };
+        _noDataMessage = "<span class=\"error\">No data for the selected filters</span>",
+        _negativeDataMessage = "<span class=\"error\">All data found was negative values.</span>";
 
 	var _margin = {top: 0, right: 0, bottom: 0, left: 0},
 		_width = 960, _height = 500 - _margin.top - _margin.bottom,
@@ -170,8 +162,8 @@ dc.treeMap = function (parent, chartGroup) {
 	Message to display if no data is found.  
     **/
     _chart.noDataMessage = function(_) {
-    	if(!arguments.length) return _noDataMessageFunc;
-    	_noDataMessageFunc = _;
+    	if(!arguments.length) return _noDataMessage;
+    	_noDataMessage = _;
     	return _chart;
     };
 
@@ -180,8 +172,8 @@ dc.treeMap = function (parent, chartGroup) {
 	Message to display if all data values were negative.
     **/
     _chart.negativeDataMessage = function(_) {
-    	if(!arguments.length) return _negativeDataMessageFunc;
-    	_negativeDataMessageFunc = _;
+    	if(!arguments.length) return _negativeDataMessage;
+    	_negativeDataMessage = _;
     	return _chart;
     };
 
@@ -277,15 +269,18 @@ dc.treeMap = function (parent, chartGroup) {
 		
 		_chart.root().classed('dc-tree-map', true);
 		_chart.root().classed('dc-chart', false);
-		_chart.root().html('');
+		_chart.select('svg').remove();
+		_chart.root().attr("style", "");
 
-		if(checkForData === null) {
-            _noDataMessageFunc(_chart);
+        if(checkForData === null) {
+            _chart.root().select(".treemap-no-data")
+                .html(_noDataMessage);
 
             return checkForData;
         }
         else if(checkForData == -1) {
-            _negativeDataMessageFunc(_chart);
+            _chart.root().select(".treemap-negative-data")
+                .html(_negativeDataMessage);
 
             return checkForData;
         }
@@ -346,7 +341,7 @@ dc.treeMap = function (parent, chartGroup) {
 		// 	children : [], _children: []};
 		// 	_currentRoot = _treeMapDataObject;
 
-		// 	_negativeDataMessageFunc(_chart);
+		// 	_negativeDataMessage(_chart);
 		// 	return checkForZero;
 		// }
 
