@@ -9494,6 +9494,8 @@ dc.treeMap = function (parent, chartGroup) {
 		
 		_chart.root().classed('dc-tree-map', true);
 		_chart.root().classed('dc-chart', false);
+		_chart.root().select('.treemap-no-data').html('');
+        _chart.root().select('.treemap-negative-data').html('');
 		_chart.select('svg').remove();
 		_chart.root().attr("style", "");
 
