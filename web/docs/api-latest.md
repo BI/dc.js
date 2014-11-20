@@ -2158,11 +2158,11 @@ Set the height explicitly as it will be used for calculating the node rectangle 
 #### .rootName(String)
 The root name is the displayed as the root parent text in the bar at the top of the treemap.
 
-#### .noDataMessage(String)
-Message to display in crumbtrail if no data is found.
+#### .noDataMessage(function)
+Message to display if no data is found.
 
-#### .negativeDataMessage(String)
-Message to display in crumbtrail if negative data is found.
+#### .negativeDataMessage(function)
+Message to display if all data values were negative.
 
 #### .label(callback)
 Pass in a custom label function. These labels are what appear in the top left of each rectangle.
@@ -2219,10 +2219,10 @@ chart.filter('columnNamefromCSV', 'singlefiltervalue');
 #### .label(function)
 Specify the callback to display text that goes next to nodes.
 
-#### .noDataMessage(String)
+#### .noDataMessage(function)
 Specify the callback to display the message when no data is found.
 
-#### .negativeDataMessage(String)
+#### .negativeDataMessage(function)
 Specify the callback to display the message when all the data is negative values.
 
 #### .setColorRange(["#color", "#morecolors"])

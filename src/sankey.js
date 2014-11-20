@@ -43,8 +43,8 @@ dc.sankey = function(parent, chartGroup) {
     var _margin = {top: 1, right: 1, bottom: 6, left: 1}, //margins needed so sankey edges aren't cut off
         _width = 960 - _margin.left - _margin.right,
         _height = 500 - _margin.top - _margin.bottom,
-        _noDataMessage = "No data for the selected filters",
-        _negativeDataMessage = "All data found was negative values.";
+        _noDataMessage = "<span class=\"error\">No data for the selected filters</span>",
+        _negativeDataMessage = "<span class=\"error\">All data found was negative values.</span>";
 
     var _formatNumber = d3.format(",.0f"),
         _format = function(d) { return _formatNumber(d); },
@@ -64,7 +64,7 @@ dc.sankey = function(parent, chartGroup) {
     };
 
     /**
-    #### .noDataMessage(String)
+    #### .noDataMessage(function)
     Specify the callback to display the message when no data is found.
     **/
     _chart.noDataMessage = function(_) {
@@ -74,7 +74,7 @@ dc.sankey = function(parent, chartGroup) {
     };
 
     /**
-    #### .negativeDataMessage(String)
+    #### .negativeDataMessage(function)
     Specify the callback to display the message when all the data is negative values. 
     **/
     _chart.negativeDataMessage = function(_) {
@@ -153,26 +153,29 @@ dc.sankey = function(parent, chartGroup) {
 
     _chart._doRender = function() {
         var checkForData = _chart.initData();
+
+        _chart.root().classed('dc-sankey', true);
+        _chart.root().classed('dc-chart', false);
+        _chart.root().select('.sankey-no-data').html('');
+        _chart.root().select('.sankey-negative-data').html('');
+        _chart.resetSvg();
+
         if(checkForData === null) {
-            _chart.root().html('');
-            _chart.root().append("div")
-                .classed("no-data-sankey", true)
-                .text(_noDataMessage);
+            _chart.root().select(".sankey-no-data")
+                .html(_noDataMessage);
+            _chart.root().select("svg").attr("width", "0").attr("height", "0");
 
             return checkForData;
         }
         else if(checkForData == -1) {
-            _chart.root().html('');
-            _chart.root().append("div")
-                .classed("sankey-negative-data", true)
-                .text(_negativeDataMessage);
-
+            _chart.root().select(".sankey-negative-data")
+                .html(_negativeDataMessage);
+            _chart.root().select("svg").attr("width", "0").attr("height", "0");
             return checkForData;
         }
 
-        _chart.root().classed('dc-sankey', true);
-        _chart.root().classed('dc-chart', false);
-        _chart.resetSvg();
+        
+        
 
         var svg = _chart.svg()
             .attr("width", _width + _margin.left + _margin.right)
@@ -243,7 +246,7 @@ dc.sankey = function(parent, chartGroup) {
 
         //add span for filter control
         _chart.levels().forEach(function(l){
-            _chart.select(".filter.column_" + l.columnName).html("");
+            d3.select(".filter.column_" + l.columnName).html("");
             if(_chart.hasFilter(l.columnName)) {
                 _chart.select(".filter.column_" + l.columnName)
                     .append("span")
@@ -251,7 +254,7 @@ dc.sankey = function(parent, chartGroup) {
                     .text(_chart.filters(l.columnName)[0])
                     .on("click", function(e) {
                         _chart.filterAll(l.columnName);
-                        _chart.redraw();
+                        _chart.redrawGroup();
                     });
             }  
         });
