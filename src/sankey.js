@@ -254,7 +254,7 @@ dc.sankey = function(parent, chartGroup) {
                     .text(_chart.filters(l.columnName)[0])
                     .on("click", function(e) {
                         _chart.filterAll(l.columnName);
-                        _chart.redraw();
+                        _chart.redrawGroup();
                     });
             }  
         });
