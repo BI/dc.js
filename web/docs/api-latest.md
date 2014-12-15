@@ -2231,6 +2231,9 @@ Specify the range of colors that can be used in the ordinal color scale.
 #### .nodeToolTip(function)
 Specify the callback to display text in the tooltip when hovering over nodes.
 
+#### .nodeWidth(Number)
+Specify the width of the sankey nodes.
+
 #### .linkToolTip(function)
 Specify the callback to display text in the tooltip when hovering over links between nodes.
 
