@@ -10277,7 +10277,7 @@ chart.filter('columnNamefromCSV', 'singlefiltervalue');
 **/
 dc.sankey = function(parent, chartGroup) {
     var _chart = dc.hierarchyMixin(dc.baseMixin({}));
-    var _sankey, _sankeyDataObject;
+    var _sankey, _sankeyDataObject, _nodeWidth = 15;
     var _margin = {top: 1, right: 1, bottom: 6, left: 1}, //margins needed so sankey edges aren't cut off
         _width = 960 - _margin.left - _margin.right,
         _height = 500 - _margin.top - _margin.bottom,
@@ -10338,6 +10338,16 @@ dc.sankey = function(parent, chartGroup) {
     _chart.nodeToolTip = function(_) {
         if(!arguments.length) return _nodeToolTipFunc;
         _nodeToolTipFunc = _;
+        return _chart;
+    };
+
+    /**
+    #### .nodeWidth(Number)
+    Specify the width of the sankey nodes. 
+    **/
+    _chart.nodeWidth = function(_) {
+        if(!arguments.length) return _nodeWidth;
+        _nodeWidth = _;
         return _chart;
     };
 
@@ -10423,7 +10433,7 @@ dc.sankey = function(parent, chartGroup) {
         
 
         _sankey = d3.sankey()
-            .nodeWidth(15)
+            .nodeWidth(_nodeWidth)
             .nodePadding(10)
             .size([_width, _height]);
 

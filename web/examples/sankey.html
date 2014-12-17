@@ -93,7 +93,8 @@ var sankey = dc.sankey("#sankey")
                 .width(600)
                 .height(400)
                 .levels(levels)
-                .measureColumn('value');
+                .measureColumn('value')
+                .nodeWidth(30);
 
 var stateFromGroup = stateFromDimension.group().reduceSum(function(d) {return d.value;});
  barChartStateFrom = dc.rowChart("#barchart-state-from");
