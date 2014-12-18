@@ -404,7 +404,7 @@ dc.treeMap = function (parent, chartGroup) {
 		                        // "un-filter" as we drill-up
 								onClick(currentRoot, false); 
 							}
-		                    //transition(d);
+		                    transition(d);
 
 		                    //second redraw to protect against the following case:
 		                    //1.) user does a redraw while there are filters on the chart
@@ -504,7 +504,7 @@ dc.treeMap = function (parent, chartGroup) {
                 });
             });
 			
-            transition(currentRoot);
+            // transition(currentRoot);
 
 			//Do the zoom animation, and set each parent block 
 			//to take up as much space as it can proportionately
