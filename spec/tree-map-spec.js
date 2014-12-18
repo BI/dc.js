@@ -73,12 +73,12 @@ describe('dc.treeMap', function () {
 
 		it('should have two children in the depth element', function() {
 			var depthChildren = chart.root().selectAll("g.depth")[0];
-			expect(depthChildren.length).toBe(2);
+			expect(depthChildren.length).toBe(1);
 		});
 
 		it('should have six child rectangles in the children', function() {
 			var childRectangles = chart.root().selectAll("g.depth g.children .child")[0];
-			expect(childRectangles.length).toBe(12); 
+			expect(childRectangles.length).toBe(6); 
 		});
 
 		describe('filter changes', function() {
