@@ -8451,6 +8451,9 @@ dc.barGauge = function (parent, chartGroup) {
                     .classed("marker-tick", true)
                     .attr("transform","translate(" + _x(marker.value) + ", 0)");
 
+                markerGroup.data([{markerName: marker.statName, markerValue: marker.value}])
+                  .enter();
+
                 markerGroup.append("title")
                     .text(_markerTitle(marker));
                 markerGroup.append("text")
@@ -8490,6 +8493,10 @@ dc.barGauge = function (parent, chartGroup) {
                     .append("g")
                     .classed("marker-tick", true)
                     .attr("transform","translate(" + _x(marker.value) + ", 0)");
+
+            markerGroup.data([{markerName: marker.statName, markerValue: marker.value}])
+                .enter();
+
             markerGroup.append("text")
                 .text(marker.statName)
                 .attr("style", "text-anchor: middle")
