@@ -50,8 +50,8 @@ dc.treeMap = function (parent, chartGroup) {
 		_transitioning=false;
     var _labelFuncsArray = [function(d) {return d.name;}];
     var _titleBarFunc = function(d) {return d.parent ? _titleBarFunc(d.parent) + "." + d.name : d.name;};
-
 	var _toolTipFunc = function(d) {return d.name;};
+	var _onLevelChangeFunc = function() {};
 
     _chart.transitionDuration(500); // good default
 
@@ -205,6 +205,16 @@ dc.treeMap = function (parent, chartGroup) {
         if(!arguments.length) return _titleBarFunc;
 		_titleBarFunc = _;
         return _chart;
+    };
+
+    /**
+	#### .onLevelChange(callback)
+	Pass in callback to hook into the level change event.
+    **/
+    _chart.onLevelChange = function(_) {
+    	if(!arguments.length) return _onLevelChangeFunc;
+    	_onLevelChangeFunc = _;
+    	return _chart;
     };
 
     _chart.initData = function () {
@@ -550,6 +560,9 @@ dc.treeMap = function (parent, chartGroup) {
 					svg.style("shape-rendering", "crispEdges");
 					_transitioning = false;
 				});
+
+				//Hook for custom functionality on level change
+            	_onLevelChangeFunc();
 			}
 
 			return depthContainerChildren;

@@ -2173,6 +2173,9 @@ Pass in a custom tool tip function. These tool tips show text for the rectangles
 #### .titleBarCaption(callback)
 Pass in custom title bar caption function. The title bar text is show in the bar at the top.
 
+#### .onLevelChange(callback)
+Pass in callback to hook into the level change event.
+
 //#### .findNodeChildrenDrill(Object, String, Number)
 //Drill down until at the correct child object, this function is used internally
 
