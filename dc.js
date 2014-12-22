@@ -8600,8 +8600,8 @@ dc.barGauge = function (parent, chartGroup) {
             offsetX = 0;
             offsetY = _gap;
             _chart.root().select('svg')
-                .attr("height", _chart.height())
-                .attr("width", (_usePercentageForLengthCalc) ? "100%" : _chart.width());
+                .attr("height", _chart.height());
+                
 
             _g.append('rect')
                 .classed("dc-bar-gauge-background", true)
@@ -8634,6 +8634,10 @@ dc.barGauge = function (parent, chartGroup) {
         _chart.root().classed('dc-chart', false);
         _chart.root().html('');
         _chart.resetSvg();
+
+        //Add data to the svg node
+        _chart.svg().data([{totalCapacity: _chart.totalCapacity(), filledValue: _chart.value()}])
+          .enter();
 
         _g = _chart.svg()
             .append('g')
