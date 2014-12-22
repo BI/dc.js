@@ -339,7 +339,7 @@ dc.barGauge = function (parent, chartGroup) {
             newFilledX, newFilledY,
             offsetX, offsetY,
             containingX, containingY,
-            actualThickness, myRectangle;
+            actualThickness, myRectangle, rect_g;
 
         if(orientation == 'vertical') {
             //NEED TO FIX
@@ -356,7 +356,8 @@ dc.barGauge = function (parent, chartGroup) {
                 .attr("width", _chart.width())
                 .attr("height", _chart.height());
 
-            _g.append('rect')
+            rect_g = _g.append("g").classed("rectangle-container", true);
+            rect_g.append('rect')
                 .classed("dc-bar-gauge-background", true)
                 .attr('width', function(){ return containingX;})
                 .attr('height', function(){return containingY;})
@@ -364,7 +365,7 @@ dc.barGauge = function (parent, chartGroup) {
                 .attr('y', 0)
               .append("title")
                 .text(_markerFormat(_filledValue));
-            _g.append('rect')
+            rect_g.append('rect')
                 .classed("dc-bar-gauge-foreground", true)
                 .attr('width', function(){return filledX;})
                 .attr('height', function(){return filledY;})
@@ -393,7 +394,8 @@ dc.barGauge = function (parent, chartGroup) {
                 .attr("height", _chart.height());
                 
 
-            _g.append('rect')
+            rect_g = _g.append("g").classed("rectangle-container", true);
+            rect_g.append('rect')
                 .classed("dc-bar-gauge-background", true)
                 .attr('width', function(){ return containingX;})
                 .attr('height', function(){return containingY;})
@@ -401,7 +403,7 @@ dc.barGauge = function (parent, chartGroup) {
                 .attr('y', offsetY)
               .append("title")
                 .text(_markerFormat(_filledValue));
-            _g.append('rect')
+            rect_g.append('rect')
                 .classed("dc-bar-gauge-foreground", true)
                 .attr('width', function(){return filledX;})
                 .attr('height', function(){return filledY;})
