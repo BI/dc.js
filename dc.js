@@ -8451,6 +8451,9 @@ dc.barGauge = function (parent, chartGroup) {
                     .classed("marker-tick", true)
                     .attr("transform","translate(" + _x(marker.value) + ", 0)");
 
+                markerGroup.data([{markerName: marker.statName, memberValue: marker.value, memberName: marker.member}])
+                  .enter();
+
                 markerGroup.append("title")
                     .text(_markerTitle(marker));
                 markerGroup.append("text")
@@ -8490,6 +8493,10 @@ dc.barGauge = function (parent, chartGroup) {
                     .append("g")
                     .classed("marker-tick", true)
                     .attr("transform","translate(" + _x(marker.value) + ", 0)");
+
+            markerGroup.data([{markerName: marker.statName, memberValue: marker.value, memberName: marker.member}])
+                .enter();
+
             markerGroup.append("text")
                 .text(marker.statName)
                 .attr("style", "text-anchor: middle")
@@ -8549,7 +8556,7 @@ dc.barGauge = function (parent, chartGroup) {
             newFilledX, newFilledY,
             offsetX, offsetY,
             containingX, containingY,
-            actualThickness, myRectangle;
+            actualThickness, myRectangle, rect_g;
 
         if(orientation == 'vertical') {
             //NEED TO FIX
@@ -8566,7 +8573,8 @@ dc.barGauge = function (parent, chartGroup) {
                 .attr("width", _chart.width())
                 .attr("height", _chart.height());
 
-            _g.append('rect')
+            rect_g = _g.append("g").classed("rectangle-container", true);
+            rect_g.append('rect')
                 .classed("dc-bar-gauge-background", true)
                 .attr('width', function(){ return containingX;})
                 .attr('height', function(){return containingY;})
@@ -8574,7 +8582,7 @@ dc.barGauge = function (parent, chartGroup) {
                 .attr('y', 0)
               .append("title")
                 .text(_markerFormat(_filledValue));
-            _g.append('rect')
+            rect_g.append('rect')
                 .classed("dc-bar-gauge-foreground", true)
                 .attr('width', function(){return filledX;})
                 .attr('height', function(){return filledY;})
@@ -8600,10 +8608,11 @@ dc.barGauge = function (parent, chartGroup) {
             offsetX = 0;
             offsetY = _gap;
             _chart.root().select('svg')
-                .attr("height", _chart.height())
-                .attr("width", (_usePercentageForLengthCalc) ? "100%" : _chart.width());
+                .attr("height", _chart.height());
+                
 
-            _g.append('rect')
+            rect_g = _g.append("g").classed("rectangle-container", true);
+            rect_g.append('rect')
                 .classed("dc-bar-gauge-background", true)
                 .attr('width', function(){ return containingX;})
                 .attr('height', function(){return containingY;})
@@ -8611,7 +8620,7 @@ dc.barGauge = function (parent, chartGroup) {
                 .attr('y', offsetY)
               .append("title")
                 .text(_markerFormat(_filledValue));
-            _g.append('rect')
+            rect_g.append('rect')
                 .classed("dc-bar-gauge-foreground", true)
                 .attr('width', function(){return filledX;})
                 .attr('height', function(){return filledY;})
@@ -8634,6 +8643,10 @@ dc.barGauge = function (parent, chartGroup) {
         _chart.root().classed('dc-chart', false);
         _chart.root().html('');
         _chart.resetSvg();
+
+        //Add data to the svg node
+        _chart.svg().data([{totalCapacity: _chart.totalCapacity(), filledValue: _chart.value()}])
+          .enter();
 
         _g = _chart.svg()
             .append('g')
