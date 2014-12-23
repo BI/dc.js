@@ -377,7 +377,7 @@ dc.barGauge = function (parent, chartGroup) {
                 .attr('width', function(){ return containingX;})
                 .attr('height', function(){return containingY;})
                 .attr('x', 0)
-                .attr('y', 0)
+                .attr('y', 0);
             if(_defaultToolTips)
                 rect_g.append("title")
                     .text(_markerFormat(_filledValue));
@@ -387,7 +387,7 @@ dc.barGauge = function (parent, chartGroup) {
                 .attr('width', function(){return filledX;})
                 .attr('height', function(){return filledY;})
                 .attr('x', offsetX)
-                .attr('y', offsetY)
+                .attr('y', offsetY);
             if(_defaultToolTips)
                 rect_g.append("title")
                     .text(_markerFormat(_filledValue));
@@ -418,7 +418,7 @@ dc.barGauge = function (parent, chartGroup) {
                 .attr('width', function(){ return containingX;})
                 .attr('height', function(){return containingY;})
                 .attr('x', 0)
-                .attr('y', offsetY)
+                .attr('y', offsetY);
             if(_defaultToolTips)
                 rect_g.append("title")
                     .text(_markerFormat(_filledValue));
@@ -427,7 +427,7 @@ dc.barGauge = function (parent, chartGroup) {
                 .attr('width', function(){return filledX;})
                 .attr('height', function(){return filledY;})
                 .attr('x', offsetX)
-                .attr('y', offsetY)
+                .attr('y', offsetY);
             if(_defaultToolTips)
                 rect_g.append("title")
                     .text(_markerFormat(_filledValue));
