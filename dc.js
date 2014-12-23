@@ -8266,7 +8266,7 @@ dc.barGauge = function (parent, chartGroup) {
             }
             return title + _markerFormat(marker.value);
         },
-        _defaultMarkerHeight = 40, _defaultMarkerWidth = 20;
+        _defaultMarkerHeight = 40, _defaultMarkerWidth = 20, _defaultToolTips = true;
 
     //dimension is not required because this component only has one dimension
     _chart._mandatoryAttributes (['group']);
@@ -8386,6 +8386,16 @@ dc.barGauge = function (parent, chartGroup) {
         return _chart;
     };
 
+    /** 
+        #### .defaultToolTips(boolean)
+        Set whether or not to show the default tool tips. 
+    **/
+    _chart.defaultToolTips = function (_) {
+        if (!arguments.length) return _defaultToolTips;
+        _defaultToolTips = _;
+        return _chart;
+    };
+
     /**
         #### .totalCapacity(number)
         Explicitly set total capacity.
@@ -8453,9 +8463,10 @@ dc.barGauge = function (parent, chartGroup) {
 
                 markerGroup.data([{markerName: marker.statName, memberValue: marker.value, memberName: marker.member}])
                   .enter();
+                if(_defaultToolTips)
+                    markerGroup.append("title")
+                        .text(_markerTitle(marker));
 
-                markerGroup.append("title")
-                    .text(_markerTitle(marker));
                 markerGroup.append("text")
                     .text(marker.statName)
                     .attr("style", "text-anchor: middle")
@@ -8496,6 +8507,10 @@ dc.barGauge = function (parent, chartGroup) {
 
             markerGroup.data([{markerName: marker.statName, memberValue: marker.value, memberName: marker.member}])
                 .enter();
+
+            if(_defaultToolTips)
+                markerGroup.append("title")
+                    .text(_markerTitle(marker));
 
             markerGroup.append("text")
                 .text(marker.statName)
@@ -8580,16 +8595,19 @@ dc.barGauge = function (parent, chartGroup) {
                 .attr('height', function(){return containingY;})
                 .attr('x', 0)
                 .attr('y', 0)
-              .append("title")
-                .text(_markerFormat(_filledValue));
+            if(_defaultToolTips)
+                rect_g.append("title")
+                    .text(_markerFormat(_filledValue));
+
             rect_g.append('rect')
                 .classed("dc-bar-gauge-foreground", true)
                 .attr('width', function(){return filledX;})
                 .attr('height', function(){return filledY;})
                 .attr('x', offsetX)
                 .attr('y', offsetY)
-              .append("title")
-                .text(_markerFormat(_filledValue));
+            if(_defaultToolTips)
+                rect_g.append("title")
+                    .text(_markerFormat(_filledValue));
             myRectangle = _chart.selectAll('.dc-bar-gauge-foreground');
 
             dc.transition(myRectangle, _chart.transitionDuration())
@@ -8618,16 +8636,18 @@ dc.barGauge = function (parent, chartGroup) {
                 .attr('height', function(){return containingY;})
                 .attr('x', 0)
                 .attr('y', offsetY)
-              .append("title")
-                .text(_markerFormat(_filledValue));
+            if(_defaultToolTips)
+                rect_g.append("title")
+                    .text(_markerFormat(_filledValue));
             rect_g.append('rect')
                 .classed("dc-bar-gauge-foreground", true)
                 .attr('width', function(){return filledX;})
                 .attr('height', function(){return filledY;})
                 .attr('x', offsetX)
                 .attr('y', offsetY)
-              .append("title")
-                .text(_markerFormat(_filledValue));
+            if(_defaultToolTips)
+                rect_g.append("title")
+                    .text(_markerFormat(_filledValue));
             myRectangle = _chart.selectAll('.dc-bar-gauge-foreground');
 
             dc.transition(myRectangle, _chart.transitionDuration())

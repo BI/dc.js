@@ -1959,6 +1959,10 @@ Setting this explicitly is useful for when a resize/redraw occurs and the text i
 Explicitly set marker height. The marker dimensions are set based on the marker text offset dimensions.
 Setting this explicitly is useful for when a resize/redraw occurs and the text is momentarily 0x0.
 
+ 
+#### .defaultToolTips(boolean)
+Set whether or not to show the default tool tips.
+
 #### .totalCapacity(number)
 Explicitly set total capacity.
 
