@@ -9488,6 +9488,10 @@ dc.treeMap = function (parent, chartGroup) {
         return _chart;
     };
 
+    _chart.data(function() {
+    	return [_treeMapDataObject];
+    });
+
     function onClick(d, drillDown) {
         //if click event is blocked, then the element is being dragged so don't filter
         /*if(d3.event.defaultPrevented) 
@@ -10428,6 +10432,10 @@ dc.sankey = function(parent, chartGroup) {
         _height = _;
         return _chart;
     };
+
+    _chart.data(function(){ 
+        return [_sankeyDataObject];
+    });
     
     _chart.initData = function () {
         if(_chart.levels() && _chart.measureColumn()) {
