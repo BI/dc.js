@@ -230,6 +230,10 @@ dc.treeMap = function (parent, chartGroup) {
         return _chart;
     };
 
+    _chart.data(function() {
+    	return [_treeMapDataObject];
+    });
+
     function onClick(d, drillDown) {
         //if click event is blocked, then the element is being dragged so don't filter
         /*if(d3.event.defaultPrevented) 

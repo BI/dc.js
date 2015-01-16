@@ -144,6 +144,10 @@ dc.sankey = function(parent, chartGroup) {
         _height = _;
         return _chart;
     };
+
+    _chart.data(function(){ 
+        return [_sankeyDataObject];
+    });
     
     _chart.initData = function () {
         if(_chart.levels() && _chart.measureColumn()) {

@@ -8594,20 +8594,20 @@ dc.barGauge = function (parent, chartGroup) {
                 .attr('width', function(){ return containingX;})
                 .attr('height', function(){return containingY;})
                 .attr('x', 0)
-                .attr('y', 0)
+                .attr('y', 0);
             if(_defaultToolTips)
-              rect_g.append("title")
-                .text(_markerFormat(_filledValue));
+                rect_g.append("title")
+                    .text(_markerFormat(_filledValue));
 
             rect_g.append('rect')
                 .classed("dc-bar-gauge-foreground", true)
                 .attr('width', function(){return filledX;})
                 .attr('height', function(){return filledY;})
                 .attr('x', offsetX)
-                .attr('y', offsetY)
+                .attr('y', offsetY);
             if(_defaultToolTips)
-              rect_g.append("title")
-                .text(_markerFormat(_filledValue));
+                rect_g.append("title")
+                    .text(_markerFormat(_filledValue));
             myRectangle = _chart.selectAll('.dc-bar-gauge-foreground');
 
             dc.transition(myRectangle, _chart.transitionDuration())
@@ -8635,19 +8635,19 @@ dc.barGauge = function (parent, chartGroup) {
                 .attr('width', function(){ return containingX;})
                 .attr('height', function(){return containingY;})
                 .attr('x', 0)
-                .attr('y', offsetY)
+                .attr('y', offsetY);
             if(_defaultToolTips)
-              rect_g.append("title")
-                .text(_markerFormat(_filledValue));
+                rect_g.append("title")
+                    .text(_markerFormat(_filledValue));
             rect_g.append('rect')
                 .classed("dc-bar-gauge-foreground", true)
                 .attr('width', function(){return filledX;})
                 .attr('height', function(){return filledY;})
                 .attr('x', offsetX)
-                .attr('y', offsetY)
+                .attr('y', offsetY);
             if(_defaultToolTips)
-              rect_g.append("title")
-                .text(_markerFormat(_filledValue));
+                rect_g.append("title")
+                    .text(_markerFormat(_filledValue));
             myRectangle = _chart.selectAll('.dc-bar-gauge-foreground');
 
             dc.transition(myRectangle, _chart.transitionDuration())
@@ -9487,6 +9487,10 @@ dc.treeMap = function (parent, chartGroup) {
         else throw "Must provide dimension column array and measureColumn";
         return _chart;
     };
+
+    _chart.data(function() {
+    	return [_treeMapDataObject];
+    });
 
     function onClick(d, drillDown) {
         //if click event is blocked, then the element is being dragged so don't filter
@@ -10428,6 +10432,10 @@ dc.sankey = function(parent, chartGroup) {
         _height = _;
         return _chart;
     };
+
+    _chart.data(function(){ 
+        return [_sankeyDataObject];
+    });
     
     _chart.initData = function () {
         if(_chart.levels() && _chart.measureColumn()) {
