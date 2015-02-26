@@ -43,6 +43,8 @@ dc.sankey = function(parent, chartGroup) {
     var _margin = {top: 1, right: 1, bottom: 6, left: 1}, //margins needed so sankey edges aren't cut off
         _width = 960 - _margin.left - _margin.right,
         _height = 500 - _margin.top - _margin.bottom,
+        _totalNegativeValue, _showNegativeTotal = false,
+        _totalNegFormatter = function(d){return d;},
         _noDataMessage = "<span class=\"error\">No data for the selected filters</span>",
         _negativeDataMessage = "<span class=\"error\">All data found was negative values.</span>";
 
@@ -80,6 +82,26 @@ dc.sankey = function(parent, chartGroup) {
     _chart.negativeDataMessage = function(_) {
         if(!arguments.length) return _negativeDataMessage;
         _negativeDataMessage = _;
+        return _chart;
+    };
+
+    /**
+    #### .showNegativeTotal(boolean)
+    Pass a boolean flag for whether or not to show the negative data number. 
+    **/
+    _chart.showNegativeTotal = function(_) {
+        if(!arguments.length) return _showNegativeTotal;
+        _showNegativeTotal = _;
+        return _chart;
+    };
+
+    /**
+    #### .totalNegFormatter(function)
+    Pass a function to format the total negative value. 
+    **/
+    _chart.totalNegFormatter = function(_) {
+        if(!arguments.length) return _totalNegFormatter;
+        _totalNegFormatter = _;
         return _chart;
     };
 
@@ -188,7 +210,9 @@ dc.sankey = function(parent, chartGroup) {
             return checkForData;
         }
 
-        
+        _chart.root().select(".sankey-negative-totalValue")
+                .html(_totalNegFormatter(_totalNegativeValue));
+        var negValueElement = _chart.root().select(".sankey-negative-totalValue-message").remove();
         
 
         var svg = _chart.svg()
@@ -197,6 +221,7 @@ dc.sankey = function(parent, chartGroup) {
           .append("g")
             .attr("transform", "translate(" + _margin.left + "," + _margin.top + ")");
         
+        _showNegativeTotal && d3.select(parent).append(function() {return negValueElement.node();});
 
         _sankey = d3.sankey()
             .nodeWidth(_nodeWidth)
@@ -321,6 +346,7 @@ dc.sankey = function(parent, chartGroup) {
     //**Translate the crossfilter dimensions to a sankey data structure
     function crossfilterToSankeyData(levels, measureColumn) {
 
+        _totalNegativeValue = 0;
         //Dimensions provided are the source for creating the Sankey Node/Link 
         //data structure
         var t = {nodes: [], links: []};
@@ -339,6 +365,7 @@ dc.sankey = function(parent, chartGroup) {
             s.forEach(function(row){
                 if(row[measureColumn] > 0)
                     insertNodes(row, columnName);
+                
                 
             });
         });
@@ -359,6 +386,8 @@ dc.sankey = function(parent, chartGroup) {
                     allNegativeData = false;
                     insertOrUpdateLinks(row, columnName, index);
                 }
+                else
+                    _totalNegativeValue += Number(row[measureColumn]);
             });
         });
 
