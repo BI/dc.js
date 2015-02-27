@@ -63,6 +63,7 @@ svg {
 
 <div id="sankey" >
   <div class="filter column_state_from"></div><div class="filter column_state_live"></div><div class="filter column_region"></div><div class="filter column_countrycode"></div>
+  <div class="sankey-negative-totalValue-message"><div class="sankey-negative-totalValue"></div></div>
 </div>
 <br/><hr/>
 <div id="barchart-state-from"></div>
@@ -94,7 +95,8 @@ var sankey = dc.sankey("#sankey")
                 .height(400)
                 .levels(levels)
                 .measureColumn('value')
-                .nodeWidth(30);
+                .nodeWidth(30)
+                .showNegativeTotal(true);
 
 var stateFromGroup = stateFromDimension.group().reduceSum(function(d) {return d.value;});
  barChartStateFrom = dc.rowChart("#barchart-state-from");

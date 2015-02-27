@@ -41,6 +41,8 @@ dc.treeMap = function (parent, chartGroup) {
 	var _treeMapd3, _treeMapDataObject, _currentRoot, _currentXscale, _currentYscale,
 		_rootName = "root",
 		_zoomLevel = 0, _colors = d3.scale.category20c(),
+		_totalNegativeValue, _showNegativeTotal = false,
+		_totalNegFormatter = function(d){return d;},
         _noDataMessage = "<span class=\"error\">No data for the selected filters</span>",
         _negativeDataMessage = "<span class=\"error\">All data found was negative values.</span>";
 
@@ -178,6 +180,26 @@ dc.treeMap = function (parent, chartGroup) {
     };
 
     /**
+	#### .showNegativeTotal(boolean)
+	Pass a boolean flag for whether or not to show the negative data number. 
+    **/
+    _chart.showNegativeTotal = function(_) {
+    	if(!arguments.length) return _showNegativeTotal;
+    	_showNegativeTotal = _;
+    	return _chart;
+    };
+
+        /**
+	#### .totalNegFormatter(function)
+	Pass a function to format the total negative value. 
+    **/
+    _chart.totalNegFormatter = function(_) {
+    	if(!arguments.length) return _totalNegFormatter;
+    	_totalNegFormatter = _;
+    	return _chart;
+    };
+
+    /**
     #### .label(callback)
     Pass in a custom label function. These labels are what appear in the top left of each rectangle.
     **/
@@ -300,6 +322,10 @@ dc.treeMap = function (parent, chartGroup) {
 
             return checkForData;
         }
+        
+        _chart.root().select(".treemap-negative-totalValue")
+            	.html(_totalNegFormatter(_totalNegativeValue));
+        var negValueElement = _chart.root().select(".treemap-negative-totalValue-message").remove();
 
 		_chart.root()
 			.style("width", _width + "px")
@@ -330,6 +356,8 @@ dc.treeMap = function (parent, chartGroup) {
           .append("g")
 			.attr("transform", "translate(" + _margin.left + "," + _margin.top + ")")
 			.style("shape-rendering", "crispEdges");
+
+		_showNegativeTotal && d3.select(parent).append(function() {return negValueElement.node();});
 
 		var crumbTrail = svg.append("g")
 			.attr("class", "crumbTrail");
@@ -586,9 +614,15 @@ dc.treeMap = function (parent, chartGroup) {
 				})
 				.attr("y", function(d) { return y(d.y); })
 				.attr("width", function(d) { 
-					return x(d.x + d.dx) - x(d.x);
+					var width = x(d.x + d.dx) - x(d.x);
+					if(width < 10) width = 10;
+					return width;
 				})
-				.attr("height", function(d) { return y(d.y + d.dy) - y(d.y); });
+				.attr("height", function(d) {
+					var height = y(d.y + d.dy) - y(d.y);
+					if(height < 12) height = 12;
+					return height;
+				});
 
 
 			//Need to add clip path margin so text doesnt go all the way to the edge. 
@@ -613,6 +647,7 @@ dc.treeMap = function (parent, chartGroup) {
 	function crossfilterToTreeMapData(levelsData, measureColumn) {
 		var _tree = {name : _rootName, columnName : "root",
 					children : [], _children: []};
+		_totalNegativeValue = 0;
 
 		//loop over the rows, and then by column to populate the tree data
 		var rows = levelsData[0].dimension.top(Infinity);
@@ -630,6 +665,9 @@ dc.treeMap = function (parent, chartGroup) {
 					if(row[measureColumn] > 0) {
 						allNegativeData = false;
 						insertNode(row, columnName, columnIndex);
+					}
+					else {
+						_totalNegativeValue += Number(row[measureColumn]);
 					}
 				});
 			});
