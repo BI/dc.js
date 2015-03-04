@@ -221,7 +221,7 @@ dc.sankey = function(parent, chartGroup) {
           .append("g")
             .attr("transform", "translate(" + _margin.left + "," + _margin.top + ")");
         
-        _showNegativeTotal && d3.select(parent).append(function() {return negValueElement.node();});
+        _showNegativeTotal && _totalNegativeValue < 0 && d3.select(parent).append(function() {return negValueElement.node();});
 
         _sankey = d3.sankey()
             .nodeWidth(_nodeWidth)

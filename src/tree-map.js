@@ -357,7 +357,7 @@ dc.treeMap = function (parent, chartGroup) {
 			.attr("transform", "translate(" + _margin.left + "," + _margin.top + ")")
 			.style("shape-rendering", "crispEdges");
 
-		_showNegativeTotal && d3.select(parent).append(function() {return negValueElement.node();});
+		_showNegativeTotal && _totalNegativeValue < 0 && d3.select(parent).append(function() {return negValueElement.node();});
 
 		var crumbTrail = svg.append("g")
 			.attr("class", "crumbTrail");

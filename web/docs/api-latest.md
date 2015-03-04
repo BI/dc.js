@@ -2168,6 +2168,12 @@ Message to display if no data is found.
 #### .negativeDataMessage(function)
 Message to display if all data values were negative.
 
+#### .showNegativeTotal(boolean)
+Pass a boolean flag for whether or not to show the negative data number.
+
+#### .totalNegFormatter(function)
+Pass a function to format the total negative value.
+
 #### .label(callback)
 Pass in a custom label function. These labels are what appear in the top left of each rectangle.
 
@@ -2231,6 +2237,12 @@ Specify the callback to display the message when no data is found.
 
 #### .negativeDataMessage(function)
 Specify the callback to display the message when all the data is negative values.
+
+#### .showNegativeTotal(boolean)
+Pass a boolean flag for whether or not to show the negative data number.
+
+#### .totalNegFormatter(function)
+Pass a function to format the total negative value.
 
 #### .setColorRange(["#color", "#morecolors"])
 Specify the range of colors that can be used in the ordinal color scale.
