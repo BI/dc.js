@@ -1,5 +1,5 @@
-/*!
- *  dc 2.0.0-alpha.2
+/*! 
+ *  dc 2.0.0-alpha.2 
  *  http://dc-js.github.io/dc.js/
  *  Copyright 2012 Nick Zhu and other contributors
  *
@@ -3319,7 +3319,8 @@ dc.bubbleMixin = function (_chart) {
 /**
 ## Hierarchy Mixin
 
-The Hierarchy Mixin provides support for hierarchical mutli dimensional filtering.
+The Hierarchy Mixin provides support for hierarchical multi dimensional filtering. This means that we can use dimensions
+in hierarchichal or tree like fashion. Example uses for this would be the Sankey and the Treemap.
 
 **/
 
@@ -3347,8 +3348,10 @@ dc.hierarchyMixin = function(_chart) {
         return filters;
     };
 
-    //Specify the dimension that goes along with the filter by providing columnName as the key.
-    //_filters = {regionDimension : ['West', 'East'], otherDimension : }
+    /**
+    #### .hasFilter(columnName, filterValue)
+    Specify the dimension that goes along with the filter by providing columnName as the key corresponding to a key in your levels object.
+    **/
     _chart.hasFilter = function (columnName, filterValue) {
         if(!arguments.length) {
             if(Object.keys(_filters).length === 0) {
@@ -3425,6 +3428,7 @@ dc.hierarchyMixin = function(_chart) {
     ```js
     //filter on a dimension with a string
     chart.filter("csvColumnforRegion", "West");
+    ```js
     **/
     _chart.filter = function(columnName, filterValue) {
         if(!arguments.length) return _filters;
@@ -8220,8 +8224,7 @@ dc.boxPlot = function (parent, chartGroup) {
 
 Includes: [Base Mixin](#base-mixin)
 
-The Bar Gauge is a way to see data displacement. Typically there is a number
-Total and 'filled up' number. The bar will show how close the fill number is to the total. 
+The Bar Gauge is a way to see data displacement based on a total capacity. An example would be showing how each country's population compares to the largest country's population in the world.
 
 #### dc.barGauge(parent[, chartGroup])
 Parameters:
@@ -8237,13 +8240,16 @@ A newly created choropleth chart instance
 
 ```js
 totalFundingBar = dc.barGauge("#total-funding-gauge")
+                                .height(150)
+                                .width(300)
+                                .margins({top: 5, right: 5, bottom: 5, left: 5}) //margins are good for positioning
                                 .group(totalFundingGroup)
+                                .dimension(countryDimension)
                                 .valueAccessor(function(d){return d;})
-                                .totalCapacity(function(){
-                                  return totalDollars;
-                                })
-                                .orientation('horizontal') 
-                                .thickness(6);
+                                .totalCapacity(maxCountryValue)
+                                .orientation('horizontal') //vertical still needs work
+                                .gap(5)
+                                .drawScale(true); //draw the scale around the gauge
 ```
 **/
 dc.barGauge = function (parent, chartGroup) {
@@ -8268,7 +8274,7 @@ dc.barGauge = function (parent, chartGroup) {
         },
         _defaultMarkerHeight = 40, _defaultMarkerWidth = 20, _defaultToolTips = true;
 
-    //dimension is not required because this component only has one dimension
+    //dimension is not required because this comp onent only has one dimension
     _chart._mandatoryAttributes (['group']);
 
     _chart.transitionDuration(700); // good default
@@ -8324,7 +8330,7 @@ dc.barGauge = function (parent, chartGroup) {
 
     /**
         #### .orientation(string)
-        Set the orientation of the bar 'horizontal' or 'vertical'. 
+        Set the orientation of the bar 'horizontal' or 'vertical'. Only horizontal is fully working at this time. 
     **/
     _chart.orientation = function(_) {
         if(!arguments.length) return _orientation;
@@ -8338,7 +8344,7 @@ dc.barGauge = function (parent, chartGroup) {
         Set the calculation for the length, and filled length to use percentages, not exact values. The
         svg will be set so its long side is 100% of the parent container. 
         This can be useful for when we want the length of the bar to fill up its parent element, 
-        but do not know the size of the parent element. 
+        but do not know the size of the parent element. Defaults to false.
     **/
     _chart.usePercentageLength = function(_) {
         if(!arguments.length) return _usePercentageForLengthCalc;
@@ -8346,8 +8352,8 @@ dc.barGauge = function (parent, chartGroup) {
         return _chart;
     };
     /**
-        #### .gap([gap])
-        Get or set the vertical gap space between rows on a particular row chart instance. Default gap is 5px;
+        #### .gap(number)
+        Get or set the gap between the bar and the scale. Default gap is 5px.
     **/
     _chart.gap = function (_) {
         if (!arguments.length) return _gap;
@@ -8357,6 +8363,7 @@ dc.barGauge = function (parent, chartGroup) {
 
     /**
         #### .markerPadding(Object)
+        Pad the space around marker text. Defaults to 5px.
     **/
     _chart.markerPadding = function (_) {
         if (!arguments.length) return _markerPadding;
@@ -8388,7 +8395,7 @@ dc.barGauge = function (parent, chartGroup) {
 
     /** 
         #### .defaultToolTips(boolean)
-        Set whether or not to show the default tool tips. 
+        Set whether or not to show the default tool tips. Defaults to true.
     **/
     _chart.defaultToolTips = function (_) {
         if (!arguments.length) return _defaultToolTips;
@@ -8398,7 +8405,7 @@ dc.barGauge = function (parent, chartGroup) {
 
     /**
         #### .totalCapacity(number)
-        Explicitly set total capacity.
+        Explicitly set total capacity of the chart.
     **/
     _chart.totalCapacity = function(_) {
         if (!arguments.length) return _totalCapacity.call(_chart);
@@ -8409,8 +8416,7 @@ dc.barGauge = function (parent, chartGroup) {
 
     /**
         #### .filledValue(number)
-        Explicitly set filled value. 
-        The filled value will be used to get the percentage the bar is filled.
+        Explicitly set filled value.
     **/
     _chart.filledValue = function(_) {
         if(!arguments.length) return _filledValue;
@@ -8420,7 +8426,7 @@ dc.barGauge = function (parent, chartGroup) {
 
     /**
         #### .drawScale(boolean)
-        Explicitly set whether or not to draw the scale. 
+        Explicitly set whether or not to draw the scale. Defaults to false.
     **/
     _chart.drawScale = function(_) {
         if(!arguments.length) return _drawScale;
@@ -8431,9 +8437,11 @@ dc.barGauge = function (parent, chartGroup) {
     /**
         #### .drawScale(markerObjArray)
         Set markers with an array of marker objects. The structure should look similar the following:
+        ```js
         markerObjArray = [{value: someValue, statName: "Median"}, 
             {value: otherValue, statName: ""Mean"},
             {value: maxValue, member: maxName, statName: "Max"}];
+        ```
         If the member is specified, the tooltip will show "member: value"
     **/
     _chart.setMarkers = function(_) {
@@ -8538,7 +8546,7 @@ dc.barGauge = function (parent, chartGroup) {
     }
 
     /**
-        #### .markerFormat(Function)
+        #### .markerFormat(function)
         Pass a formatter function like d3.format() to format marker values. 
     **/
     _chart.markerFormat = function(_) {
@@ -8549,7 +8557,7 @@ dc.barGauge = function (parent, chartGroup) {
     };
 
     /**
-        #### .tickFormat(Function)
+        #### .tickFormat(function)
         Pass a formatter function like d3.format() to format tick values. 
     **/
     _chart.tickFormat = function(_) {
@@ -8561,7 +8569,7 @@ dc.barGauge = function (parent, chartGroup) {
     /**
         #### .initializeRectangles(ParentSelector, number, number, string)
         Add the background and foreground rectangles. Set the foreground
-        rectangle to the calculated fill percantage.
+        rectangle to the calculated fill percentage.
     **/
     var initializeRectangles = function(orientation) {
         //the percentage value will be how much the bar is actually filled up
@@ -9013,11 +9021,11 @@ dc.geoBubbleOverlayChart = function (parent, chartGroup) {
     return _chart.anchor(parent, chartGroup);
 };
 
-/**
+ /**
 ## Arc Gauge
 
 Includes: [Base Mixin](#base-mixin)
-
+ 
 The Arc Gauge is a way to see data displacement similar to the Bar Gauge
  but in curved speedometer-like fashion.
 
@@ -9227,6 +9235,7 @@ dc.arcGauge = function (parent, chartGroup) {
         _endAngle = (_endAngle === undefined) ? 115 : _chart.endAngle();
         _outerRadius = _outerRadius || d3.min([_chart.width(), _chart.height()]) / 2;
         _innerRadius = _innerRadius || _innerRadiusRatio * _outerRadius;
+        
 
         _arc = d3.svg.arc()
             .innerRadius(_innerRadius)
@@ -9259,11 +9268,11 @@ dc.arcGauge = function (parent, chartGroup) {
 /**
 ## Tree Map 
 
-Includes: [Base Mixin](#base-mixin)
+Includes: [Base Mixin](#base-mixin), [Hierarchy Mixin](#hierarchy-mixin)
 
 
 #### dc.treeMap(parent[, chartGroup])
-Create a Tree Map chart that uses multiple crossfilter dimensions in a hierarchical data structure.
+Create a Tree Map chart that uses multiple dimensions in a hierarchical fashion. 
 
 Parameters:
 
@@ -9286,10 +9295,12 @@ var dimensionColumnnamePairs = [{'dimension' : someRootDimension, 'columnName' :
 var measureColumn = 'value';
 // create a row chart under #sankey element using the default global chart group
 var chart = dc.rowChart("#treeMap")
+				.topBarHeight(45)
+				.height(400)
                 .levels(dimensionColumnnamePairs)
                 .measureColumn(measureColumn);
 
-//filter manually by passing in the column name, and filter value like this
+//unlike other charts you must filter manually by passing in the column name, and filter value like this
 chart.filter('columnNamefromCSV', 'singlefiltervalue');
 ```
 
@@ -9401,6 +9412,10 @@ dc.treeMap = function (parent, chartGroup) {
         return _chart;  
     };
 
+    /**
+    #### .colors(array)
+    Set the classnames of rectangles for use with css colors.
+    **/
     _chart.colors = function(_) {
     	if(!arguments.length) return _colors;
         _colors = _;
@@ -9439,7 +9454,7 @@ dc.treeMap = function (parent, chartGroup) {
 
     /**
 	#### .showNegativeTotal(boolean)
-	Pass a boolean flag for whether or not to show the negative data number. 
+	Pass a boolean flag for whether or not to show the negative data number. Defaults to false.
     **/
     _chart.showNegativeTotal = function(_) {
     	if(!arguments.length) return _showNegativeTotal;
@@ -9458,8 +9473,8 @@ dc.treeMap = function (parent, chartGroup) {
     };
 
     /**
-    #### .label(callback)
-    Pass in a custom label function. These labels are what appear in the top left of each rectangle.
+    #### .label(function)
+    Pass in a custom label function. These labels are what appear as text in the rectangles.
     **/
     _chart.labelFunctions = function(_) {
 		if(!arguments.length) return _labelFuncsArray;
@@ -9468,7 +9483,7 @@ dc.treeMap = function (parent, chartGroup) {
     };
 
     /**
-	#### .toolTip(callback)
+	#### .toolTip(function)
 	Pass in a custom tool tip function. These tool tips show text for the rectangles on hover.
     **/
     _chart.toolTip = function(_) {
@@ -9478,8 +9493,8 @@ dc.treeMap = function (parent, chartGroup) {
     };
 
     /**
-	#### .titleBarCaption(callback)
-	Pass in custom title bar caption function. The title bar text is show in the bar at the top.
+	#### .titleBarCaption(function)
+	Pass in custom title bar caption function. The title bar text is shown in the bar at the top.
     **/
     _chart.titleBarCaption = function(_) {
         if(!arguments.length) return _titleBarFunc;
@@ -9488,8 +9503,8 @@ dc.treeMap = function (parent, chartGroup) {
     };
 
     /**
-	#### .onLevelChange(callback)
-	Pass in callback to hook into the level change event.
+	#### .onLevelChange(function)
+	Pass in callback to hook into the level change event. Level change happens when the user clicks on a rectangle to dive one level deeper, or the top bar to dive one level up. 
     **/
     _chart.onLevelChange = function(_) {
     	if(!arguments.length) return _onLevelChangeFunc;
@@ -9976,10 +9991,10 @@ dc.treeMap = function (parent, chartGroup) {
 			existingNode.value = Number(existingNode.value) + Number(row[measureColumn]);
 		}
 
-		/**
-		//#### .findNodeChildrenDrill(Object, String, Number)
-		//Drill down until at the correct child object, this function is used internally
-		**/
+		/*
+		.findNodeChildrenDrill(Object, String, Number)
+		Drill down until at the correct child object, this function is used internally
+		*/
 		function findNodeChildrenDrill(row, columnName, columnIndex) {
 			var childNode = _tree; //array of child objects
 			for (var i = 0; i < columnIndex; i++) {
@@ -9994,10 +10009,10 @@ dc.treeMap = function (parent, chartGroup) {
 			return childNode;
 		}
 
-		/**
-		//#### .zoomLevelDrill(Number)
-		//Drill down to the child node by zoom level, this function is used externally
-		**/
+		/*
+		.zoomLevelDrill(Number)
+		Drill down to the child node by zoom level, this function is used externally
+		*/
 		_tree.zoomLevelDrill = function(zoomLevel) {
 			var childNode = _tree;
 
@@ -10327,12 +10342,11 @@ d3.sankey = function() {
 /**
 ## Sankey
 
-Includes: [Base Mixin](#base-mixin)
+Includes: [Base Mixin](#base-mixin) [Hierarchy Mixin](#hierarchy-mixin)
 
 
 #### dc.sankey(parent[, chartGroup])
-Create a Sankey chart that shows how crossfilter dimensions flow into other dimensions. 
-Multiple dimensions can be used. 
+Create a Sankey chart that shows how dimensions flow into other dimensions in a hierarchichal fashion.
 
 Parameters:
 
@@ -10347,14 +10361,17 @@ Returns:
 A newly created sankey instance
 
 ```js
-//setup the dimension/column name array(levels) needed to translate crossfilter data into the sankey 
-//data structure
+//setup the dimension hierarchy we call 'levels'
+//the levels data structure specifies dimension, and its corresponding columnName from the csv data
 var levels = [{'dimension' : someDimension, 'columnName' : 'columnNamefromCSV'},
                                 {'dimension' : anotherDimension, 'columnName' : 'anotherColumnName'}];
-//which column name from the CSV contains the value for measuring the data
+//set the column used as your measure
 var measureColumn = 'value';
-// create a sankey chart under #sankey element using the default global chart group
+
+// create a sankey
 var chart = dc.sankey("#sankey")
+                .width(600)
+                .height(400)
                 .levels(levels)
                 .measureColumn(measureColumn);
 
@@ -10383,7 +10400,7 @@ dc.sankey = function(parent, chartGroup) {
 
     /**
     #### .label(function)
-    Specify the callback to display text that goes next to nodes. 
+    Specify the callback to display text that goes next to nodes(rectangles). 
     **/
     _chart.label = function(_) {
         if(!arguments.length) return _labelFunc;
@@ -10403,7 +10420,7 @@ dc.sankey = function(parent, chartGroup) {
 
     /**
     #### .negativeDataMessage(function)
-    Specify the callback to display the message when all the data is negative values. 
+    Specify the callback to display the message when all the data values in the chart are negative numbers. 
     **/
     _chart.negativeDataMessage = function(_) {
         if(!arguments.length) return _negativeDataMessage;
@@ -10413,7 +10430,7 @@ dc.sankey = function(parent, chartGroup) {
 
     /**
     #### .showNegativeTotal(boolean)
-    Pass a boolean flag for whether or not to show the negative data number. 
+    Pass a boolean flag for whether or not to show the negative data number. Defaults to false.
     **/
     _chart.showNegativeTotal = function(_) {
         if(!arguments.length) return _showNegativeTotal;

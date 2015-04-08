@@ -3,7 +3,7 @@
 [![NPM Status](https://badge.fury.io/js/dc.png)](http://badge.fury.io/js/dc)
 
 dc.js
-=====
+===== 
 
 Dimensional charting built to work natively with crossfilter rendered using d3.js. Check out the
 [example page](http://dc-js.github.com/dc.js/) with a quick five minutes how to guide. For a

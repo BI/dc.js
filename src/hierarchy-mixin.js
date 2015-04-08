@@ -1,7 +1,8 @@
 /**
 ## Hierarchy Mixin
 
-The Hierarchy Mixin provides support for hierarchical mutli dimensional filtering.
+The Hierarchy Mixin provides support for hierarchical multi dimensional filtering. This means that we can use dimensions
+in hierarchichal or tree like fashion. Example uses for this would be the Sankey and the Treemap.
 
 **/
 
@@ -29,8 +30,10 @@ dc.hierarchyMixin = function(_chart) {
         return filters;
     };
 
-    //Specify the dimension that goes along with the filter by providing columnName as the key.
-    //_filters = {regionDimension : ['West', 'East'], otherDimension : }
+    /**
+    #### .hasFilter(columnName, filterValue)
+    Specify the dimension that goes along with the filter by providing columnName as the key corresponding to a key in your levels object.
+    **/
     _chart.hasFilter = function (columnName, filterValue) {
         if(!arguments.length) {
             if(Object.keys(_filters).length === 0) {
@@ -107,6 +110,7 @@ dc.hierarchyMixin = function(_chart) {
     ```js
     //filter on a dimension with a string
     chart.filter("csvColumnforRegion", "West");
+    ```js
     **/
     _chart.filter = function(columnName, filterValue) {
         if(!arguments.length) return _filters;

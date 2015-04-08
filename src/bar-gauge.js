@@ -3,8 +3,7 @@
 
 Includes: [Base Mixin](#base-mixin)
 
-The Bar Gauge is a way to see data displacement. Typically there is a number
-Total and 'filled up' number. The bar will show how close the fill number is to the total. 
+The Bar Gauge is a way to see data displacement based on a total capacity. An example would be showing how each country's population compares to the largest country's population in the world.
 
 #### dc.barGauge(parent[, chartGroup])
 Parameters:
@@ -20,13 +19,16 @@ A newly created choropleth chart instance
 
 ```js
 totalFundingBar = dc.barGauge("#total-funding-gauge")
+                                .height(150)
+                                .width(300)
+                                .margins({top: 5, right: 5, bottom: 5, left: 5}) //margins are good for positioning
                                 .group(totalFundingGroup)
+                                .dimension(countryDimension)
                                 .valueAccessor(function(d){return d;})
-                                .totalCapacity(function(){
-                                  return totalDollars;
-                                })
-                                .orientation('horizontal') 
-                                .thickness(6);
+                                .totalCapacity(maxCountryValue)
+                                .orientation('horizontal') //vertical still needs work
+                                .gap(5)
+                                .drawScale(true); //draw the scale around the gauge
 ```
 **/
 dc.barGauge = function (parent, chartGroup) {
@@ -51,7 +53,7 @@ dc.barGauge = function (parent, chartGroup) {
         },
         _defaultMarkerHeight = 40, _defaultMarkerWidth = 20, _defaultToolTips = true;
 
-    //dimension is not required because this component only has one dimension
+    //dimension is not required because this comp onent only has one dimension
     _chart._mandatoryAttributes (['group']);
 
     _chart.transitionDuration(700); // good default
@@ -107,7 +109,7 @@ dc.barGauge = function (parent, chartGroup) {
 
     /**
         #### .orientation(string)
-        Set the orientation of the bar 'horizontal' or 'vertical'. 
+        Set the orientation of the bar 'horizontal' or 'vertical'. Only horizontal is fully working at this time. 
     **/
     _chart.orientation = function(_) {
         if(!arguments.length) return _orientation;
@@ -121,7 +123,7 @@ dc.barGauge = function (parent, chartGroup) {
         Set the calculation for the length, and filled length to use percentages, not exact values. The
         svg will be set so its long side is 100% of the parent container. 
         This can be useful for when we want the length of the bar to fill up its parent element, 
-        but do not know the size of the parent element. 
+        but do not know the size of the parent element. Defaults to false.
     **/
     _chart.usePercentageLength = function(_) {
         if(!arguments.length) return _usePercentageForLengthCalc;
@@ -129,8 +131,8 @@ dc.barGauge = function (parent, chartGroup) {
         return _chart;
     };
     /**
-        #### .gap([gap])
-        Get or set the vertical gap space between rows on a particular row chart instance. Default gap is 5px;
+        #### .gap(number)
+        Get or set the gap between the bar and the scale. Default gap is 5px.
     **/
     _chart.gap = function (_) {
         if (!arguments.length) return _gap;
@@ -140,6 +142,7 @@ dc.barGauge = function (parent, chartGroup) {
 
     /**
         #### .markerPadding(Object)
+        Pad the space around marker text. Defaults to 5px.
     **/
     _chart.markerPadding = function (_) {
         if (!arguments.length) return _markerPadding;
@@ -171,7 +174,7 @@ dc.barGauge = function (parent, chartGroup) {
 
     /** 
         #### .defaultToolTips(boolean)
-        Set whether or not to show the default tool tips. 
+        Set whether or not to show the default tool tips. Defaults to true.
     **/
     _chart.defaultToolTips = function (_) {
         if (!arguments.length) return _defaultToolTips;
@@ -181,7 +184,7 @@ dc.barGauge = function (parent, chartGroup) {
 
     /**
         #### .totalCapacity(number)
-        Explicitly set total capacity.
+        Explicitly set total capacity of the chart.
     **/
     _chart.totalCapacity = function(_) {
         if (!arguments.length) return _totalCapacity.call(_chart);
@@ -192,8 +195,7 @@ dc.barGauge = function (parent, chartGroup) {
 
     /**
         #### .filledValue(number)
-        Explicitly set filled value. 
-        The filled value will be used to get the percentage the bar is filled.
+        Explicitly set filled value.
     **/
     _chart.filledValue = function(_) {
         if(!arguments.length) return _filledValue;
@@ -203,7 +205,7 @@ dc.barGauge = function (parent, chartGroup) {
 
     /**
         #### .drawScale(boolean)
-        Explicitly set whether or not to draw the scale. 
+        Explicitly set whether or not to draw the scale. Defaults to false.
     **/
     _chart.drawScale = function(_) {
         if(!arguments.length) return _drawScale;
@@ -214,9 +216,11 @@ dc.barGauge = function (parent, chartGroup) {
     /**
         #### .drawScale(markerObjArray)
         Set markers with an array of marker objects. The structure should look similar the following:
+        ```js
         markerObjArray = [{value: someValue, statName: "Median"}, 
             {value: otherValue, statName: ""Mean"},
             {value: maxValue, member: maxName, statName: "Max"}];
+        ```
         If the member is specified, the tooltip will show "member: value"
     **/
     _chart.setMarkers = function(_) {
@@ -321,7 +325,7 @@ dc.barGauge = function (parent, chartGroup) {
     }
 
     /**
-        #### .markerFormat(Function)
+        #### .markerFormat(function)
         Pass a formatter function like d3.format() to format marker values. 
     **/
     _chart.markerFormat = function(_) {
@@ -332,7 +336,7 @@ dc.barGauge = function (parent, chartGroup) {
     };
 
     /**
-        #### .tickFormat(Function)
+        #### .tickFormat(function)
         Pass a formatter function like d3.format() to format tick values. 
     **/
     _chart.tickFormat = function(_) {
@@ -344,7 +348,7 @@ dc.barGauge = function (parent, chartGroup) {
     /**
         #### .initializeRectangles(ParentSelector, number, number, string)
         Add the background and foreground rectangles. Set the foreground
-        rectangle to the calculated fill percantage.
+        rectangle to the calculated fill percentage.
     **/
     var initializeRectangles = function(orientation) {
         //the percentage value will be how much the bar is actually filled up

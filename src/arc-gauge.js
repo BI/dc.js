@@ -1,8 +1,8 @@
-/**
+ /**
 ## Arc Gauge
 
 Includes: [Base Mixin](#base-mixin)
-
+ 
 The Arc Gauge is a way to see data displacement similar to the Bar Gauge
  but in curved speedometer-like fashion.
 
@@ -212,6 +212,7 @@ dc.arcGauge = function (parent, chartGroup) {
         _endAngle = (_endAngle === undefined) ? 115 : _chart.endAngle();
         _outerRadius = _outerRadius || d3.min([_chart.width(), _chart.height()]) / 2;
         _innerRadius = _innerRadius || _innerRadiusRatio * _outerRadius;
+        
 
         _arc = d3.svg.arc()
             .innerRadius(_innerRadius)

@@ -1,12 +1,11 @@
 /**
 ## Sankey
 
-Includes: [Base Mixin](#base-mixin)
+Includes: [Base Mixin](#base-mixin) [Hierarchy Mixin](#hierarchy-mixin)
 
 
 #### dc.sankey(parent[, chartGroup])
-Create a Sankey chart that shows how crossfilter dimensions flow into other dimensions. 
-Multiple dimensions can be used. 
+Create a Sankey chart that shows how dimensions flow into other dimensions in a hierarchichal fashion.
 
 Parameters:
 
@@ -21,14 +20,17 @@ Returns:
 A newly created sankey instance
 
 ```js
-//setup the dimension/column name array(levels) needed to translate crossfilter data into the sankey 
-//data structure
+//setup the dimension hierarchy we call 'levels'
+//the levels data structure specifies dimension, and its corresponding columnName from the csv data
 var levels = [{'dimension' : someDimension, 'columnName' : 'columnNamefromCSV'},
                                 {'dimension' : anotherDimension, 'columnName' : 'anotherColumnName'}];
-//which column name from the CSV contains the value for measuring the data
+//set the column used as your measure
 var measureColumn = 'value';
-// create a sankey chart under #sankey element using the default global chart group
+
+// create a sankey
 var chart = dc.sankey("#sankey")
+                .width(600)
+                .height(400)
                 .levels(levels)
                 .measureColumn(measureColumn);
 
@@ -57,7 +59,7 @@ dc.sankey = function(parent, chartGroup) {
 
     /**
     #### .label(function)
-    Specify the callback to display text that goes next to nodes. 
+    Specify the callback to display text that goes next to nodes(rectangles). 
     **/
     _chart.label = function(_) {
         if(!arguments.length) return _labelFunc;
@@ -77,7 +79,7 @@ dc.sankey = function(parent, chartGroup) {
 
     /**
     #### .negativeDataMessage(function)
-    Specify the callback to display the message when all the data is negative values. 
+    Specify the callback to display the message when all the data values in the chart are negative numbers. 
     **/
     _chart.negativeDataMessage = function(_) {
         if(!arguments.length) return _negativeDataMessage;
@@ -87,7 +89,7 @@ dc.sankey = function(parent, chartGroup) {
 
     /**
     #### .showNegativeTotal(boolean)
-    Pass a boolean flag for whether or not to show the negative data number. 
+    Pass a boolean flag for whether or not to show the negative data number. Defaults to false.
     **/
     _chart.showNegativeTotal = function(_) {
         if(!arguments.length) return _showNegativeTotal;
