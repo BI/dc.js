@@ -864,7 +864,11 @@ when the difference in radius between bubbles is too great. Default: 0.3
 
 ## Hierarchy Mixin
 
-The Hierarchy Mixin provides support for hierarchical mutli dimensional filtering.
+The Hierarchy Mixin provides support for hierarchical multi dimensional filtering. This means that we can use dimensions
+in hierarchichal or tree like fashion. Example uses for this would be the Sankey and the Treemap.
+
+#### .hasFilter(columnName, filterValue)
+Specify the dimension that goes along with the filter by providing columnName as the key corresponding to a key in your levels object.
 
 #### .filter(columnName, filterValues)
 Filter the chart by specifying the column name and filter values.
@@ -873,6 +877,7 @@ Returns the _filters object containing all of the specified dimensions and filte
 ```js
 //filter on a dimension with a string
 chart.filter("csvColumnforRegion", "West");
+```js
 
 #### .levels([{dimension: someDimension, columnName: "column"}]) 
 Pass in an array of objects containing a dimension and corresponding column name
@@ -1911,8 +1916,7 @@ chart.tickFormat(d3.format(".2f"));
 
 Includes: [Base Mixin](#base-mixin)
 
-The Bar Gauge is a way to see data displacement. Typically there is a number
-Total and 'filled up' number. The bar will show how close the fill number is to the total. 
+The Bar Gauge is a way to see data displacement based on a total capacity. An example would be showing how each country's population compares to the largest country's population in the world.
 
 #### dc.barGauge(parent[, chartGroup])
 Parameters:
@@ -1928,28 +1932,32 @@ A newly created choropleth chart instance
 
 ```js
 totalFundingBar = dc.barGauge("#total-funding-gauge")
+                               .height(150)
+                               .width(300)
+                               .margins({top: 5, right: 5, bottom: 5, left: 5}) //margins are good for positioning
                                .group(totalFundingGroup)
+                               .dimension(countryDimension)
                                .valueAccessor(function(d){return d;})
-                               .totalCapacity(function(){
-                                 return totalDollars;
-                               })
-                               .orientation('horizontal') 
-                               .thickness(6);
+                               .totalCapacity(maxCountryValue)
+                               .orientation('horizontal') //vertical still needs work
+                               .gap(5)
+                               .drawScale(true); //draw the scale around the gauge
 ```
 
 #### .orientation(string)
-Set the orientation of the bar 'horizontal' or 'vertical'.
+Set the orientation of the bar 'horizontal' or 'vertical'. Only horizontal is fully working at this time.
 
 #### .usePercentageLength(Boolean)
 Set the calculation for the length, and filled length to use percentages, not exact values. The
 svg will be set so its long side is 100% of the parent container. 
 This can be useful for when we want the length of the bar to fill up its parent element, 
-but do not know the size of the parent element.
+but do not know the size of the parent element. Defaults to false.
 
-#### .gap([gap])
-Get or set the vertical gap space between rows on a particular row chart instance. Default gap is 5px;
+#### .gap(number)
+Get or set the gap between the bar and the scale. Default gap is 5px.
 
 #### .markerPadding(Object)
+Pad the space around marker text. Defaults to 5px.
 
 #### .markerWidth(Number)
 Explicitly set marker width. The marker dimensions are set based on the marker text offset dimensions.
@@ -1961,37 +1969,38 @@ Setting this explicitly is useful for when a resize/redraw occurs and the text i
 
  
 #### .defaultToolTips(boolean)
-Set whether or not to show the default tool tips.
+Set whether or not to show the default tool tips. Defaults to true.
 
 #### .totalCapacity(number)
-Explicitly set total capacity.
+Explicitly set total capacity of the chart.
 
 #### .filledValue(number)
-Explicitly set filled value. 
-The filled value will be used to get the percentage the bar is filled.
+Explicitly set filled value.
 
 #### .drawScale(boolean)
-Explicitly set whether or not to draw the scale.
+Explicitly set whether or not to draw the scale. Defaults to false.
 
 #### .drawScale(markerObjArray)
 Set markers with an array of marker objects. The structure should look similar the following:
+```js
 markerObjArray = [{value: someValue, statName: "Median"}, 
     {value: otherValue, statName: ""Mean"},
     {value: maxValue, member: maxName, statName: "Max"}];
+```
 If the member is specified, the tooltip will show "member: value"
 
 #### .markerTitle(function)
 Set the function to display what goes in the SVG title/tooltip.
 
-#### .markerFormat(Function)
+#### .markerFormat(function)
 Pass a formatter function like d3.format() to format marker values.
 
-#### .tickFormat(Function)
+#### .tickFormat(function)
 Pass a formatter function like d3.format() to format tick values.
 
 #### .initializeRectangles(ParentSelector, number, number, string)
 Add the background and foreground rectangles. Set the foreground
-rectangle to the calculated fill percantage.
+rectangle to the calculated fill percentage.
 
 ## Geo Bubble Overlay Chart
 
@@ -2106,11 +2115,11 @@ Add the background and foreground arcs. Also do the animation of the arc filling
 
 ## Tree Map 
 
-Includes: [Base Mixin](#base-mixin)
+Includes: [Base Mixin](#base-mixin), [Hierarchy Mixin](#hierarchy-mixin)
 
 
 #### dc.treeMap(parent[, chartGroup])
-Create a Tree Map chart that uses multiple crossfilter dimensions in a hierarchical data structure.
+Create a Tree Map chart that uses multiple dimensions in a hierarchical fashion. 
 
 Parameters:
 
@@ -2133,10 +2142,12 @@ var dimensionColumnnamePairs = [{'dimension' : someRootDimension, 'columnName' :
 var measureColumn = 'value';
 // create a row chart under #sankey element using the default global chart group
 var chart = dc.rowChart("#treeMap")
+				.topBarHeight(45)
+				.height(400)
                .levels(dimensionColumnnamePairs)
                .measureColumn(measureColumn);
 
-//filter manually by passing in the column name, and filter value like this
+//unlike other charts you must filter manually by passing in the column name, and filter value like this
 chart.filter('columnNamefromCSV', 'singlefiltervalue');
 ```
 
@@ -2159,6 +2170,9 @@ Set the width explicitly as it will be used for calculating the node rectangle s
 #### .height(Number)
 Set the height explicitly as it will be used for calculating the node rectangle sizes.
 
+#### .colors(array)
+Set the classnames of rectangles for use with css colors.
+
 #### .rootName(String)
 The root name is the displayed as the root parent text in the bar at the top of the treemap.
 
@@ -2168,32 +2182,31 @@ Message to display if no data is found.
 #### .negativeDataMessage(function)
 Message to display if all data values were negative.
 
-#### .label(callback)
-Pass in a custom label function. These labels are what appear in the top left of each rectangle.
+#### .showNegativeTotal(boolean)
+Pass a boolean flag for whether or not to show the negative data number. Defaults to false.
 
-#### .toolTip(callback)
+#### .totalNegFormatter(function)
+Pass a function to format the total negative value.
+
+#### .label(function)
+Pass in a custom label function. These labels are what appear as text in the rectangles.
+
+#### .toolTip(function)
 Pass in a custom tool tip function. These tool tips show text for the rectangles on hover.
 
-#### .titleBarCaption(callback)
-Pass in custom title bar caption function. The title bar text is show in the bar at the top.
+#### .titleBarCaption(function)
+Pass in custom title bar caption function. The title bar text is shown in the bar at the top.
 
-#### .onLevelChange(callback)
-Pass in callback to hook into the level change event.
-
-//#### .findNodeChildrenDrill(Object, String, Number)
-//Drill down until at the correct child object, this function is used internally
-
-//#### .zoomLevelDrill(Number)
-//Drill down to the child node by zoom level, this function is used externally
+#### .onLevelChange(function)
+Pass in callback to hook into the level change event. Level change happens when the user clicks on a rectangle to dive one level deeper, or the top bar to dive one level up.
 
 ## Sankey
 
-Includes: [Base Mixin](#base-mixin)
+Includes: [Base Mixin](#base-mixin) [Hierarchy Mixin](#hierarchy-mixin)
 
 
 #### dc.sankey(parent[, chartGroup])
-Create a Sankey chart that shows how crossfilter dimensions flow into other dimensions. 
-Multiple dimensions can be used. 
+Create a Sankey chart that shows how dimensions flow into other dimensions in a hierarchichal fashion.
 
 Parameters:
 
@@ -2208,14 +2221,17 @@ Returns:
 A newly created sankey instance
 
 ```js
-//setup the dimension/column name array(levels) needed to translate crossfilter data into the sankey 
-//data structure
+//setup the dimension hierarchy we call 'levels'
+//the levels data structure specifies dimension, and its corresponding columnName from the csv data
 var levels = [{'dimension' : someDimension, 'columnName' : 'columnNamefromCSV'},
                                {'dimension' : anotherDimension, 'columnName' : 'anotherColumnName'}];
-//which column name from the CSV contains the value for measuring the data
+//set the column used as your measure
 var measureColumn = 'value';
-// create a sankey chart under #sankey element using the default global chart group
+
+// create a sankey
 var chart = dc.sankey("#sankey")
+               .width(600)
+               .height(400)
                .levels(levels)
                .measureColumn(measureColumn);
 
@@ -2224,13 +2240,19 @@ chart.filter('columnNamefromCSV', 'singlefiltervalue');
 ```
 
 #### .label(function)
-Specify the callback to display text that goes next to nodes.
+Specify the callback to display text that goes next to nodes(rectangles).
 
 #### .noDataMessage(function)
 Specify the callback to display the message when no data is found.
 
 #### .negativeDataMessage(function)
-Specify the callback to display the message when all the data is negative values.
+Specify the callback to display the message when all the data values in the chart are negative numbers.
+
+#### .showNegativeTotal(boolean)
+Pass a boolean flag for whether or not to show the negative data number. Defaults to false.
+
+#### .totalNegFormatter(function)
+Pass a function to format the total negative value.
 
 #### .setColorRange(["#color", "#morecolors"])
 Specify the range of colors that can be used in the ordinal color scale.

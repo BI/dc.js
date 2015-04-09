@@ -766,13 +766,17 @@ then no label will be rendered.  Default: 10</p>
 <p>Get or set the maximum relative size of a bubble to the length of x axis. This value is useful
 when the difference in radius between bubbles is too great. Default: 0.3</p>
 <h2 id="hierarchy-mixin">Hierarchy Mixin</h2>
-<p>The Hierarchy Mixin provides support for hierarchical mutli dimensional filtering.</p>
+<p>The Hierarchy Mixin provides support for hierarchical multi dimensional filtering. This means that we can use dimensions
+in hierarchichal or tree like fashion. Example uses for this would be the Sankey and the Treemap.</p>
+<h4 id="-hasfilter-columnname-filtervalue-">.hasFilter(columnName, filterValue)</h4>
+<p>Specify the dimension that goes along with the filter by providing columnName as the key corresponding to a key in your levels object.</p>
 <h4 id="-filter-columnname-filtervalues-">.filter(columnName, filterValues)</h4>
 <p>Filter the chart by specifying the column name and filter values.
 This differs from the normal chart.filter(“value”) api that comes with Base mixin.
 Returns the _filters object containing all of the specified dimensions and filters.</p>
 <pre><code class="lang-js">//filter <span class="function_start"><span class="keyword">on</span> <span class="title">a</span></span> dimension <span class="keyword">with</span> a <span class="type">string</span>
 chart.filter(<span class="string">"csvColumnforRegion"</span>, <span class="string">"West"</span>);
+```js
 
 <span class="comment">#### .levels([{dimension: someDimension, columnName: "column"}]) </span>
 Pass <span class="keyword">in</span> an array <span class="keyword">of</span> objects containing a dimension <span class="keyword">and</span> corresponding column <span class="property">name</span>
@@ -1572,8 +1576,7 @@ integer formatting.</p>
 chart<span class="variable">.tickFormat</span>(d3<span class="variable">.format</span>(<span class="string">".2f"</span>));</code></pre>
 <h2 id="bar-gauge">Bar Gauge</h2>
 <p>Includes: <a href="#base-mixin">Base Mixin</a></p>
-<p>The Bar Gauge is a way to see data displacement. Typically there is a number
-Total and ‘filled up’ number. The bar will show how close the fill number is to the total. </p>
+<p>The Bar Gauge is a way to see data displacement based on a total capacity. An example would be showing how each country’s population compares to the largest country’s population in the world.</p>
 <h4 id="dc-bargauge-parent-chartgroup-">dc.barGauge(parent[, chartGroup])</h4>
 <p>Parameters:</p>
 <ul>
@@ -1588,23 +1591,27 @@ Interaction with a chart will only trigger events and redraws within the chart�
 <p>Returns:
 A newly created choropleth chart instance</p>
 <pre><code class="lang-js"><span class="comment">totalFundingBar</span> <span class="comment">=</span> <span class="comment">dc</span>.<span class="comment">barGauge("#total</span>-<span class="comment">funding</span>-<span class="comment">gauge")</span>
+                               <span class="string">.</span><span class="comment">height(150)</span>
+                               <span class="string">.</span><span class="comment">width(300)</span>
+                               <span class="string">.</span><span class="comment">margins({top:</span> <span class="comment">5</span>, <span class="comment">right:</span> <span class="comment">5</span>, <span class="comment">bottom:</span> <span class="comment">5</span>, <span class="comment">left:</span> <span class="comment">5})</span> <span class="comment">//margins</span> <span class="comment">are</span> <span class="comment">good</span> <span class="comment">for</span> <span class="comment">positioning</span>
                                <span class="string">.</span><span class="comment">group(totalFundingGroup)</span>
+                               <span class="string">.</span><span class="comment">dimension(countryDimension)</span>
                                <span class="string">.</span><span class="comment">valueAccessor(function(d){return</span> <span class="comment">d;})</span>
-                               <span class="string">.</span><span class="comment">totalCapacity(function(){</span>
-                                 <span class="comment">return</span> <span class="comment">totalDollars;</span>
-                               <span class="comment">})</span>
-                               <span class="string">.</span><span class="comment">orientation('horizontal')</span> 
-                               <span class="string">.</span><span class="comment">thickness(6);</code></pre>
+                               <span class="string">.</span><span class="comment">totalCapacity(maxCountryValue)</span>
+                               <span class="string">.</span><span class="comment">orientation('horizontal')</span> <span class="comment">//vertical</span> <span class="comment">still</span> <span class="comment">needs</span> <span class="comment">work</span>
+                               <span class="string">.</span><span class="comment">gap(5)</span>
+                               <span class="string">.</span><span class="comment">drawScale(true);</span> <span class="comment">//draw</span> <span class="comment">the</span> <span class="comment">scale</span> <span class="comment">around</span> <span class="comment">the</span> <span class="comment">gauge</code></pre>
 <h4 id="-orientation-string-">.orientation(string)</h4>
-<p>Set the orientation of the bar ‘horizontal’ or ‘vertical’.</p>
+<p>Set the orientation of the bar ‘horizontal’ or ‘vertical’. Only horizontal is fully working at this time.</p>
 <h4 id="-usepercentagelength-boolean-">.usePercentageLength(Boolean)</h4>
 <p>Set the calculation for the length, and filled length to use percentages, not exact values. The
 svg will be set so its long side is 100% of the parent container. 
 This can be useful for when we want the length of the bar to fill up its parent element, 
-but do not know the size of the parent element.</p>
-<h4 id="-gap-gap-">.gap([gap])</h4>
-<p>Get or set the vertical gap space between rows on a particular row chart instance. Default gap is 5px;</p>
+but do not know the size of the parent element. Defaults to false.</p>
+<h4 id="-gap-number-">.gap(number)</h4>
+<p>Get or set the gap between the bar and the scale. Default gap is 5px.</p>
 <h4 id="-markerpadding-object-">.markerPadding(Object)</h4>
+<p>Pad the space around marker text. Defaults to 5px.</p>
 <h4 id="-markerwidth-number-">.markerWidth(Number)</h4>
 <p>Explicitly set marker width. The marker dimensions are set based on the marker text offset dimensions.
 Setting this explicitly is useful for when a resize/redraw occurs and the text is momentarily 0x0.</p>
@@ -1612,29 +1619,28 @@ Setting this explicitly is useful for when a resize/redraw occurs and the text i
 <p>Explicitly set marker height. The marker dimensions are set based on the marker text offset dimensions.
 Setting this explicitly is useful for when a resize/redraw occurs and the text is momentarily 0x0.</p>
 <h4 id="-defaulttooltips-boolean-">.defaultToolTips(boolean)</h4>
-<p>Set whether or not to show the default tool tips.</p>
+<p>Set whether or not to show the default tool tips. Defaults to true.</p>
 <h4 id="-totalcapacity-number-">.totalCapacity(number)</h4>
-<p>Explicitly set total capacity.</p>
+<p>Explicitly set total capacity of the chart.</p>
 <h4 id="-filledvalue-number-">.filledValue(number)</h4>
-<p>Explicitly set filled value. 
-The filled value will be used to get the percentage the bar is filled.</p>
+<p>Explicitly set filled value.</p>
 <h4 id="-drawscale-boolean-">.drawScale(boolean)</h4>
-<p>Explicitly set whether or not to draw the scale.</p>
+<p>Explicitly set whether or not to draw the scale. Defaults to false.</p>
 <h4 id="-drawscale-markerobjarray-">.drawScale(markerObjArray)</h4>
-<p>Set markers with an array of marker objects. The structure should look similar the following:
-markerObjArray = [{value: someValue, statName: “Median”}, 
-    {value: otherValue, statName: “”Mean”},
-    {value: maxValue, member: maxName, statName: “Max”}];
-If the member is specified, the tooltip will show “member: value”</p>
+<p>Set markers with an array of marker objects. The structure should look similar the following:</p>
+<pre><code class="lang-js">markerObjArray = [{<span class="method">value:</span> someValue, <span class="method">statName:</span> <span class="comment">"Median"</span>}, 
+    {<span class="method">value:</span> otherValue, <span class="method">statName:</span> <span class="comment">""</span><span class="class">Mean</span><span class="comment">"},
+    {value: maxValue, member: maxName, statName: "</span><span class="class">Max</span><span class="comment">"}];</code></pre>
+<p>If the member is specified, the tooltip will show “member: value”</p>
 <h4 id="-markertitle-function-">.markerTitle(function)</h4>
 <p>Set the function to display what goes in the SVG title/tooltip.</p>
-<h4 id="-markerformat-function-">.markerFormat(Function)</h4>
+<h4 id="-markerformat-function-">.markerFormat(function)</h4>
 <p>Pass a formatter function like d3.format() to format marker values.</p>
-<h4 id="-tickformat-function-">.tickFormat(Function)</h4>
+<h4 id="-tickformat-function-">.tickFormat(function)</h4>
 <p>Pass a formatter function like d3.format() to format tick values.</p>
 <h4 id="-initializerectangles-parentselector-number-number-string-">.initializeRectangles(ParentSelector, number, number, string)</h4>
 <p>Add the background and foreground rectangles. Set the foreground
-rectangle to the calculated fill percantage.</p>
+rectangle to the calculated fill percentage.</p>
 <h2 id="geo-bubble-overlay-chart">Geo Bubble Overlay Chart</h2>
 <p>Includes: <a href="#base-mixin">Base Mixin</a></p>
 <p>The Geo Bubble Overlay chart is a mix of the Geo Choropleth chart and the Bubble Graph chart.
@@ -1724,9 +1730,9 @@ to the correct amount of degrees to fill in the arc.</p>
 <h4 id="-initializearc-parentselector-">.initializeArc(ParentSelector)</h4>
 <p>Add the background and foreground arcs. Also do the animation of the arc filling/emptying.</p>
 <h2 id="tree-map">Tree Map</h2>
-<p>Includes: <a href="#base-mixin">Base Mixin</a></p>
+<p>Includes: <a href="#base-mixin">Base Mixin</a>, <a href="#hierarchy-mixin">Hierarchy Mixin</a></p>
 <h4 id="dc-treemap-parent-chartgroup-">dc.treeMap(parent[, chartGroup])</h4>
-<p>Create a Tree Map chart that uses multiple crossfilter dimensions in a hierarchical data structure.</p>
+<p>Create a Tree Map chart that uses multiple dimensions in a hierarchical fashion. </p>
 <p>Parameters:</p>
 <ul>
 <li><p>parent : string | node | selection - any valid
@@ -1747,10 +1753,12 @@ var dimensionColumnnamePairs = [{'dimension' : someRootDimension, 'columnName' :
 var measureColumn = 'value';
 // create a row chart under <span class="comment">#sankey element using the default global chart group</span>
 var chart = dc.rowChart(<span class="string">"#treeMap"</span>)
+                .topBarHeight(<span class="number">45</span>)
+                .height(<span class="number">400</span>)
                .levels(dimensionColumnnamePairs)
                .measureColumn(measureColumn);
 
-//filter manually <span class="keyword">by</span> passing <span class="keyword">in</span> <span class="keyword">the</span> column <span class="property">name</span>, <span class="keyword">and</span> filter value like this
+//unlike other charts you must filter manually <span class="keyword">by</span> passing <span class="keyword">in</span> <span class="keyword">the</span> column <span class="property">name</span>, <span class="keyword">and</span> filter value like this
 chart.filter('columnNamefromCSV', 'singlefiltervalue');</code></pre>
 <h4 id="-crumbtrailx-number-">.crumbTrailX(Number)</h4>
 <p>Set the X position of the crumb trail text within the top bar.</p>
@@ -1765,29 +1773,30 @@ Example: .crumbTrailHeight(“.75em”)</p>
 <p>Set the width explicitly as it will be used for calculating the node rectangle sizes.</p>
 <h4 id="-height-number-">.height(Number)</h4>
 <p>Set the height explicitly as it will be used for calculating the node rectangle sizes.</p>
+<h4 id="-colors-array-">.colors(array)</h4>
+<p>Set the classnames of rectangles for use with css colors.</p>
 <h4 id="-rootname-string-">.rootName(String)</h4>
 <p>The root name is the displayed as the root parent text in the bar at the top of the treemap.</p>
 <h4 id="-nodatamessage-function-">.noDataMessage(function)</h4>
 <p>Message to display if no data is found.</p>
 <h4 id="-negativedatamessage-function-">.negativeDataMessage(function)</h4>
 <p>Message to display if all data values were negative.</p>
-<h4 id="-label-callback-">.label(callback)</h4>
-<p>Pass in a custom label function. These labels are what appear in the top left of each rectangle.</p>
-<h4 id="-tooltip-callback-">.toolTip(callback)</h4>
+<h4 id="-shownegativetotal-boolean-">.showNegativeTotal(boolean)</h4>
+<p>Pass a boolean flag for whether or not to show the negative data number. Defaults to false.</p>
+<h4 id="-totalnegformatter-function-">.totalNegFormatter(function)</h4>
+<p>Pass a function to format the total negative value.</p>
+<h4 id="-label-function-">.label(function)</h4>
+<p>Pass in a custom label function. These labels are what appear as text in the rectangles.</p>
+<h4 id="-tooltip-function-">.toolTip(function)</h4>
 <p>Pass in a custom tool tip function. These tool tips show text for the rectangles on hover.</p>
-<h4 id="-titlebarcaption-callback-">.titleBarCaption(callback)</h4>
-<p>Pass in custom title bar caption function. The title bar text is show in the bar at the top.</p>
-<h4 id="-onlevelchange-callback-">.onLevelChange(callback)</h4>
-<p>Pass in callback to hook into the level change event.</p>
-<p>//#### .findNodeChildrenDrill(Object, String, Number)
-//Drill down until at the correct child object, this function is used internally</p>
-<p>//#### .zoomLevelDrill(Number)
-//Drill down to the child node by zoom level, this function is used externally</p>
+<h4 id="-titlebarcaption-function-">.titleBarCaption(function)</h4>
+<p>Pass in custom title bar caption function. The title bar text is shown in the bar at the top.</p>
+<h4 id="-onlevelchange-function-">.onLevelChange(function)</h4>
+<p>Pass in callback to hook into the level change event. Level change happens when the user clicks on a rectangle to dive one level deeper, or the top bar to dive one level up.</p>
 <h2 id="sankey">Sankey</h2>
-<p>Includes: <a href="#base-mixin">Base Mixin</a></p>
+<p>Includes: <a href="#base-mixin">Base Mixin</a> <a href="#hierarchy-mixin">Hierarchy Mixin</a></p>
 <h4 id="dc-sankey-parent-chartgroup-">dc.sankey(parent[, chartGroup])</h4>
-<p>Create a Sankey chart that shows how crossfilter dimensions flow into other dimensions. 
-Multiple dimensions can be used. </p>
+<p>Create a Sankey chart that shows how dimensions flow into other dimensions in a hierarchichal fashion.</p>
 <p>Parameters:</p>
 <ul>
 <li><p>parent : string | node | selection - any valid
@@ -1800,25 +1809,32 @@ Interaction with a chart will only trigger events and redraws within the chart�
 </ul>
 <p>Returns:
 A newly created sankey instance</p>
-<pre><code class="lang-js">//setup <span class="keyword">the</span> dimension/column <span class="property">name</span> array(levels) needed <span class="keyword">to</span> translate crossfilter data <span class="keyword">into</span> <span class="keyword">the</span> sankey 
-//data structure
+<pre><code class="lang-js">//setup <span class="keyword">the</span> dimension hierarchy we call 'levels'
+//<span class="keyword">the</span> levels data structure specifies dimension, <span class="keyword">and</span> <span class="keyword">its</span> corresponding columnName <span class="keyword">from</span> <span class="keyword">the</span> csv data
 var levels = [{'dimension' : someDimension, 'columnName' : 'columnNamefromCSV'},
                                {'dimension' : anotherDimension, 'columnName' : 'anotherColumnName'}];
-//which column <span class="property">name</span> <span class="keyword">from</span> <span class="keyword">the</span> CSV <span class="keyword">contains</span> <span class="keyword">the</span> value <span class="keyword">for</span> measuring <span class="keyword">the</span> data
+//<span class="keyword">set</span> <span class="keyword">the</span> column used <span class="keyword">as</span> your measure
 var measureColumn = 'value';
-// create a sankey chart under <span class="comment">#sankey element using the default global chart group</span>
+
+// create a sankey
 var chart = dc.sankey(<span class="string">"#sankey"</span>)
+               .width(<span class="number">600</span>)
+               .height(<span class="number">400</span>)
                .levels(levels)
                .measureColumn(measureColumn);
 
 //filter manually <span class="keyword">by</span> passing <span class="keyword">in</span> <span class="keyword">the</span> column <span class="property">name</span>, <span class="keyword">and</span> filter value like this
 chart.filter('columnNamefromCSV', 'singlefiltervalue');</code></pre>
 <h4 id="-label-function-">.label(function)</h4>
-<p>Specify the callback to display text that goes next to nodes.</p>
+<p>Specify the callback to display text that goes next to nodes(rectangles).</p>
 <h4 id="-nodatamessage-function-">.noDataMessage(function)</h4>
 <p>Specify the callback to display the message when no data is found.</p>
 <h4 id="-negativedatamessage-function-">.negativeDataMessage(function)</h4>
-<p>Specify the callback to display the message when all the data is negative values.</p>
+<p>Specify the callback to display the message when all the data values in the chart are negative numbers.</p>
+<h4 id="-shownegativetotal-boolean-">.showNegativeTotal(boolean)</h4>
+<p>Pass a boolean flag for whether or not to show the negative data number. Defaults to false.</p>
+<h4 id="-totalnegformatter-function-">.totalNegFormatter(function)</h4>
+<p>Pass a function to format the total negative value.</p>
 <h4 id="-setcolorrange-color-morecolors-">.setColorRange([“#color”, “#morecolors”])</h4>
 <p>Specify the range of colors that can be used in the ordinal color scale.</p>
 <h4 id="-nodetooltip-function-">.nodeToolTip(function)</h4>

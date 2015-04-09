@@ -1,5 +1,5 @@
-/*!
- *  dc %VERSION%
+/*! 
+ *  dc %VERSION% 
  *  http://dc-js.github.io/dc.js/
  *  Copyright 2012 Nick Zhu and other contributors
  *

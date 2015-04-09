@@ -1,11 +1,11 @@
 /**
 ## Tree Map 
 
-Includes: [Base Mixin](#base-mixin)
+Includes: [Base Mixin](#base-mixin), [Hierarchy Mixin](#hierarchy-mixin)
 
 
 #### dc.treeMap(parent[, chartGroup])
-Create a Tree Map chart that uses multiple crossfilter dimensions in a hierarchical data structure.
+Create a Tree Map chart that uses multiple dimensions in a hierarchical fashion. 
 
 Parameters:
 
@@ -28,10 +28,12 @@ var dimensionColumnnamePairs = [{'dimension' : someRootDimension, 'columnName' :
 var measureColumn = 'value';
 // create a row chart under #sankey element using the default global chart group
 var chart = dc.rowChart("#treeMap")
+				.topBarHeight(45)
+				.height(400)
                 .levels(dimensionColumnnamePairs)
                 .measureColumn(measureColumn);
 
-//filter manually by passing in the column name, and filter value like this
+//unlike other charts you must filter manually by passing in the column name, and filter value like this
 chart.filter('columnNamefromCSV', 'singlefiltervalue');
 ```
 
@@ -143,6 +145,10 @@ dc.treeMap = function (parent, chartGroup) {
         return _chart;  
     };
 
+    /**
+    #### .colors(array)
+    Set the classnames of rectangles for use with css colors.
+    **/
     _chart.colors = function(_) {
     	if(!arguments.length) return _colors;
         _colors = _;
@@ -181,7 +187,7 @@ dc.treeMap = function (parent, chartGroup) {
 
     /**
 	#### .showNegativeTotal(boolean)
-	Pass a boolean flag for whether or not to show the negative data number. 
+	Pass a boolean flag for whether or not to show the negative data number. Defaults to false.
     **/
     _chart.showNegativeTotal = function(_) {
     	if(!arguments.length) return _showNegativeTotal;
@@ -200,8 +206,8 @@ dc.treeMap = function (parent, chartGroup) {
     };
 
     /**
-    #### .label(callback)
-    Pass in a custom label function. These labels are what appear in the top left of each rectangle.
+    #### .label(function)
+    Pass in a custom label function. These labels are what appear as text in the rectangles.
     **/
     _chart.labelFunctions = function(_) {
 		if(!arguments.length) return _labelFuncsArray;
@@ -210,7 +216,7 @@ dc.treeMap = function (parent, chartGroup) {
     };
 
     /**
-	#### .toolTip(callback)
+	#### .toolTip(function)
 	Pass in a custom tool tip function. These tool tips show text for the rectangles on hover.
     **/
     _chart.toolTip = function(_) {
@@ -220,8 +226,8 @@ dc.treeMap = function (parent, chartGroup) {
     };
 
     /**
-	#### .titleBarCaption(callback)
-	Pass in custom title bar caption function. The title bar text is show in the bar at the top.
+	#### .titleBarCaption(function)
+	Pass in custom title bar caption function. The title bar text is shown in the bar at the top.
     **/
     _chart.titleBarCaption = function(_) {
         if(!arguments.length) return _titleBarFunc;
@@ -230,8 +236,8 @@ dc.treeMap = function (parent, chartGroup) {
     };
 
     /**
-	#### .onLevelChange(callback)
-	Pass in callback to hook into the level change event.
+	#### .onLevelChange(function)
+	Pass in callback to hook into the level change event. Level change happens when the user clicks on a rectangle to dive one level deeper, or the top bar to dive one level up. 
     **/
     _chart.onLevelChange = function(_) {
     	if(!arguments.length) return _onLevelChangeFunc;
@@ -357,7 +363,7 @@ dc.treeMap = function (parent, chartGroup) {
 			.attr("transform", "translate(" + _margin.left + "," + _margin.top + ")")
 			.style("shape-rendering", "crispEdges");
 
-		_showNegativeTotal && d3.select(parent).append(function() {return negValueElement.node();});
+		_showNegativeTotal && _totalNegativeValue < 0 && d3.select(parent).append(function() {return negValueElement.node();});
 
 		var crumbTrail = svg.append("g")
 			.attr("class", "crumbTrail");
@@ -718,10 +724,10 @@ dc.treeMap = function (parent, chartGroup) {
 			existingNode.value = Number(existingNode.value) + Number(row[measureColumn]);
 		}
 
-		/**
-		//#### .findNodeChildrenDrill(Object, String, Number)
-		//Drill down until at the correct child object, this function is used internally
-		**/
+		/*
+		.findNodeChildrenDrill(Object, String, Number)
+		Drill down until at the correct child object, this function is used internally
+		*/
 		function findNodeChildrenDrill(row, columnName, columnIndex) {
 			var childNode = _tree; //array of child objects
 			for (var i = 0; i < columnIndex; i++) {
@@ -736,10 +742,10 @@ dc.treeMap = function (parent, chartGroup) {
 			return childNode;
 		}
 
-		/**
-		//#### .zoomLevelDrill(Number)
-		//Drill down to the child node by zoom level, this function is used externally
-		**/
+		/*
+		.zoomLevelDrill(Number)
+		Drill down to the child node by zoom level, this function is used externally
+		*/
 		_tree.zoomLevelDrill = function(zoomLevel) {
 			var childNode = _tree;
 
