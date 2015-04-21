@@ -2239,6 +2239,19 @@ var chart = dc.sankey("#sankey")
 chart.filter('columnNamefromCSV', 'singlefiltervalue');
 ```
 
+#### Add Column Labels
+Add labels that go on top of each sankey column. These column labels will also show the filter of that column, and can remove that filter by clicking that filter label.
+You must use your own styles to position these labels, but the onclick handler that controls the filters will be automatically applied to the label text.
+```html
+<!-- Add span elements with the classname that corresponds with the column name in the following format: column_YOURCOLUMNNAME If your dimensions were based off of "country", "state", and "region" columns, they would look like the following -->
+<div id="sankey">
+   <span class="column_country"></span>
+   <span class="column_state"></span>
+   <span class="column_region"></span>
+
+</div>
+```
+
 #### .label(function)
 Specify the callback to display text that goes next to nodes(rectangles).
 

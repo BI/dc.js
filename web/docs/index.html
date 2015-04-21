@@ -1825,6 +1825,16 @@ var chart = dc.sankey(<span class="string">"#sankey"</span>)
 
 //filter manually <span class="keyword">by</span> passing <span class="keyword">in</span> <span class="keyword">the</span> column <span class="property">name</span>, <span class="keyword">and</span> filter value like this
 chart.filter('columnNamefromCSV', 'singlefiltervalue');</code></pre>
+<h4 id="add-column-labels">Add Column Labels</h4>
+<p>Add labels that go on top of each sankey column. These column labels will also show the filter of that column, and can remove that filter by clicking that filter label.
+You must use your own styles to position these labels, but the onclick handler that controls the filters will be automatically applied to the label text.</p>
+<pre><code class="lang-html"><span class="comment">&lt;!-- Add span elements with the classname that corresponds with the column name in the following format: column_YOURCOLUMNNAME If your dimensions were based off of "country", "state", and "region" columns, they would look like the following --&gt;</span>
+<span class="tag">&lt;<span class="title">div</span> <span class="attribute">id</span>=<span class="value">"sankey"</span>&gt;</span>
+   <span class="tag">&lt;<span class="title">span</span> <span class="attribute">class</span>=<span class="value">"column_country"</span>&gt;</span><span class="tag">&lt;/<span class="title">span</span>&gt;</span>
+   <span class="tag">&lt;<span class="title">span</span> <span class="attribute">class</span>=<span class="value">"column_state"</span>&gt;</span><span class="tag">&lt;/<span class="title">span</span>&gt;</span>
+   <span class="tag">&lt;<span class="title">span</span> <span class="attribute">class</span>=<span class="value">"column_region"</span>&gt;</span><span class="tag">&lt;/<span class="title">span</span>&gt;</span>
+
+<span class="tag">&lt;/<span class="title">div</span>&gt;</span></code></pre>
 <h4 id="-label-function-">.label(function)</h4>
 <p>Specify the callback to display text that goes next to nodes(rectangles).</p>
 <h4 id="-nodatamessage-function-">.noDataMessage(function)</h4>
