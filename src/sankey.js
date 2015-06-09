@@ -235,8 +235,15 @@ dc.sankey = function(parent, chartGroup) {
             .attr("height", _height + _margin.top + _margin.bottom)
           .append("g")
             .attr("transform", "translate(" + _margin.left + "," + _margin.top + ")");
-        
-        _showNegativeTotal && _totalNegativeValue < 0 && d3.select(parent).append(function() {return negValueElement.node();});
+
+        if(_showNegativeTotal && _totalNegativeValue < 0) {
+            negValueElement.attr("style", "");
+            d3.select(parent).append(function() {return negValueElement.node();});
+        }
+        else if(_showNegativeTotal) {
+            negValueElement.style("display", "none");
+            d3.select(parent).append(function() {return negValueElement.node();});
+        }
 
         _sankey = d3.sankey()
             .nodeWidth(_nodeWidth)

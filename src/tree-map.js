@@ -363,7 +363,14 @@ dc.treeMap = function (parent, chartGroup) {
 			.attr("transform", "translate(" + _margin.left + "," + _margin.top + ")")
 			.style("shape-rendering", "crispEdges");
 
-		_showNegativeTotal && _totalNegativeValue < 0 && d3.select(parent).append(function() {return negValueElement.node();});
+		if(_showNegativeTotal && _totalNegativeValue < 0) {
+			negValueElement.attr("style", "");
+			d3.select(parent).append(function() {return negValueElement.node();});
+		}
+		else if(_showNegativeTotal) {
+			negValueElement.style("display", "none");
+			d3.select(parent).append(function() {return negValueElement.node();});
+		}
 
 		var crumbTrail = svg.append("g")
 			.attr("class", "crumbTrail");
