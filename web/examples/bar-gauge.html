@@ -45,7 +45,6 @@ var barGaugeH = dc.barGauge('#barGaugeHorizontal')
 	.orientation("horizontal")
 	.dimension(stateDimension)
 	.group(stateValueSumGroup)
-	.valueAccessor(function(d){return d;})
 	.totalCapacity(maxState)
   .drawScale(true)
   .gap(5);
@@ -69,7 +68,6 @@ var barGaugeV = dc.barGauge('#barGaugeVertical')
   .orientation("vertical")
   .dimension(stateDimension)
   .group(stateValueSumGroup)
-  .valueAccessor(function(d){return d;})
   .totalCapacity(maxState)
   .drawScale(false);
 
