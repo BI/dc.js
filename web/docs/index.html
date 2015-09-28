@@ -1596,11 +1596,12 @@ A newly created choropleth chart instance</p>
                                <span class="string">.</span><span class="comment">margins({top:</span> <span class="comment">5</span>, <span class="comment">right:</span> <span class="comment">5</span>, <span class="comment">bottom:</span> <span class="comment">5</span>, <span class="comment">left:</span> <span class="comment">5})</span> <span class="comment">//margins</span> <span class="comment">are</span> <span class="comment">good</span> <span class="comment">for</span> <span class="comment">positioning</span>
                                <span class="string">.</span><span class="comment">group(totalFundingGroup)</span>
                                <span class="string">.</span><span class="comment">dimension(countryDimension)</span>
-                               <span class="string">.</span><span class="comment">valueAccessor(function(d){return</span> <span class="comment">d;})</span>
                                <span class="string">.</span><span class="comment">totalCapacity(maxCountryValue)</span>
                                <span class="string">.</span><span class="comment">orientation('horizontal')</span> <span class="comment">//vertical</span> <span class="comment">still</span> <span class="comment">needs</span> <span class="comment">work</span>
                                <span class="string">.</span><span class="comment">gap(5)</span>
                                <span class="string">.</span><span class="comment">drawScale(true);</span> <span class="comment">//draw</span> <span class="comment">the</span> <span class="comment">scale</span> <span class="comment">around</span> <span class="comment">the</span> <span class="comment">gauge</code></pre>
+<h4 id="-valueaccessor-function-">.valueAccessor(function)</h4>
+<p>Set the value accessor function. Bar gauge comes with a default that should work in most cases.</p>
 <h4 id="-orientation-string-">.orientation(string)</h4>
 <p>Set the orientation of the bar ‘horizontal’ or ‘vertical’. Only horizontal is fully working at this time.</p>
 <h4 id="-usepercentagelength-boolean-">.usePercentageLength(Boolean)</h4>

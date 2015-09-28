@@ -1937,12 +1937,15 @@ totalFundingBar = dc.barGauge("#total-funding-gauge")
                                .margins({top: 5, right: 5, bottom: 5, left: 5}) //margins are good for positioning
                                .group(totalFundingGroup)
                                .dimension(countryDimension)
-                               .valueAccessor(function(d){return d;})
                                .totalCapacity(maxCountryValue)
                                .orientation('horizontal') //vertical still needs work
                                .gap(5)
                                .drawScale(true); //draw the scale around the gauge
 ```
+
+ 
+#### .valueAccessor(function)
+Set the value accessor function. Bar gauge comes with a default that should work in most cases.
 
 #### .orientation(string)
 Set the orientation of the bar 'horizontal' or 'vertical'. Only horizontal is fully working at this time.

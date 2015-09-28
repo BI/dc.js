@@ -8245,7 +8245,6 @@ totalFundingBar = dc.barGauge("#total-funding-gauge")
                                 .margins({top: 5, right: 5, bottom: 5, left: 5}) //margins are good for positioning
                                 .group(totalFundingGroup)
                                 .dimension(countryDimension)
-                                .valueAccessor(function(d){return d;})
                                 .totalCapacity(maxCountryValue)
                                 .orientation('horizontal') //vertical still needs work
                                 .gap(5)
@@ -8272,7 +8271,8 @@ dc.barGauge = function (parent, chartGroup) {
             }
             return title + _markerFormat(marker.value);
         },
-        _defaultMarkerHeight = 40, _defaultMarkerWidth = 20, _defaultToolTips = true;
+        _defaultMarkerHeight = 40, _defaultMarkerWidth = 20, _defaultToolTips = true,
+        _valueAccessor = function(d) {return d;};
 
     //dimension is not required because this comp onent only has one dimension
     _chart._mandatoryAttributes (['group']);
@@ -8327,6 +8327,16 @@ dc.barGauge = function (parent, chartGroup) {
         return _chart.valueAccessor()(valObj);
 
     });
+
+    /** 
+        #### .valueAccessor(function)
+        Set the value accessor function. Bar gauge comes with a default that should work in most cases.
+    **/
+    _chart.valueAccessor = function(_) {
+        if(!arguments.length) return _valueAccessor;
+        _valueAccessor = _;
+        return _chart;
+    };
 
     /**
         #### .orientation(string)
@@ -9946,7 +9956,7 @@ dc.treeMap = function (parent, chartGroup) {
 						allNegativeData = false;
 						insertNode(row, columnName, columnIndex);
 					}
-					else {
+					else if(columnIndex === 0){ //do not want to add duplicate negative values for each level
 						_totalNegativeValue += Number(row[measureColumn]);
 					}
 				});

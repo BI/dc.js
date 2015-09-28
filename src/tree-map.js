@@ -679,7 +679,7 @@ dc.treeMap = function (parent, chartGroup) {
 						allNegativeData = false;
 						insertNode(row, columnName, columnIndex);
 					}
-					else {
+					else if(columnIndex === 0){ //do not want to add duplicate negative values for each level
 						_totalNegativeValue += Number(row[measureColumn]);
 					}
 				});
