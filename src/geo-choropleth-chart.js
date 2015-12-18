@@ -43,6 +43,7 @@ dc.geoChoroplethChart = function (parent, chartGroup) {
     var _geoJsons = [];
 
     var _zoom;
+    var _mouseScrollZoomable = true;
     var _scaleExtent = [1,50];
     var _zoomed = zoomed;
     var _zoomButtonClass = "zoomButton";
@@ -78,8 +79,13 @@ dc.geoChoroplethChart = function (parent, chartGroup) {
         if (_enableZoom){
             _zoom = d3.behavior.zoom()
                 .scaleExtent(_scaleExtent)
-                .on("zoom", _zoomed);   
+                .on("zoom", _zoomed); 
+
             _chart.svg().call(_zoom);
+
+            if(!_mouseScrollZoomable)
+                _chart.svg().on("wheel.zoom", null);
+            
             setupZoomControls(); 
         }
     };
@@ -97,6 +103,16 @@ dc.geoChoroplethChart = function (parent, chartGroup) {
     _chart.enableZoom = function(_){
         if (!arguments.length) return _enableZoom;
         _enableZoom = _;
+        return _chart;
+    };
+
+    /**
+     #### .mouseScrollZoomable(boolean)
+     Set or get if chart is zoomable by mouse wheel.
+    **/
+    _chart.mouseScrollZoomable = function(_) {
+        if(!arguments.length) return _mouseScrollZoomable;
+        _mouseScrollZoomable = _;
         return _chart;
     };
 
