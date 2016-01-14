@@ -668,7 +668,7 @@ dc.baseMixin = function (_chart) {
         "filtered",
         "zoomed");
 
-    var _legend;
+    var _legend, _renderLegend;
 
     var _filters = [];
     var _filterHandler = function (dimension, filters) {
@@ -1036,7 +1036,7 @@ dc.baseMixin = function (_chart) {
 
         var result = _chart._doRender();
 
-        if (_legend) _legend.render();
+        if (_legend && _renderLegend) _legend.render();
 
         _chart._activateRenderlets("postRender");
 
@@ -1071,7 +1071,7 @@ dc.baseMixin = function (_chart) {
 
         var result = _chart._doRedraw();
 
-        if (_legend) _legend.render();
+        if (_legend && _renderLegend) _legend.render();
 
         _chart._activateRenderlets("postRedraw");
 
@@ -1462,6 +1462,17 @@ dc.baseMixin = function (_chart) {
         if (!arguments.length) return _legend;
         _legend = l;
         _legend.parent(_chart);
+        _renderLegend = true;
+        return _chart;
+    };
+
+    /**
+    #### .renderLegend(boolean)
+    Show or hide the legend. Default is true, if a legend exists.
+    **/
+    _chart.renderLegend = function(_) {
+        if (!arguments.length) return _renderLegend;
+        _renderLegend = _;
         return _chart;
     };
 
