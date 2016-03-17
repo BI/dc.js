@@ -6927,6 +6927,7 @@ dc.legend = function () {
         _g = _parent.svg().append("g")
             .attr("class", "dc-legend")
             .attr("transform", "translate(" + _x + "," + _y + ")");
+
         var legendables = _parent.legendables();
 
         var itemEnter = _g.selectAll('g.dc-legend-item')
@@ -6989,6 +6990,16 @@ dc.legend = function () {
                 return "translate(0," + i * legendItemHeight() + ")";
             }
         });
+
+        _g.insert("rect", ":first-child")
+            .classed("legend-background", true)
+            .attr("x", -10)
+            .attr("y", -10)
+            .attr("height", _g.node().getBBox().height + 20)
+            .attr("width", _g.node().getBBox().width + 20)
+            .attr("rx", 4)
+            .attr("ry", 4)
+            .attr("fill-opacity", 0);
     };
 
     function legendItemHeight() {
