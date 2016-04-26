@@ -14,6 +14,9 @@
         z-index: 999;
         text-align:right;
       }
+      svg {
+        border: 1px solid green;
+      }
     </style>
 </head>
 <body>
@@ -45,14 +48,21 @@ stateDimension = data.dimension(function(d){return d.state;});
 stateValueSumGroup = stateDimension.group().reduceSum(function(d){return d.value;});
 
 geoJson = loadGeoFixture();
-width = 1000;
-height = 600;
+width = 960;
+height = 500;
+
+var projection = d3.geo.albersUsa()
+  .translate([width/2, height/2])
+  .scale(1000);
 
 map = dc.geoChoroplethChart('#map')
   .width(width)
   .height(height)
+  .panOffsetX(true)
+  .panOffsetY(true)
   .dimension(stateDimension)
   .group(stateValueSumGroup)
+  .projection(projection)
   .enableZoom(true)
   .overlayGeoJson(geoJson.features, 'state', function (d) {
       return d.properties.name;

@@ -44,13 +44,16 @@ dc.geoChoroplethChart = function (parent, chartGroup) {
 
     var _zoom;
     var _mouseScrollZoomable = true;
-    var _scaleExtent = [1,50];
+    var _scaleExtent = [1,8];
     var _zoomed = zoomed;
     var _zoomButtonClass = "zoomButton";
     var _resetZoomButtonClass = "resetZoomButton";
     var _enableZoom = false;
-    var _afterZoom;
+    var _afterZoom = function(){};
     var _g;
+    var _clip;
+    var _panOffsetX = true;
+    var _panOffsetY = true;
 
     _chart._doRender = function () { 
         _chart.resetSvg();
@@ -74,6 +77,7 @@ dc.geoChoroplethChart = function (parent, chartGroup) {
 
             plotData(layerIndex);
         }
+
         _projectionFlag = false;
 
         if (_enableZoom){
@@ -128,6 +132,29 @@ dc.geoChoroplethChart = function (parent, chartGroup) {
     _chart.afterZoom = function(_){
         if (!arguments.length) return _afterZoom;
         _afterZoom = _;
+        return _chart;
+    };
+
+
+    /**
+     #### .panOffsetX(boolean)
+     if set to true, offsets zoom t[0]  
+
+    **/
+    _chart.panOffsetX = function(_){
+        if (!arguments.length) return _panOffsetX;
+        _panOffsetX = _;
+        return _chart;
+    };
+
+    /**
+     #### .panOffsetY(boolean)
+     if set to true, offsets zoom t[1]  
+
+    **/
+    _chart.panOffsetY = function(_){
+        if (!arguments.length) return _panOffsetY;
+        _panOffsetY = _;
         return _chart;
     };
 
@@ -379,12 +406,44 @@ dc.geoChoroplethChart = function (parent, chartGroup) {
         });
     }
 
+    _chart.on("postRender", function(){
+        updateClip();
+    });
+
+    function relativeBoundingRect(node) {
+        var svgRect = _chart.svg().node().getBoundingClientRect();
+
+        var absRect = node.getBoundingClientRect();
+
+         return {
+            width: absRect.width,
+            height: absRect.height,
+            left: absRect.left - svgRect.left,
+            right: absRect.right - svgRect.right,
+            top: absRect.top - svgRect.top,
+            bottom: absRect.bottom - svgRect.bottom
+        };
+    }
+
+    function updateClip() {
+        var gbox = _g.node().getBoundingClientRect();
+
+        var svgRect = _chart.svg().node().getBoundingClientRect();
+
+        _clip = {
+            bottom: (-1) * (svgRect.bottom - gbox.bottom),
+            top: (svgRect.top - gbox.top),
+            left: (svgRect.left - gbox.left),
+            right: (-1) * (svgRect.right - gbox.right)
+        };
+    }
 
     function zoomed() {
         var s;
         var t;
-        var ox = _chart.width() / 2 - 50,
-            oy = _chart.width() / 2;
+
+        var width = _chart.width(),
+            height = _chart.height();
 
         if(d3.event){
             s = d3.event.scale;
@@ -392,27 +451,51 @@ dc.geoChoroplethChart = function (parent, chartGroup) {
         }else{
             s= _zoom.scale();
             t= _zoom.translate();
-        }
+        }          
         
-        t[0] = Math.min((_chart.width() / 2 - ox - 100) * (s - 1), Math.max((_chart.width() / 2 + ox) * (1 - s), t[0]));
-        t[1] = Math.min((_chart.height() / 2 - oy + 200) * (s - 1), Math.max((_chart.height() / 2 + oy - 175)  * (1 - s), t[1]));
+        function posOr(n) {
+            return n > 0 ? n : 0;
+        }
+
+        function limitDimension(value, min, max) {
+            if (value > max)
+                return max;
+            if (value < min)
+                return min;
+            return value;
+        }
+
+
+        var lClip = posOr(_clip.left);
+        var rClip = posOr(_clip.right);
+
+        var xMax = lClip * (s);
+        var xMin = (-1) * rClip * s;
+        if (_panOffsetX)
+            xMin = xMin + width * (1 - s);
+
+        t[0] = limitDimension(t[0], xMin, xMax);
+
+        var tClip = posOr(_clip.top);
+        var bClip = posOr(_clip.bottom);
+
+        var yMax = tClip * (s);
+        var yMin = (-1) * bClip * s;
+        if (_panOffsetY)
+            yMin = yMin + height * (1 - s); 
+
+        t[1] = limitDimension(t[1], yMin, yMax);
+
         _zoom.translate(t);
         _g.attr("transform",
             "translate(" + t + ")" +
             "scale(" + s + ")"
         );
 
-        if (_afterZoom){
-            _afterZoom(_g, s);
-        }
-        /*
-        // Zoom dependent fading of labels and lines
-        g.select(".state-boundaries").style("stroke-width", 1.75 / s + "px");
-        g.select(".district-boundaries").style("stroke-width", .75 / s + "px");
-        g.selectAll(".stateLabel").style("opacity", 1.75 - s);
-        g.selectAll(".districtLabel").attr("font-size", 1/(s+1) + "em").style("opacity", -2 + s);
-        */
+        _afterZoom(_g, s);
+ 
     }
+
     function interpolateZoom (translate, scale) {
         var self = this;
         return d3.transition().duration(350).tween("zoom", function () {
