@@ -1,3 +1,4 @@
+Make sure to be using roughly node 0.10.45, and npm 2.15.1
 [![Build Status](https://api.travis-ci.org/dc-js/dc.js.png?branch=master)](http://travis-ci.org/dc-js/dc.js)
 [![Sauce Status](https://saucelabs.com/buildstatus/sclevine)](https://saucelabs.com/u/sclevine)
 [![NPM Status](https://badge.fury.io/js/dc.png)](http://badge.fury.io/js/dc)
