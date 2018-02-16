@@ -453,6 +453,8 @@ clear the cache to make sure charts are rendered properly.</p>
 <p>Attach a dc.legend widget to this chart. The legend widget will automatically draw legend labels
 based on the color setting and names associated with each group.</p>
 <pre><code class="lang-js">chart<span class="variable">.legend</span>(dc<span class="variable">.legend</span>()<span class="variable">.x</span>(<span class="number">400</span>)<span class="variable">.y</span>(<span class="number">10</span>)<span class="variable">.itemHeight</span>(<span class="number">13</span>)<span class="variable">.gap</span>(<span class="number">5</span>))</code></pre>
+<h4 id="-renderlegend-boolean-">.renderLegend(boolean)</h4>
+<p>Show or hide the legend. Default is true, if a legend exists.</p>
 <h4 id="-chartid-">.chartID()</h4>
 <p>Returns the internal numeric ID of the chart.</p>
 <h4 id="-options-optionsobject-">.options(optionsObject)</h4>
@@ -1278,6 +1280,8 @@ Includes basic d3.zoom scroll zoom, and click-drag panning, as well as button co
 “+” (zoom in), “-“ (zoom out) and “Reset Zoom”. </p>
 <p>By default, the “+/-“ controls will render in to “#zoomButton”, while the reset button will render in to
 “#resetZoomButton”. These value can be over-ridden in the methods below.</p>
+<h4 id="-mousescrollzoomable-boolean-">.mouseScrollZoomable(boolean)</h4>
+<p>Set or get if chart is zoomable by mouse wheel.</p>
 <h4 id="-afterzoom-function-">.afterZoom([function])</h4>
 <p>Set or get the function that will execute after zoom. Your afterZoom function should take two parameters (mapGroupD3Node, scaleNumber)
 These values can be used inside your function to dynamically alter styles of map features as zooming occurs. </p>

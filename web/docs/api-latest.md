@@ -443,6 +443,9 @@ based on the color setting and names associated with each group.
 chart.legend(dc.legend().x(400).y(10).itemHeight(13).gap(5))
 ```
 
+#### .renderLegend(boolean)
+Show or hide the legend. Default is true, if a legend exists.
+
 #### .chartID()
 Returns the internal numeric ID of the chart.
 
@@ -1515,6 +1518,9 @@ Includes basic d3.zoom scroll zoom, and click-drag panning, as well as button co
 
 By default, the "+/-" controls will render in to "#zoomButton", while the reset button will render in to
 "#resetZoomButton". These value can be over-ridden in the methods below.
+
+#### .mouseScrollZoomable(boolean)
+Set or get if chart is zoomable by mouse wheel.
 
 #### .afterZoom([function])
 Set or get the function that will execute after zoom. Your afterZoom function should take two parameters (mapGroupD3Node, scaleNumber)

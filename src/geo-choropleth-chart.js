@@ -341,7 +341,7 @@ dc.geoChoroplethChart = function (parent, chartGroup) {
     function setupZoomControls() {
 
         _chart.select('.'+_zoomButtonClass).html('');
-        
+
         var container = _chart.select('.'+_zoomButtonClass)
             .append('div')
             .classed("dc-zoom-button", true);

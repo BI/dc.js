@@ -668,7 +668,7 @@ dc.baseMixin = function (_chart) {
         "filtered",
         "zoomed");
 
-    var _legend;
+    var _legend, _renderLegend;
 
     var _filters = [];
     var _filterHandler = function (dimension, filters) {
@@ -1036,7 +1036,7 @@ dc.baseMixin = function (_chart) {
 
         var result = _chart._doRender();
 
-        if (_legend) _legend.render();
+        if (_legend && _renderLegend) _legend.render();
 
         _chart._activateRenderlets("postRender");
 
@@ -1071,7 +1071,7 @@ dc.baseMixin = function (_chart) {
 
         var result = _chart._doRedraw();
 
-        if (_legend) _legend.render();
+        if (_legend && _renderLegend) _legend.render();
 
         _chart._activateRenderlets("postRedraw");
 
@@ -1462,6 +1462,17 @@ dc.baseMixin = function (_chart) {
         if (!arguments.length) return _legend;
         _legend = l;
         _legend.parent(_chart);
+        _renderLegend = true;
+        return _chart;
+    };
+
+    /**
+    #### .renderLegend(boolean)
+    Show or hide the legend. Default is true, if a legend exists.
+    **/
+    _chart.renderLegend = function(_) {
+        if (!arguments.length) return _renderLegend;
+        _renderLegend = _;
         return _chart;
     };
 
@@ -5907,6 +5918,7 @@ dc.geoChoroplethChart = function (parent, chartGroup) {
     var _geoJsons = [];
 
     var _zoom;
+    var _mouseScrollZoomable = true;
     var _scaleExtent = [1,50];
     var _zoomed = zoomed;
     var _zoomButtonClass = "zoomButton";
@@ -5942,8 +5954,13 @@ dc.geoChoroplethChart = function (parent, chartGroup) {
         if (_enableZoom){
             _zoom = d3.behavior.zoom()
                 .scaleExtent(_scaleExtent)
-                .on("zoom", _zoomed);   
+                .on("zoom", _zoomed); 
+
             _chart.svg().call(_zoom);
+
+            if(!_mouseScrollZoomable)
+                _chart.svg().on("wheel.zoom", null);
+            
             setupZoomControls(); 
         }
     };
@@ -5961,6 +5978,16 @@ dc.geoChoroplethChart = function (parent, chartGroup) {
     _chart.enableZoom = function(_){
         if (!arguments.length) return _enableZoom;
         _enableZoom = _;
+        return _chart;
+    };
+
+    /**
+     #### .mouseScrollZoomable(boolean)
+     Set or get if chart is zoomable by mouse wheel.
+    **/
+    _chart.mouseScrollZoomable = function(_) {
+        if(!arguments.length) return _mouseScrollZoomable;
+        _mouseScrollZoomable = _;
         return _chart;
     };
 
@@ -6189,7 +6216,7 @@ dc.geoChoroplethChart = function (parent, chartGroup) {
     function setupZoomControls() {
 
         _chart.select('.'+_zoomButtonClass).html('');
-        
+
         var container = _chart.select('.'+_zoomButtonClass)
             .append('div')
             .classed("dc-zoom-button", true);
@@ -6911,6 +6938,7 @@ dc.legend = function () {
         _g = _parent.svg().append("g")
             .attr("class", "dc-legend")
             .attr("transform", "translate(" + _x + "," + _y + ")");
+
         var legendables = _parent.legendables();
 
         var itemEnter = _g.selectAll('g.dc-legend-item')
@@ -6973,6 +7001,16 @@ dc.legend = function () {
                 return "translate(0," + i * legendItemHeight() + ")";
             }
         });
+
+        _g.insert("rect", ":first-child")
+            .classed("legend-background", true)
+            .attr("x", -10)
+            .attr("y", -10)
+            .attr("height", _g.node().getBBox().height + 20)
+            .attr("width", _g.node().getBBox().width + 20)
+            .attr("rx", 4)
+            .attr("ry", 4)
+            .attr("fill-opacity", 0);
     };
 
     function legendItemHeight() {
