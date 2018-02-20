@@ -54,6 +54,13 @@ dc.geoChoroplethChart = function (parent, chartGroup) {
     var _clip;
     var _panOffsetX = true;
     var _panOffsetY = true;
+    var _zeroDataMessage = 'No Data';
+    var _legendNumberFormat = function(n) { return Math.round(n) }
+    var _showLegend = false;
+    var _legendSwatchHeight = 15;
+    var _legendSwatchMargin = { bottom: 5, right: 5 }
+    var _legendMargin = { bottom: 50, left: 20 }
+    var _getLegendHeight = function() { return (_chart.colors().range().length + 1 ) * (_legendSwatchHeight + _legendSwatchMargin.bottom) }
 
     _chart._doRender = function () { 
         _chart.resetSvg();
@@ -92,7 +99,152 @@ dc.geoChoroplethChart = function (parent, chartGroup) {
             
             setupZoomControls(); 
         }
+
+        if(_showLegend) addLegend();
     };
+
+    function addLegend() {
+        var legendYPos = _chart.height() - _chart.legendHeight() - _chart.legendMargin().bottom
+        var legend = _chart.svg().append('g')
+            .classed('legend', true)
+             .attr('transform', 'translate(' + _chart.legendMargin().left + ',' + legendYPos + ')');
+
+        legend.append('rect')
+            .classed('background', true)
+            .attr('width', 170)
+            .attr('height', _chart.legendHeight())
+             .attr('fill', 'none');
+        
+        // legend.append('text')
+        //     .classed('legend-title', true)
+        //     .text('Legend')
+        //     .attr('alignment-baseline', 'hanging')
+        //     .attr('y', 10)
+        //     .attr('x', 10);
+
+        var keyContainer = legend.append('g')
+            .classed('key-container', true)
+            .attr('transform', 'translate(0, 0)');
+
+        var legendColors = _chart.colors().range().slice(0).reverse();
+        var zeroColor = _chart.getColor(0);
+        legendColors.push(zeroColor);
+        var keyRow = keyContainer.selectAll('g')
+            .data(legendColors)
+            .enter()
+            .append('g')
+            .attr('transform', function(d, i) {
+                return 'translate(0, ' + String(i * (_chart.legendSwatchHeight() + _chart.legendSwatchMargin().bottom) ) + ')'
+            });
+
+        keyRow.append('rect')
+            .attr('x', 0)
+            .attr('y', 0)
+            .attr('height', _chart.legendSwatchHeight())
+            .attr('width', _chart.legendSwatchHeight())
+            .attr('fill', function(color) { return color });
+
+        keyRow.append('text')
+            .text(function(color) {
+                return getLegendValueRange(color)
+            })
+            .classed('key-text', true)
+            .attr('alignment-baseline', 'hanging')
+            .attr('x', _chart.legendSwatchHeight() + _chart.legendSwatchMargin().right)
+            .attr('y', 0);
+    }
+
+    function updateLegendText() {
+        _chart.svg().select('.key-container')
+            .selectAll('g text')
+            .text(function(color) {
+                return getLegendValueRange(color);
+            });
+    }
+
+    function getLegendValueRange(color) {
+        var colorValueRange = _chart.colors().invertExtent
+        if(!colorValueRange(color)[0]) return _chart.zeroDataMessage();
+
+        var startNumber = _chart.legendNumberFormat()(Math.ceil(colorValueRange(color)[0]))
+        var endNumber = _chart.legendNumberFormat()(Math.floor(colorValueRange(color)[1]))
+        return startNumber + ' to ' + endNumber
+    }
+
+    /** 
+     #### .legendMargin
+     Set or get the margin for the legend. This will position the legend container. Only the bottom and left are actually used.
+     The default is set to { bottom: 50, left: 20 }
+    */
+    _chart.legendMargin = function(_) {
+        if(!arguments.length) return _legendMargin;
+        _legendMargin = _;
+        return _chart;
+    }
+
+    /** 
+     #### .legendSwatchMargin
+     Set or get the margin of the legend swatch. Accepts an object with the properties, top, right, bottom, left.
+     The default is set to { bottom: 5, right: 5 }
+    */
+    _chart.legendSwatchMargin = function (_) {
+        if(!arguments.length) return _legendSwatchMargin;
+        _legendSwatchMargin = _;
+        return _chart;
+    }
+
+    /**
+     #### .legendSwatchHeight 
+     Set or get the height of a legend swatch(the colored rectangle).
+     The default is set to 15
+     */
+    _chart.legendSwatchHeight = function (_) {
+        if(!arguments.length) return _legendSwatchHeight;
+        _legendSwatchHeight = _;
+        return _chart;
+    }
+
+    /**
+     #### .legendHeight
+     Set or get the height of the legend container. Accepts a function or a value. Returns a value.
+     The default function calculates the height based on the amount of legend items in the legend.
+     */
+    _chart.legendHeight = function (_) {
+        if(!arguments.length) return _getLegendHeight()
+        _getLegendHeight = d3.functor(_)
+        return _chart
+    }
+
+    /**
+     #### .showLegend
+     Set or get the boolean to show the legend.
+     Defaults to false. Make sure to use a scale that can have its extent inverted like a quantize/quantile/linear scale. Ordinal will not work!
+     */
+    _chart.showLegend = function(_) {
+        if(!arguments.length) return _showLegend;
+        _showLegend = _;
+        return _chart;
+    }
+
+    /**
+     #### .legendNumberFormat
+     Set or get the number format function for the legend number ranges. Default is set to round the number
+     */
+    _chart.legendNumberFormat = function(_) {
+        if(!arguments.length) return _legendNumberFormat;
+        _legendNumberFormat = _;
+        return _chart;
+    }
+
+    /**
+     #### .zeroDataMessage
+     Set or get the message that appears when a data value is zero. This will show in the legend. By default it will show as 'No Data'
+     */
+    _chart.zeroDataMessage = function(_) {
+        if(!arguments.length) return _zeroDataMessage;
+        _zeroDataMessage = _;
+        return _chart;
+    }
 
     /**
      #### .enableZoom(boolean)
@@ -275,6 +427,7 @@ dc.geoChoroplethChart = function (parent, chartGroup) {
             }
         }
         _projectionFlag = false;
+        updateLegendText();
     };
 
     /**
